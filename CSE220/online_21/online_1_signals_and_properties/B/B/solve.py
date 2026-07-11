@@ -76,6 +76,31 @@ def time_scale_signal_interpolate(x : np.ndarray, k : int) -> np.ndarray:
     
     return y
 
+def time_scale_signal_interpolate(x: np.ndarray, k: int) -> np.ndarray:
+    center = INF
+    N = len(x)
+
+    n = np.arange(N) - center
+    source = n / k
+
+    left = np.floor(source).astype(int) + center
+    right = np.ceil(source).astype(int) + center
+
+    # Prevent out-of-bounds indexing
+    left = np.clip(left, 0, N - 1)
+    right = np.clip(right, 0, N - 1)
+
+    y = 0.5 * (x[left] + x[right])
+
+    # Zero out samples whose original indices were outside the signal
+    valid = (
+        (source >= -center) &
+        (source <= N - center - 1)
+    )
+    y[~valid] = 0
+
+    return y
+
 
 def main():
     img_root = r'online_21\online_1_signals_and_properties\B\B'

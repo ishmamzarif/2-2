@@ -52,6 +52,12 @@ def interpolate_signal(
             left = int(np.floor(time_k)) + t_center_idx
             right = int(np.ceil(time_k)) + t_center_idx
             y[i] = 0.5 * (x_original[left] + x_original[right])
+    
+    # y = np.interp(
+    #     t_query, # where we want values
+    #     t_original, # original time values
+    #     x_original # original signal values
+    # )
 
     return y
 
@@ -78,6 +84,8 @@ def plot_pair(t: np.ndarray, x: np.ndarray, y: np.ndarray, title: str):
     plt.figure()
     plt.plot(t, x, color = "red", label = "x(t)")
     plt.plot(t, y, color = "blue", label = "x(t/k)")
+    # plt.stem(t, x, linefmt = "b.")
+    # plt.stem(t, y, linefmt = "r-")
     plt.grid(True, alpha = 0.3)
     plt.legend()
     plt.xlabel("Time")

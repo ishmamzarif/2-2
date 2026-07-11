@@ -35,6 +35,12 @@ def init_signal():
 def time_reverse_signal(x : np.ndarray) -> np.ndarray:
     # implement this function
     return np.flip(x)
+    # if time array is not symmetric w.r.t 0
+    # t_rev = -t[::-1]
+    # x_rev = x[::-1]
+
+
+
 
 def odd_even_decomposition(x : np.ndarray)->Tuple[np.ndarray, np.ndarray]:
     # implement this function

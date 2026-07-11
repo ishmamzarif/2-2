@@ -74,7 +74,7 @@ def time_shift_signal(x : np.ndarray, k : int) -> np.ndarray:
     
 
 def time_scale_signal(x: np.ndarray, k: int) -> np.ndarray:
-    center = 8
+    center = INF
     y = np.zeros_like(x)
 
     # origin
@@ -94,6 +94,22 @@ def time_scale_signal(x: np.ndarray, k: int) -> np.ndarray:
 
     return y
         
+def time_scale_signal(x: np.ndarray, k: int) -> np.ndarray:
+    center = INF
+    y = np.zeros_like(x)
+
+    # Origin
+    y[center] = x[center]
+
+    # Positive side
+    pos = x[center + k :: k]
+    y[center + 1 : center + 1 + len(pos)] = pos
+
+    # Negative side
+    neg = x[center - k :: -k]
+    y[center - len(neg) : center] = neg[::-1]
+
+    return y
 
 def main():
     img_root_path = r'online_21\online_1_signals_and_properties\A\A'
