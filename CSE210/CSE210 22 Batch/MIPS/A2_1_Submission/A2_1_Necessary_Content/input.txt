@@ -1,0 +1,8 @@
+addi $t0, $t0, 3    # t0 = 3
+addi $t1, $t1, 5    # t1 = 5
+push $t0			# mem[FF] = 3
+push $t1			# mem[FE] = 5		
+ori $t0, $t0, 4		# $t0 = 7
+pop $t0 			# $t0 = 5			
+pop $t2			    # $t2 = 3
+nor $t2, $t2, $t2 	# $t2 = -4				             

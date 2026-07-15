@@ -1,0 +1,190 @@
+
+    <html>
+    <head>
+        <title>Control Signals</title>
+        <style>
+            body {
+                font-family: monospace;
+                background: #ffffff;
+                color: #000000;
+            }
+            table {
+                border-collapse: collapse;
+                width: 90%;
+                margin: auto;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 8px;
+                text-align: center;
+            }
+            th {
+                background: #f2f2f2;
+            }
+            tr:nth-child(even) {
+                background: #fafafa;
+            }
+            caption {
+                text-align: left;
+                margin-top: 10px;
+                font-size: 0.95em;
+            }
+            .legend {
+                width: 90%;
+                margin: auto;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+
+    <h2 style="text-align:center;">Control Signals (Active + Encoded)</h2>
+
+    <table>
+        <tr>
+            <th>Instruction</th>
+            <th>Opcode</th>
+            <th>Active Signals</th>
+            <th>Binary (4-4-4)</th>
+            <th>Hex</th>
+        </tr>
+        
+        <tr>
+            <td>sub</td>
+            <td>C</td>
+            <td>RegDst, RegWrite, ALUOp0</td>
+            <td>1001 0000 0001</td>
+            <td>0x901</td>
+        </tr>
+        
+        <tr>
+            <td>sll</td>
+            <td>I</td>
+            <td>ALUSrc, RegWrite, ALUOp2, ALUOp0</td>
+            <td>0101 0000 0101</td>
+            <td>0x505</td>
+        </tr>
+        
+        <tr>
+            <td>sw</td>
+            <td>M</td>
+            <td>ALUSrc, MemWrite</td>
+            <td>0100 0100 0000</td>
+            <td>0x440</td>
+        </tr>
+        
+        <tr>
+            <td>addi</td>
+            <td>B</td>
+            <td>ALUSrc, RegWrite</td>
+            <td>0101 0000 0000</td>
+            <td>0x500</td>
+        </tr>
+        
+        <tr>
+            <td>lw</td>
+            <td>L</td>
+            <td>ALUSrc, MemtoReg, RegWrite, MemRead</td>
+            <td>0111 1000 0000</td>
+            <td>0x780</td>
+        </tr>
+        
+        <tr>
+            <td>and</td>
+            <td>E</td>
+            <td>RegDst, RegWrite, ALUOp1</td>
+            <td>1001 0000 0010</td>
+            <td>0x902</td>
+        </tr>
+        
+        <tr>
+            <td>ori</td>
+            <td>H</td>
+            <td>ALUSrc, RegWrite, ALUOp1, ALUOp0</td>
+            <td>0101 0000 0011</td>
+            <td>0x503</td>
+        </tr>
+        
+        <tr>
+            <td>subi</td>
+            <td>D</td>
+            <td>ALUSrc, RegWrite, ALUOp0</td>
+            <td>0101 0000 0001</td>
+            <td>0x501</td>
+        </tr>
+        
+        <tr>
+            <td>add</td>
+            <td>A</td>
+            <td>RegDst, RegWrite</td>
+            <td>1001 0000 0000</td>
+            <td>0x900</td>
+        </tr>
+        
+        <tr>
+            <td>or</td>
+            <td>G</td>
+            <td>RegDst, RegWrite, ALUOp1, ALUOp0</td>
+            <td>1001 0000 0011</td>
+            <td>0x903</td>
+        </tr>
+        
+        <tr>
+            <td>bneq</td>
+            <td>O</td>
+            <td>Bneq, ALUOp0</td>
+            <td>0000 0001 0001</td>
+            <td>0x011</td>
+        </tr>
+        
+        <tr>
+            <td>srl</td>
+            <td>J</td>
+            <td>ALUSrc, RegWrite, ALUOp2, ALUOp1</td>
+            <td>0101 0000 0110</td>
+            <td>0x506</td>
+        </tr>
+        
+        <tr>
+            <td>j</td>
+            <td>P</td>
+            <td>Jump</td>
+            <td>0000 0000 1000</td>
+            <td>0x008</td>
+        </tr>
+        
+        <tr>
+            <td>nor</td>
+            <td>K</td>
+            <td>RegDst, RegWrite, ALUOp2</td>
+            <td>1001 0000 0100</td>
+            <td>0x904</td>
+        </tr>
+        
+        <tr>
+            <td>andi</td>
+            <td>F</td>
+            <td>ALUSrc, RegWrite, ALUOp1</td>
+            <td>0101 0000 0010</td>
+            <td>0x502</td>
+        </tr>
+        
+        <tr>
+            <td>beq</td>
+            <td>N</td>
+            <td>Beq, ALUOp0</td>
+            <td>0000 0010 0001</td>
+            <td>0x021</td>
+        </tr>
+        
+    </table>
+
+    <div class="legend">
+        <p><b>Bit Positions:</b> 11 10 9 8 7 6 5 4 3 2 1 0</p>
+        <p><b>Signals:</b> RegDst ALUSrc MemtoReg RegWrite MemRead MemWrite Beq Bneq Jump ALUOp2 ALUOp1 ALUOp0</p>
+        <p><b>Grouping:</b> [Reg/Mem/Branch/Jump] [ALUOp]</p>
+    </div>
+
+    </body>
+    </html>
+    
