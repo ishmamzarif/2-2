@@ -144,3 +144,5 @@ def check_table(filename="my_truth_table.txt", outfile="alu_errors.txt"):
         out.write(f"\nTotal errors: {cnt}\n")
 
 check_table()
+
+
