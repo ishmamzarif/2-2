@@ -1,0 +1,567 @@
+\begin{thebibliography}{109}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abdulhai et~al.(2023)Abdulhai, White, Snell, Sun, Hong, Zhai, Xu, and Levine]{abdulhai2023lmrl}
+Abdulhai, M., White, I., Snell, C., Sun, C., Hong, J., Zhai, Y., Xu, K., and Levine, S.
+\newblock Lmrl gym: Benchmarks for multi-turn reinforcement learning with language models.
+\newblock \emph{arXiv preprint arXiv:2311.18232}, 2023.
+
+\bibitem[Andrychowicz et~al.(2017)Andrychowicz, Wolski, Ray, Schneider, Fong, Welinder, McGrew, Tobin, Pieter~Abbeel, and Zaremba]{andrychowicz2017hindsight}
+Andrychowicz, M., Wolski, F., Ray, A., Schneider, J., Fong, R., Welinder, P., McGrew, B., Tobin, J., Pieter~Abbeel, O., and Zaremba, W.
+\newblock Hindsight experience replay.
+\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+
+\bibitem[Anthony et~al.(2017)Anthony, Tian, and Barber]{anthony2017thinkingfastslowdeep}
+Anthony, T., Tian, Z., and Barber, D.
+\newblock Thinking fast and slow with deep learning and tree search, 2017.
+\newblock URL \url{https://arxiv.org/abs/1705.08439}.
+
+\bibitem[Anthony et~al.(2019)Anthony, Nishihara, Moritz, Salimans, and Schulman]{anthony2019policygradientsearchonline}
+Anthony, T., Nishihara, R., Moritz, P., Salimans, T., and Schulman, J.
+\newblock Policy gradient search: Online planning and expert iteration without search trees, 2019.
+\newblock URL \url{https://arxiv.org/abs/1904.03646}.
+
+\bibitem[Audibert \& Bubeck(2010)Audibert and Bubeck]{audibert:hal-00654404}
+Audibert, J.-Y. and Bubeck, S.
+\newblock {Best Arm Identification in Multi-Armed Bandits}.
+\newblock In \emph{{COLT 2010 - Proceedings}}, pp.\  13 p., Haifa, Israel, June 2010.
+\newblock URL \url{https://enpc.hal.science/hal-00654404}.
+
+\bibitem[Auer(2000)]{auer2000using}
+Auer, P.
+\newblock Using upper confidence bounds for online learning.
+\newblock In \emph{Proceedings 41st annual symposium on foundations of computer science}, pp.\  270--279. IEEE, 2000.
+
+\bibitem[Auer et~al.(2002)Auer, Cesa-Bianchi, and Fischer]{auer2002finite}
+Auer, P., Cesa-Bianchi, N., and Fischer, P.
+\newblock Finite-time analysis of the multiarmed bandit problem.
+\newblock \emph{Machine learning}, 47:\penalty0 235--256, 2002.
+
+\bibitem[Beck et~al.(2023)Beck, Vuorio, Liu, Xiong, Zintgraf, Finn, and Whiteson]{beck2023survey}
+Beck, J., Vuorio, R., Liu, E.~Z., Xiong, Z., Zintgraf, L., Finn, C., and Whiteson, S.
+\newblock A survey of meta-reinforcement learning.
+\newblock \emph{arXiv preprint arXiv:2301.08028}, 2023.
+
+\bibitem[Bengio et~al.(2009)Bengio, Louradour, Collobert, and Weston]{bengio2009curriculum}
+Bengio, Y., Louradour, J., Collobert, R., and Weston, J.
+\newblock Curriculum learning.
+\newblock In \emph{Proceedings of the 26th annual international conference on machine learning}, pp.\  41--48, 2009.
+
+\bibitem[Boerner et~al.(2023)Boerner, Deems, Furlani, Knuth, and Towns]{access_compute}
+Boerner, T.~J., Deems, S., Furlani, T.~R., Knuth, S.~L., and Towns, J.
+\newblock Access: Advancing innovation: Nsf’s advanced cyberinfrastructure coordination ecosystem: Services \& support.
+\newblock In \emph{Practice and Experience in Advanced Research Computing 2023: Computing for the Common Good}, PEARC '23, pp.\  173–176, New York, NY, USA, 2023. Association for Computing Machinery.
+\newblock ISBN 9781450399852.
+\newblock \doi{10.1145/3569951.3597559}.
+\newblock URL \url{https://doi.org/10.1145/3569951.3597559}.
+
+\bibitem[Bradley \& Terry(1952)Bradley and Terry]{bradley1952rank}
+Bradley, R.~A. and Terry, M.~E.
+\newblock Rank analysis of incomplete block designs: I. the method of paired comparisons.
+\newblock \emph{Biometrika}, 39\penalty0 (3/4):\penalty0 324--345, 1952.
+
+\bibitem[Brown et~al.(2021)Brown, Buitrago, Hanna, Sanielevici, Scibek, and Nystrom]{psc_computing}
+Brown, S.~T., Buitrago, P., Hanna, E., Sanielevici, S., Scibek, R., and Nystrom, N.~A.
+\newblock Bridges-2: A platform for rapidly-evolving and data intensive research.
+\newblock In \emph{Practice and Experience in Advanced Research Computing 2021: Evolution Across All Dimensions}, PEARC '21, New York, NY, USA, 2021. Association for Computing Machinery.
+\newblock ISBN 9781450382922.
+\newblock \doi{10.1145/3437359.3465593}.
+\newblock URL \url{https://doi.org/10.1145/3437359.3465593}.
+
+\bibitem[Brown et~al.(2020)Brown, Mann, Ryder, Subbiah, Kaplan, Dhariwal, Neelakantan, Shyam, Sastry, Askell, et~al.]{brown2020language}
+Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.~D., Dhariwal, P., Neelakantan, A., Shyam, P., Sastry, G., Askell, A., et~al.
+\newblock Language models are few-shot learners.
+\newblock \emph{Advances in neural information processing systems}, 33:\penalty0 1877--1901, 2020.
+
+\bibitem[Bruce et~al.(2024)Bruce, Dennis, Edwards, Parker-Holder, Shi, Hughes, Lai, Mavalankar, Steigerwald, Apps, et~al.]{bruce2024genie}
+Bruce, J., Dennis, M.~D., Edwards, A., Parker-Holder, J., Shi, Y., Hughes, E., Lai, M., Mavalankar, A., Steigerwald, R., Apps, C., et~al.
+\newblock Genie: Generative interactive environments.
+\newblock In \emph{Forty-first International Conference on Machine Learning}, 2024.
+
+\bibitem[Burda et~al.(2018)Burda, Edwards, Storkey, and Klimov]{burda2018exploration}
+Burda, Y., Edwards, H., Storkey, A., and Klimov, O.
+\newblock Exploration by random network distillation.
+\newblock \emph{arXiv preprint arXiv:1810.12894}, 2018.
+
+\bibitem[Chen et~al.(2024)Chen, Qadri, Wen, Jain, Kirchenbauer, Zhou, and Goldstein]{chen2024genqageneratingmillionsinstructions}
+Chen, J., Qadri, R., Wen, Y., Jain, N., Kirchenbauer, J., Zhou, T., and Goldstein, T.
+\newblock Genqa: Generating millions of instructions from a handful of prompts, 2024.
+\newblock URL \url{https://arxiv.org/abs/2406.10323}.
+
+\bibitem[Chen et~al.(2017)Chen, Sidor, Abbeel, and Schulman]{chen2017ucb}
+Chen, R.~Y., Sidor, S., Abbeel, P., and Schulman, J.
+\newblock Ucb exploration via q-ensembles.
+\newblock \emph{arXiv preprint arXiv:1706.01502}, 2017.
+
+\bibitem[Christiano et~al.(2017)Christiano, Leike, Brown, Martic, Legg, and Amodei]{christiano2017deep}
+Christiano, P.~F., Leike, J., Brown, T., Martic, M., Legg, S., and Amodei, D.
+\newblock Deep reinforcement learning from human preferences.
+\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+
+\bibitem[Cook et~al.(2004)]{cook2004universality}
+Cook, M. et~al.
+\newblock Universality in elementary cellular automata.
+\newblock \emph{Complex systems}, 15\penalty0 (1):\penalty0 1--40, 2004.
+
+\bibitem[Côté et~al.(2019)Côté, Ákos Kádár, Yuan, Kybartas, Barnes, Fine, Moore, Tao, Hausknecht, Asri, Adada, Tay, and Trischler]{côté2019textworldlearningenvironmenttextbased}
+Côté, M.-A., Ákos Kádár, Yuan, X., Kybartas, B., Barnes, T., Fine, E., Moore, J., Tao, R.~Y., Hausknecht, M., Asri, L.~E., Adada, M., Tay, W., and Trischler, A.
+\newblock Textworld: A learning environment for text-based games, 2019.
+\newblock URL \url{https://arxiv.org/abs/1806.11532}.
+
+\bibitem[Dao(2024)]{dao2023flashattention2}
+Dao, T.
+\newblock Flash{A}ttention-2: Faster attention with better parallelism and work partitioning.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem[Dao et~al.(2022)Dao, Fu, Ermon, Rudra, and R{\'e}]{dao2022flashattention}
+Dao, T., Fu, D.~Y., Ermon, S., Rudra, A., and R{\'e}, C.
+\newblock Flash{A}ttention: Fast and memory-efficient exact attention with {IO}-awareness.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2022.
+
+\bibitem[DeepSeek-AI et~al.(2025)DeepSeek-AI, Guo, Yang, Zhang, Song, Zhang, Xu, Zhu, Ma, Wang, et~al.]{deepseekai2025deepseekr1incentivizingreasoningcapability}
+DeepSeek-AI, Guo, D., Yang, D., Zhang, H., Song, J., Zhang, R., Xu, R., Zhu, Q., Ma, S., Wang, P., et~al.
+\newblock Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2501.12948}.
+
+\bibitem[Dennis et~al.(2020)Dennis, Jaques, Vinitsky, Bayen, Russell, Critch, and Levine]{dennis2020emergent}
+Dennis, M., Jaques, N., Vinitsky, E., Bayen, A., Russell, S., Critch, A., and Levine, S.
+\newblock Emergent complexity and zero-shot transfer via unsupervised environment design.
+\newblock \emph{Advances in neural information processing systems}, 33:\penalty0 13049--13061, 2020.
+
+\bibitem[Dong et~al.(2023)Dong, Xiong, Goyal, Zhang, Chow, Pan, Diao, Zhang, SHUM, and Zhang]{dong2023raft}
+Dong, H., Xiong, W., Goyal, D., Zhang, Y., Chow, W., Pan, R., Diao, S., Zhang, J., SHUM, K., and Zhang, T.
+\newblock {RAFT}: Reward ranked finetuning for generative foundation model alignment.
+\newblock \emph{Transactions on Machine Learning Research}, 2023.
+\newblock ISSN 2835-8856.
+\newblock URL \url{https://openreview.net/forum?id=m7p5O7zblY}.
+
+\bibitem[Dubois et~al.(2023)Dubois, Li, Taori, Zhang, Gulrajani, Ba, Guestrin, Liang, and Hashimoto]{dubois2023alpacafarm}
+Dubois, Y., Li, X., Taori, R., Zhang, T., Gulrajani, I., Ba, J., Guestrin, C., Liang, P., and Hashimoto, T.~B.
+\newblock Alpacafarm: A simulation framework for methods that learn from human feedback, 2023.
+
+\bibitem[Dubois et~al.(2024)Dubois, Galambosi, Liang, and Hashimoto]{dubois2024length}
+Dubois, Y., Galambosi, B., Liang, P., and Hashimoto, T.~B.
+\newblock Length-controlled alpacaeval: A simple way to debias automatic evaluators.
+\newblock \emph{arXiv preprint arXiv:2404.04475}, 2024.
+
+\bibitem[Ethayarajh et~al.(2024)Ethayarajh, Xu, Muennighoff, Jurafsky, and Kiela]{ethayarajh2024ktomodelalignmentprospect}
+Ethayarajh, K., Xu, W., Muennighoff, N., Jurafsky, D., and Kiela, D.
+\newblock Kto: Model alignment as prospect theoretic optimization, 2024.
+\newblock URL \url{https://arxiv.org/abs/2402.01306}.
+
+\bibitem[Eysenbach et~al.(2018)Eysenbach, Gupta, Ibarz, and Levine]{eysenbach2018diversity}
+Eysenbach, B., Gupta, A., Ibarz, J., and Levine, S.
+\newblock Diversity is all you need: Learning skills without a reward function.
+\newblock \emph{arXiv preprint arXiv:1802.06070}, 2018.
+
+\bibitem[Fang et~al.(2019)Fang, Zhou, Du, Han, and Zhang]{fang2019curriculum}
+Fang, M., Zhou, T., Du, Y., Han, L., and Zhang, Z.
+\newblock Curriculum-guided hindsight experience replay.
+\newblock \emph{Advances in neural information processing systems}, 32, 2019.
+
+\bibitem[Florensa et~al.(2017)Florensa, Held, Wulfmeier, Zhang, and Abbeel]{florensa2017reverse}
+Florensa, C., Held, D., Wulfmeier, M., Zhang, M., and Abbeel, P.
+\newblock Reverse curriculum generation for reinforcement learning.
+\newblock In \emph{Conference on robot learning}, pp.\  482--495. PMLR, 2017.
+
+\bibitem[Foster \& Foerster(2025)Foster and Foerster]{foster2025learningreasonfrontierlearnability}
+Foster, T. and Foerster, J.
+\newblock Learning to reason at the frontier of learnability, 2025.
+\newblock URL \url{https://arxiv.org/abs/2502.12272}.
+
+\bibitem[Gemma-Team et~al.(2025)Gemma-Team, Kamath, Ferret, Pathak, Vieillard, Merhej, Perrin, Matejovicova, Ramé, Rivière, Rouillard, Mesnard, et~al.]{gemmateam2025gemma3technicalreport}
+Gemma-Team, Kamath, A., Ferret, J., Pathak, S., Vieillard, N., Merhej, R., Perrin, S., Matejovicova, T., Ramé, A., Rivière, M., Rouillard, L., Mesnard, T., et~al.
+\newblock Gemma 3 technical report, 2025.
+\newblock URL \url{https://arxiv.org/abs/2503.19786}.
+
+\bibitem[Grand et~al.(2024)Grand, Pepe, Andreas, and Tenenbaum]{grand2024a}
+Grand, G., Pepe, V., Andreas, J., and Tenenbaum, J.~B.
+\newblock A llama sunk my battleship! asking rational questions with {LLM}s via bayesian inference.
+\newblock In \emph{The First Workshop on System-2 Reasoning at Scale, NeurIPS'24}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=DCer8frGLP}.
+
+\bibitem[Grand et~al.(2025)Grand, Pepe, Andreas, and Tenenbaum]{grand2025shootfirstaskquestions}
+Grand, G., Pepe, V., Andreas, J., and Tenenbaum, J.~B.
+\newblock Shoot first, ask questions later? building rational agents that explore and act like people, 2025.
+\newblock URL \url{https://arxiv.org/abs/2510.20886}.
+
+\bibitem[Gulcehre et~al.(2023)Gulcehre, Paine, Srinivasan, Konyushkova, Weerts, Sharma, Siddhant, Ahern, Wang, Gu, Macherey, Doucet, Firat, and de~Freitas]{gulcehre2023reinforcedselftrainingrestlanguage}
+Gulcehre, C., Paine, T.~L., Srinivasan, S., Konyushkova, K., Weerts, L., Sharma, A., Siddhant, A., Ahern, A., Wang, M., Gu, C., Macherey, W., Doucet, A., Firat, O., and de~Freitas, N.
+\newblock Reinforced self-training (rest) for language modeling, 2023.
+\newblock URL \url{https://arxiv.org/abs/2308.08998}.
+
+\bibitem[Harris \& Slivkins(2025)Harris and Slivkins]{harris2025uselargelanguagemodel}
+Harris, K. and Slivkins, A.
+\newblock Should you use your large language model to explore or exploit?, 2025.
+\newblock URL \url{https://arxiv.org/abs/2502.00225}.
+
+\bibitem[Hausknecht et~al.(2020{\natexlab{a}})Hausknecht, Ammanabrolu, Côté, and Yuan]{hausknecht2020interactivefictionenvironmentscolossal}
+Hausknecht, M., Ammanabrolu, P., Côté, M.-A., and Yuan, X.
+\newblock Interactive fiction games: A colossal adventure, 2020{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/1909.05398}.
+
+\bibitem[Hausknecht et~al.(2020{\natexlab{b}})Hausknecht, Ammanabrolu, Côté, and Yuan]{hausknecht2020interactivefictiongamescolossal}
+Hausknecht, M., Ammanabrolu, P., Côté, M.-A., and Yuan, X.
+\newblock Interactive fiction games: A colossal adventure, 2020{\natexlab{b}}.
+\newblock URL \url{https://arxiv.org/abs/1909.05398}.
+
+\bibitem[Havrilla et~al.(2024)Havrilla, Du, Raparthy, Nalmpantis, Dwivedi-Yu, Zhuravinskyi, Hambro, Sukhbaatar, and Raileanu]{havrilla2024teachinglargelanguagemodels}
+Havrilla, A., Du, Y., Raparthy, S.~C., Nalmpantis, C., Dwivedi-Yu, J., Zhuravinskyi, M., Hambro, E., Sukhbaatar, S., and Raileanu, R.
+\newblock Teaching large language models to reason with reinforcement learning, 2024.
+\newblock URL \url{https://arxiv.org/abs/2403.04642}.
+
+\bibitem[Hendrycks et~al.(2021)Hendrycks, Burns, Kadavath, Arora, Basart, Tang, Song, and Steinhardt]{hendrycks2021measuringmathematicalproblemsolving}
+Hendrycks, D., Burns, C., Kadavath, S., Arora, A., Basart, S., Tang, E., Song, D., and Steinhardt, J.
+\newblock Measuring mathematical problem solving with the math dataset, 2021.
+\newblock URL \url{https://arxiv.org/abs/2103.03874}.
+
+\bibitem[Hurst et~al.(2024)Hurst, Lerer, Goucher, Perelman, Ramesh, Clark, Ostrow, Welihinda, Hayes, Radford, et~al.]{hurst2024gpt}
+Hurst, A., Lerer, A., Goucher, A.~P., Perelman, A., Ramesh, A., Clark, A., Ostrow, A., Welihinda, A., Hayes, A., Radford, A., et~al.
+\newblock Gpt-4o system card.
+\newblock \emph{arXiv preprint arXiv:2410.21276}, 2024.
+
+\bibitem[Jansen et~al.(2024)Jansen, Côté, Khot, Bransom, Mishra, Majumder, Tafjord, and Clark]{jansen2024discoveryworldvirtualenvironmentdeveloping}
+Jansen, P., Côté, M.-A., Khot, T., Bransom, E., Mishra, B.~D., Majumder, B.~P., Tafjord, O., and Clark, P.
+\newblock Discoveryworld: A virtual environment for developing and evaluating automated scientific discovery agents, 2024.
+\newblock URL \url{https://arxiv.org/abs/2406.06769}.
+
+\bibitem[Jansen(2021)]{jansen2021systematicsurveytextworlds}
+Jansen, P.~A.
+\newblock A systematic survey of text worlds as embodied natural language environments, 2021.
+\newblock URL \url{https://arxiv.org/abs/2107.04132}.
+
+\bibitem[Jiang et~al.(2023{\natexlab{a}})Jiang, Sablayrolles, Mensch, Bamford, Chaplot, de~las Casas, Bressand, Lengyel, Lample, Saulnier, Lavaud, Lachaux, Stock, Scao, Lavril, Wang, Lacroix, and Sayed]{jiang2023mistral7b}
+Jiang, A.~Q., Sablayrolles, A., Mensch, A., Bamford, C., Chaplot, D.~S., de~las Casas, D., Bressand, F., Lengyel, G., Lample, G., Saulnier, L., Lavaud, L.~R., Lachaux, M.-A., Stock, P., Scao, T.~L., Lavril, T., Wang, T., Lacroix, T., and Sayed, W.~E.
+\newblock Mistral 7b, 2023{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2310.06825}.
+
+\bibitem[Jiang et~al.(2021{\natexlab{a}})Jiang, Dennis, Parker-Holder, Foerster, Grefenstette, and Rockt{\"a}schel]{jiang2021replay}
+Jiang, M., Dennis, M., Parker-Holder, J., Foerster, J., Grefenstette, E., and Rockt{\"a}schel, T.
+\newblock Replay-guided adversarial environment design.
+\newblock \emph{Advances in Neural Information Processing Systems}, 34:\penalty0 1884--1897, 2021{\natexlab{a}}.
+
+\bibitem[Jiang et~al.(2021{\natexlab{b}})Jiang, Grefenstette, and Rockt{\"a}schel]{jiang2021prioritized}
+Jiang, M., Grefenstette, E., and Rockt{\"a}schel, T.
+\newblock Prioritized level replay.
+\newblock In \emph{International Conference on Machine Learning}, pp.\  4940--4950. PMLR, 2021{\natexlab{b}}.
+
+\bibitem[Jiang et~al.(2023{\natexlab{b}})Jiang, Kolter, and Raileanu]{jiang2023importance}
+Jiang, Y., Kolter, J.~Z., and Raileanu, R.
+\newblock On the importance of exploration for generalization in reinforcement learning.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36:\penalty0 12951--12986, 2023{\natexlab{b}}.
+
+\bibitem[Kojima et~al.(2022)Kojima, Gu, Reid, Matsuo, and Iwasawa]{kojima2022large}
+Kojima, T., Gu, S.~S., Reid, M., Matsuo, Y., and Iwasawa, Y.
+\newblock Large language models are zero-shot reasoners.
+\newblock \emph{Advances in neural information processing systems}, 35:\penalty0 22199--22213, 2022.
+
+\bibitem[Krishnamurthy et~al.(2024)Krishnamurthy, Harris, Foster, Zhang, and Slivkins]{krishnamurthy2024largelanguagemodelsexplore}
+Krishnamurthy, A., Harris, K., Foster, D.~J., Zhang, C., and Slivkins, A.
+\newblock Can large language models explore in-context?, 2024.
+\newblock URL \url{https://arxiv.org/abs/2403.15371}.
+
+\bibitem[Kwan et~al.(2024)Kwan, Zeng, Jiang, Wang, Li, Shang, Jiang, Liu, and Wong]{kwan2024mt}
+Kwan, W.-C., Zeng, X., Jiang, Y., Wang, Y., Li, L., Shang, L., Jiang, X., Liu, Q., and Wong, K.-F.
+\newblock Mt-eval: A multi-turn capabilities evaluation benchmark for large language models.
+\newblock \emph{arXiv preprint arXiv:2401.16745}, 2024.
+
+\bibitem[Laskin et~al.(2022)Laskin, Wang, Oh, Parisotto, Spencer, Steigerwald, Strouse, Hansen, Filos, Brooks, et~al.]{laskin2022context}
+Laskin, M., Wang, L., Oh, J., Parisotto, E., Spencer, S., Steigerwald, R., Strouse, D., Hansen, S., Filos, A., Brooks, E., et~al.
+\newblock In-context reinforcement learning with algorithm distillation.
+\newblock \emph{arXiv preprint arXiv:2210.14215}, 2022.
+
+\bibitem[Lee et~al.(2024)Lee, Xie, Pacchiano, Chandak, Finn, Nachum, and Brunskill]{lee2024supervised}
+Lee, J., Xie, A., Pacchiano, A., Chandak, Y., Finn, C., Nachum, O., and Brunskill, E.
+\newblock Supervised pretraining can learn in-context reinforcement learning.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36, 2024.
+
+\bibitem[Li et~al.(2025)Li, Mun, Brahman, Ilgen, Tsvetkov, and Sap]{li2025aligningllmsaskgood}
+Li, S.~S., Mun, J., Brahman, F., Ilgen, J.~S., Tsvetkov, Y., and Sap, M.
+\newblock Aligning llms to ask good questions a case study in clinical reasoning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2502.14860}.
+
+\bibitem[Li et~al.(2023)Li, Zhang, Dubois, Taori, Gulrajani, Guestrin, Liang, and Hashimoto]{alpaca_eval}
+Li, X., Zhang, T., Dubois, Y., Taori, R., Gulrajani, I., Guestrin, C., Liang, P., and Hashimoto, T.~B.
+\newblock Alpacaeval: An automatic evaluator of instruction-following models.
+\newblock \url{https://github.com/tatsu-lab/alpaca_eval}, 5 2023.
+
+\bibitem[Lin et~al.(2024)Lin, Bai, and Mei]{lin2024transformers}
+Lin, L., Bai, Y., and Mei, S.
+\newblock Transformers as decision makers: Provable in-context reinforcement learning via supervised pretraining.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=yN4Wv17ss3}.
+
+\bibitem[Loshchilov \& Hutter(2017)Loshchilov and Hutter]{loshchilov2017sgdrstochasticgradientdescent}
+Loshchilov, I. and Hutter, F.
+\newblock Sgdr: Stochastic gradient descent with warm restarts, 2017.
+\newblock URL \url{https://arxiv.org/abs/1608.03983}.
+
+\bibitem[Loshchilov \& Hutter(2019)Loshchilov and Hutter]{loshchilov2019decoupledweightdecayregularization}
+Loshchilov, I. and Hutter, F.
+\newblock Decoupled weight decay regularization, 2019.
+\newblock URL \url{https://arxiv.org/abs/1711.05101}.
+
+\bibitem[MetaAI et~al.(2024)MetaAI, Grattafiori, Dubey, Jauhri, Pandey, Kadian, Al-Dahle, Letman, Mathur, et~al.]{grattafiori2024llama3herdmodels}
+MetaAI, Grattafiori, A., Dubey, A., Jauhri, A., Pandey, A., Kadian, A., Al-Dahle, A., Letman, A., Mathur, A., et~al.
+\newblock The llama 3 herd of models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2407.21783}.
+
+\bibitem[Monea et~al.(2025)Monea, Bosselut, Brantley, and Artzi]{monea2025llmsincontextbanditreinforcement}
+Monea, G., Bosselut, A., Brantley, K., and Artzi, Y.
+\newblock Llms are in-context bandit reinforcement learners, 2025.
+\newblock URL \url{https://arxiv.org/abs/2410.05362}.
+
+\bibitem[Mukobi et~al.(2023)Mukobi, Chatain, Fong, Windesheim, Kutyniok, Bhatia, and Alberti]{mukobi2023superhfsupervisediterativelearning}
+Mukobi, G., Chatain, P., Fong, S., Windesheim, R., Kutyniok, G., Bhatia, K., and Alberti, S.
+\newblock Superhf: Supervised iterative learning from human feedback, 2023.
+\newblock URL \url{https://arxiv.org/abs/2310.16763}.
+
+\bibitem[Murty et~al.(2024)Murty, Manning, Shaw, Joshi, and Lee]{murty2024bagel}
+Murty, S., Manning, C.~D., Shaw, P., Joshi, M., and Lee, K.
+\newblock {BAGEL}: Bootstrapping agents by guiding exploration with language.
+\newblock In \emph{Forty-first International Conference on Machine Learning}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=VsvfSMI5bs}.
+
+\bibitem[Narayanan et~al.(2024)Narayanan, Braza, Griffiths, Ponnapati, Bou, Laurent, Kabeli, Wellawatte, Cox, Rodriques, and White]{narayanan2024aviarytraininglanguageagents}
+Narayanan, S., Braza, J.~D., Griffiths, R.-R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S.~G., and White, A.~D.
+\newblock Aviary: training language agents on challenging scientific tasks, 2024.
+\newblock URL \url{https://arxiv.org/abs/2412.21154}.
+
+\bibitem[Nguyen et~al.(2024)Nguyen, Baker, Neo, Roush, Kirsch, and Shwartz-Ziv]{nguyen2024turning}
+Nguyen, M., Baker, A., Neo, C., Roush, A., Kirsch, A., and Shwartz-Ziv, R.
+\newblock Turning up the heat: Min-p sampling for creative and coherent llm outputs.
+\newblock \emph{arXiv preprint arXiv:2407.01082}, 2024.
+
+\bibitem[Nie et~al.(2024)Nie, Su, Chang, Lee, Chi, Le, and Chen]{nie2024evolveevaluatingoptimizingllms}
+Nie, A., Su, Y., Chang, B., Lee, J.~N., Chi, E.~H., Le, Q.~V., and Chen, M.
+\newblock Evolve: Evaluating and optimizing llms for exploration, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.06238}.
+
+\bibitem[OpenAI et~al.(2024{\natexlab{a}})OpenAI, Achiam, Adler, Agarwal, Ahmad, Akkaya, Aleman, Almeida, Altenschmidt, et~al.]{openai2024gpt4technicalreport}
+OpenAI, Achiam, J., Adler, S., Agarwal, S., Ahmad, L., Akkaya, I., Aleman, F.~L., Almeida, D., Altenschmidt, J., et~al.
+\newblock Gpt-4 technical report, 2024{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2303.08774}.
+
+\bibitem[OpenAI et~al.(2024{\natexlab{b}})OpenAI, Jaech, Kalai, Lerer, Richardson, El-Kishky, Low, Helyar, Madry, Beutel, Carney, et~al.]{jaech2024openai}
+OpenAI, Jaech, A., Kalai, A., Lerer, A., Richardson, A., El-Kishky, A., Low, A., Helyar, A., Madry, A., Beutel, A., Carney, A., et~al.
+\newblock Openai o1 system card.
+\newblock \emph{arXiv preprint arXiv:2412.16720}, 2024{\natexlab{b}}.
+
+\bibitem[Osband et~al.(2016)Osband, Blundell, Pritzel, and Van~Roy]{osband2016deep}
+Osband, I., Blundell, C., Pritzel, A., and Van~Roy, B.
+\newblock Deep exploration via bootstrapped dqn.
+\newblock \emph{Advances in neural information processing systems}, 29, 2016.
+
+\bibitem[Pal et~al.(2024)Pal, Karkhanis, Dooley, Roberts, Naidu, and White]{pal2024smaugfixingfailuremodes}
+Pal, A., Karkhanis, D., Dooley, S., Roberts, M., Naidu, S., and White, C.
+\newblock Smaug: Fixing failure modes of preference optimisation with dpo-positive, 2024.
+\newblock URL \url{https://arxiv.org/abs/2402.13228}.
+
+\bibitem[Pang et~al.(2024)Pang, Yuan, Cho, He, Sukhbaatar, and Weston]{pang2024iterativereasoningpreferenceoptimization}
+Pang, R.~Y., Yuan, W., Cho, K., He, H., Sukhbaatar, S., and Weston, J.
+\newblock Iterative reasoning preference optimization, 2024.
+\newblock URL \url{https://arxiv.org/abs/2404.19733}.
+
+\bibitem[Pathak et~al.(2017)Pathak, Agrawal, Efros, and Darrell]{pathak2017curiosity}
+Pathak, D., Agrawal, P., Efros, A.~A., and Darrell, T.
+\newblock Curiosity-driven exploration by self-supervised prediction.
+\newblock In \emph{International conference on machine learning}, pp.\  2778--2787. PMLR, 2017.
+
+\bibitem[Pathak et~al.(2019)Pathak, Gandhi, and Gupta]{pathak2019self}
+Pathak, D., Gandhi, D., and Gupta, A.
+\newblock Self-supervised exploration via disagreement.
+\newblock In \emph{International conference on machine learning}, pp.\  5062--5071. PMLR, 2019.
+
+\bibitem[Portelas et~al.(2020{\natexlab{a}})Portelas, Colas, Hofmann, and Oudeyer]{portelas2020teacher}
+Portelas, R., Colas, C., Hofmann, K., and Oudeyer, P.-Y.
+\newblock Teacher algorithms for curriculum learning of deep rl in continuously parameterized environments.
+\newblock In \emph{Conference on Robot Learning}, pp.\  835--853. PMLR, 2020{\natexlab{a}}.
+
+\bibitem[Portelas et~al.(2020{\natexlab{b}})Portelas, Colas, Weng, Hofmann, and Oudeyer]{portelas2020automatic}
+Portelas, R., Colas, C., Weng, L., Hofmann, K., and Oudeyer, P.-Y.
+\newblock Automatic curriculum learning for deep rl: A short survey.
+\newblock \emph{arXiv preprint arXiv:2003.04664}, 2020{\natexlab{b}}.
+
+\bibitem[Qwen et~al.(2025)Qwen, Yang, Yang, Zhang, Hui, Zheng, Yu, Li, Liu, Huang, Wei, Lin, Yang, Tu, Zhang, Yang, Yang, et~al.]{qwen2025qwen25technicalreport}
+Qwen, Yang, A., Yang, B., Zhang, B., Hui, B., Zheng, B., Yu, B., Li, C., Liu, D., Huang, F., Wei, H., Lin, H., Yang, J., Tu, J., Zhang, J., Yang, J., Yang, J., et~al.
+\newblock Qwen2.5 technical report, 2025.
+\newblock URL \url{https://arxiv.org/abs/2412.15115}.
+
+\bibitem[Rafailov et~al.(2024{\natexlab{a}})Rafailov, Hejna, Park, and Finn]{rafailov2024rqlanguagemodel}
+Rafailov, R., Hejna, J., Park, R., and Finn, C.
+\newblock From $r$ to $q^*$: Your language model is secretly a q-function, 2024{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2404.12358}.
+
+\bibitem[Rafailov et~al.(2024{\natexlab{b}})Rafailov, Sharma, Mitchell, Manning, Ermon, and Finn]{rafailov2024direct}
+Rafailov, R., Sharma, A., Mitchell, E., Manning, C.~D., Ermon, S., and Finn, C.
+\newblock Direct preference optimization: Your language model is secretly a reward model.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36, 2024{\natexlab{b}}.
+
+\bibitem[Raparthy et~al.(2023)Raparthy, Hambro, Kirk, Henaff, and Raileanu]{raparthy2023generalization}
+Raparthy, S.~C., Hambro, E., Kirk, R., Henaff, M., and Raileanu, R.
+\newblock Generalization to new sequential decision making tasks with in-context learning.
+\newblock \emph{arXiv preprint arXiv:2312.03801}, 2023.
+
+\bibitem[Razin et~al.(2024)Razin, Malladi, Bhaskar, Chen, Arora, and Hanin]{razin2024unintentionalunalignmentlikelihooddisplacement}
+Razin, N., Malladi, S., Bhaskar, A., Chen, D., Arora, S., and Hanin, B.
+\newblock Unintentional unalignment: Likelihood displacement in direct preference optimization, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.08847}.
+
+\bibitem[Rein et~al.(2023)Rein, Hou, Stickland, Petty, Pang, Dirani, Michael, and Bowman]{rein2023gpqagraduatelevelgoogleproofqa}
+Rein, D., Hou, B.~L., Stickland, A.~C., Petty, J., Pang, R.~Y., Dirani, J., Michael, J., and Bowman, S.~R.
+\newblock Gpqa: A graduate-level google-proof q\&a benchmark, 2023.
+\newblock URL \url{https://arxiv.org/abs/2311.12022}.
+
+\bibitem[Rothe et~al.(2016)Rothe, Lake, and Gureckis]{rothe2016battleship}
+Rothe, A., Lake, B., and Gureckis, T.
+\newblock Asking and evaluating natural language questions.
+\newblock In Papafragou, A., Grodner, D., Mirman, D., and Trueswell, J. (eds.), \emph{Proceedings of the 38th Annual Meeting of the Cognitive Science Society, CogSci 2016}, Proceedings of the 38th Annual Meeting of the Cognitive Science Society, CogSci 2016, pp.\  2051--2056. The Cognitive Science Society, 2016.
+\newblock Publisher Copyright: {\textcopyright} 2016 Proceedings of the 38th Annual Meeting of the Cognitive Science Society, CogSci 2016. All rights reserved.; 38th Annual Meeting of the Cognitive Science Society: Recognizing and Representing Events, CogSci 2016 ; Conference date: 10-08-2016 Through 13-08-2016.
+
+\bibitem[Rothe et~al.(2017)Rothe, Lake, and Gureckis]{rothe2017questionaskingprogramgeneration}
+Rothe, A., Lake, B.~M., and Gureckis, T.~M.
+\newblock Question asking as program generation, 2017.
+\newblock URL \url{https://arxiv.org/abs/1711.06351}.
+
+\bibitem[Rothe et~al.(2018)Rothe, Lake, and Gureckis]{Rothe2018}
+Rothe, A., Lake, B.~M., and Gureckis, T.~M.
+\newblock Do people ask good questions?
+\newblock \emph{Computational Brain \& Behavior}, 1:\penalty0 69--89, 2018.
+\newblock \doi{10.1007/s42113-018-0005-5}.
+
+\bibitem[Rothe et~al.(2019)Rothe, Lake, and Gureckis]{Rothe2019}
+Rothe, A., Lake, B.~M., and Gureckis, T.~M.
+\newblock Asking goal-oriented questions and learning from answers.
+\newblock In \emph{Proceedings of the 41st Annual Meeting of the Cognitive Science Society: Creativity + Cognition + Computation, CogSci 2019}, pp.\  981--986, Montreal, QC, Canada, 2019. The Cognitive Science Society.
+
+\bibitem[Schmidhuber(1991)]{schmidhuber1991curious}
+Schmidhuber, J.
+\newblock Curious model-building control systems.
+\newblock In \emph{Proc. international joint conference on neural networks}, pp.\  1458--1463, 1991.
+
+\bibitem[Schmidhuber(2007)]{schmidhuber2007godel}
+Schmidhuber, J.
+\newblock G{\"o}del machines: Fully self-referential optimal universal self-improvers.
+\newblock In \emph{Artificial general intelligence}, pp.\  199--226. Springer, 2007.
+
+\bibitem[Schulman et~al.(2017)Schulman, Wolski, Dhariwal, Radford, and Klimov]{schulman2017proximal}
+Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O.
+\newblock Proximal policy optimization algorithms.
+\newblock \emph{arXiv preprint arXiv:1707.06347}, 2017.
+
+\bibitem[Sharma et~al.(2019)Sharma, Gu, Levine, Kumar, and Hausman]{sharma2019dynamics}
+Sharma, A., Gu, S., Levine, S., Kumar, V., and Hausman, K.
+\newblock Dynamics-aware unsupervised discovery of skills.
+\newblock \emph{arXiv preprint arXiv:1907.01657}, 2019.
+
+\bibitem[Skinner(1958)]{skinner1958reinforcement}
+Skinner, B.~F.
+\newblock Reinforcement today.
+\newblock \emph{American Psychologist}, 13\penalty0 (3):\penalty0 94, 1958.
+
+\bibitem[Slivkins(2024)]{slivkins2024introductionmultiarmedbandits}
+Slivkins, A.
+\newblock Introduction to multi-armed bandits, 2024.
+\newblock URL \url{https://arxiv.org/abs/1904.07272}.
+
+\bibitem[Sokal \& Rohlf(2013)Sokal and Rohlf]{biometry2013Sokal}
+Sokal, R. and Rohlf, F.
+\newblock Biometry : the principles and practice of statistics in biological research / robert r. sokal and f. james rohlf, 04 2013.
+
+\bibitem[Sun et~al.(2023)Sun, Liu, Huang, Song, Zhang, Zhang, Wang, and Gai]{sun2023parrot}
+Sun, Y., Liu, C., Huang, J., Song, R., Zhang, F., Zhang, D., Wang, Z., and Gai, K.
+\newblock Parrot: Enhancing multi-turn chat models by learning to ask questions.
+\newblock \emph{arXiv preprint arXiv:2310.07301}, 2023.
+
+\bibitem[Sutton et~al.(1998)Sutton, Barto, et~al.]{sutton1998reinforcement}
+Sutton, R.~S., Barto, A.~G., et~al.
+\newblock \emph{Reinforcement learning: An introduction}, volume~1.
+\newblock MIT press Cambridge, 1998.
+
+\bibitem[Tajwar et~al.(2024)Tajwar, Singh, Sharma, Rafailov, Schneider, Xie, Ermon, Finn, and Kumar]{tajwar2024preferencefinetuningllmsleverage}
+Tajwar, F., Singh, A., Sharma, A., Rafailov, R., Schneider, J., Xie, T., Ermon, S., Finn, C., and Kumar, A.
+\newblock Preference fine-tuning of llms should leverage suboptimal, on-policy data, 2024.
+\newblock URL \url{https://arxiv.org/abs/2404.14367}.
+
+\bibitem[Thompson(1933)]{thompson1933likelihood}
+Thompson, W.~R.
+\newblock On the likelihood that one unknown probability exceeds another in view of the evidence of two samples.
+\newblock \emph{Biometrika}, 25\penalty0 (3-4):\penalty0 285--294, 1933.
+
+\bibitem[Wang et~al.(2024{\natexlab{a}})Wang, Tzeng, and Proutiere]{wang2024bestarmidentificationfixed}
+Wang, P.-A., Tzeng, R.-C., and Proutiere, A.
+\newblock Best arm identification with fixed budget: A large deviation perspective, 2024{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2312.12137}.
+
+\bibitem[Wang et~al.(2019)Wang, Lehman, Clune, and Stanley]{wang2019paired}
+Wang, R., Lehman, J., Clune, J., and Stanley, K.~O.
+\newblock Paired open-ended trailblazer (poet): Endlessly generating increasingly complex and diverse learning environments and their solutions.
+\newblock \emph{arXiv preprint arXiv:1901.01753}, 2019.
+
+\bibitem[Wang et~al.(2022)Wang, Jansen, Côté, and Ammanabrolu]{wang2022scienceworldagentsmarter5th}
+Wang, R., Jansen, P., Côté, M.-A., and Ammanabrolu, P.
+\newblock Scienceworld: Is your agent smarter than a 5th grader?, 2022.
+\newblock URL \url{https://arxiv.org/abs/2203.07540}.
+
+\bibitem[Wang et~al.(2024{\natexlab{b}})Wang, Wang, Liu, Chen, Yuan, Peng, and Ji]{wang2024mint}
+Wang, X., Wang, Z., Liu, J., Chen, Y., Yuan, L., Peng, H., and Ji, H.
+\newblock {MINT}: Evaluating {LLM}s in multi-turn interaction with tools and language feedback.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024{\natexlab{b}}.
+\newblock URL \url{https://openreview.net/forum?id=jp3gWrMuIZ}.
+
+\bibitem[Wang et~al.(2024{\natexlab{c}})Wang, Ma, Zhang, Ni, Chandra, Guo, Ren, Arulraj, He, Jiang, Li, Ku, Wang, Zhuang, Fan, Yue, and Chen]{wang2024mmluprorobustchallengingmultitask}
+Wang, Y., Ma, X., Zhang, G., Ni, Y., Chandra, A., Guo, S., Ren, W., Arulraj, A., He, X., Jiang, Z., Li, T., Ku, M., Wang, K., Zhuang, A., Fan, R., Yue, X., and Chen, W.
+\newblock Mmlu-pro: A more robust and challenging multi-task language understanding benchmark, 2024{\natexlab{c}}.
+\newblock URL \url{https://arxiv.org/abs/2406.01574}.
+
+\bibitem[Wei et~al.(2022)Wei, Wang, Schuurmans, Bosma, Xia, Chi, Le, Zhou, et~al.]{wei2022chain}
+Wei, J., Wang, X., Schuurmans, D., Bosma, M., Xia, F., Chi, E., Le, Q.~V., Zhou, D., et~al.
+\newblock Chain-of-thought prompting elicits reasoning in large language models.
+\newblock \emph{Advances in neural information processing systems}, 35:\penalty0 24824--24837, 2022.
+
+\bibitem[Wolfram(1983)]{wolfram1983statistical}
+Wolfram, S.
+\newblock Statistical mechanics of cellular automata.
+\newblock \emph{Reviews of modern physics}, 55\penalty0 (3):\penalty0 601, 1983.
+
+\bibitem[Xu et~al.(2024)Xu, Fu, Gao, Ye, Liu, Mei, Wang, Yu, and Wu]{xu2024dposuperiorppollm}
+Xu, S., Fu, W., Gao, J., Ye, W., Liu, W., Mei, Z., Wang, G., Yu, C., and Wu, Y.
+\newblock Is dpo superior to ppo for llm alignment? a comprehensive study, 2024.
+\newblock URL \url{https://arxiv.org/abs/2404.10719}.
+
+\bibitem[Yang et~al.(2024)Yang, Li, Yan, Zhang, Huang, and Liu]{yang2024react}
+Yang, Z., Li, P., Yan, M., Zhang, J., Huang, F., and Liu, Y.
+\newblock React meets actre: Autonomous annotation of agent trajectories for contrastive self-training.
+\newblock In \emph{First Conference on Language Modeling}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=0VLBwQGWpA}.
+
+\bibitem[Yao et~al.(2023)Yao, Zhao, Yu, Du, Shafran, Narasimhan, and Cao]{yao2023reactsynergizingreasoningacting}
+Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., and Cao, Y.
+\newblock React: Synergizing reasoning and acting in language models, 2023.
+\newblock URL \url{https://arxiv.org/abs/2210.03629}.
+
+\bibitem[Zelikman et~al.(2022)Zelikman, Wu, Mu, and Goodman]{zelikman2022starbootstrappingreasoningreasoning}
+Zelikman, E., Wu, Y., Mu, J., and Goodman, N.~D.
+\newblock Star: Bootstrapping reasoning with reasoning, 2022.
+\newblock URL \url{https://arxiv.org/abs/2203.14465}.
+
+\bibitem[Zhao et~al.(2024)Zhao, Ren, Hessel, Cardie, Choi, and Deng]{zhao2024wildchat1mchatgptinteraction}
+Zhao, W., Ren, X., Hessel, J., Cardie, C., Choi, Y., and Deng, Y.
+\newblock Wildchat: 1m chatgpt interaction logs in the wild, 2024.
+\newblock URL \url{https://arxiv.org/abs/2405.01470}.
+
+\bibitem[Zheng et~al.(2023)Zheng, Chiang, Sheng, Zhuang, Wu, Zhuang, Lin, Li, Li, Xing, Zhang, Gonzalez, and Stoica]{zheng2023judgingllmasajudgemtbenchchatbot}
+Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E.~P., Zhang, H., Gonzalez, J.~E., and Stoica, I.
+\newblock Judging llm-as-a-judge with mt-bench and chatbot arena, 2023.
+\newblock URL \url{https://arxiv.org/abs/2306.05685}.
+
+\bibitem[Zhou et~al.(2023)Zhou, Lu, Mishra, Brahma, Basu, Luan, Zhou, and Hou]{zhou2023instructionfollowingevaluationlargelanguage}
+Zhou, J., Lu, T., Mishra, S., Brahma, S., Basu, S., Luan, Y., Zhou, D., and Hou, L.
+\newblock Instruction-following evaluation for large language models, 2023.
+\newblock URL \url{https://arxiv.org/abs/2311.07911}.
+
+\end{thebibliography}
