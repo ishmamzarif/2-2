@@ -1,0 +1,540 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{comment}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+
+\definecolor{customblue}{RGB}{0, 76, 153}
+\definecolor{softgreen}{RGB}{226, 245, 236}
+\definecolor{softred}{RGB}{255, 232, 232}
+\definecolor{softyellow}{RGB}{255, 247, 214}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{customblue}\bfseries,
+    commentstyle=\color{teal!70!black},
+    stringstyle=\color{red!70!black},
+    frame=single,
+    breaklines=true,
+    showstringspaces=false,
+    columns=fullflexible
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=customblue,
+    citecolor=customblue,
+    urlcolor=teal
+}
+
+\title{CSE200 LaTeX Tutorial II}
+\author{Mohammad Sadat Hossain}
+\date{June 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Text Formatting}
+
+Package note: bold, underline, and emphasis commands are built in. Text color
+needs the \texttt{xcolor} package. Colored table rows and cells need the
+\texttt{table} option for \texttt{xcolor}, as shown in the preamble.
+
+The commands below are worth knowing for text formatting.
+
+\begin{itemize}
+    \item \verb|\textbf{...}| gives \textbf{bold text}.
+    \item \verb|\underline{...}| gives \underline{underlined text}.
+    \item \verb|\emph{...}| gives \emph{emphasized text}; its appearance may
+    change depending on context.
+\end{itemize}
+
+Example sentence: A technical report should use \textbf{important terms},
+\underline{precise labels}, and \emph{consistent emphasis} carefully.
+
+Use \texttt{xcolor} when color has a clear purpose: emphasis, status, or
+readability. This sentence has \textcolor{red}{red text},
+\textcolor{customblue}{a custom phrase}, and a
+\colorbox{softyellow}{short highlighted note}.
+
+\begin{table}[H]
+    \centering
+    \rowcolors{2}{gray!10}{white}
+    \begin{tabular}{lll}
+        \toprule
+        Item & Result & Comment \\
+        \midrule
+        Figure reference & \cellcolor{softgreen}Correct & Label placed after caption \\
+        Image size & \cellcolor{softred}Needs work & Width too large \\
+        Citation & \cellcolor{softgreen}Correct & Source appears in bibliography \\
+        \bottomrule
+    \end{tabular}
+    \caption{Color used to communicate status in a table.}
+    \label{tab:color-status}
+\end{table}
+
+\section{Nested and Mixed Lists}
+
+Package note: basic \texttt{itemize} and \texttt{enumerate} lists are built in.
+Custom list labels in this section use the \texttt{enumitem} package.
+
+Technical documents often combine numbered lists, bullets, custom symbols, and
+lettered sublists. The \texttt{enumitem} package gives reliable control over
+list labels.
+
+\begin{enumerate}[label=\arabic*.]
+    \item System Setup
+    \begin{itemize}
+        \item Install software packages
+        \item Configure hardware
+        \item[!] Verify connections
+    \end{itemize}
+
+    \item Simulation Steps
+    \begin{enumerate}[label=(\alph*)]
+        \item Initialize parameters
+        \item Run simulation
+        \begin{itemize}[label=-]
+            \item Monitor CPU usage
+            \item[$\rightarrow$] Record intermediate results
+        \end{itemize}
+        \item Analyze outputs
+    \end{enumerate}
+
+    \item Reporting
+    \begin{itemize}
+        \item Prepare charts
+        \item[\#] Document observations
+        \item Summarize findings
+        \begin{enumerate}[label=(\alph*)]
+            \item Key insights
+            \item Recommendations
+        \end{enumerate}
+    \end{itemize}
+\end{enumerate}
+
+\section{Image Files and the \texttt{figure} Float}
+
+Package note: image insertion needs \verb|\usepackage{graphicx}|. The
+\texttt{figure} environment itself is built in.
+
+Use \verb|\includegraphics| to insert an image. Put it inside a
+\texttt{figure} environment when it needs a number, caption, label, and
+cross-reference.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\linewidth]{images/bangladesh_satellite.jpg}
+    \caption{Bangladesh observed by NASA's Terra satellite.}
+    \label{fig:bangladesh}
+\end{figure}
+
+Figure~\ref{fig:bangladesh} is referenced from the paragraph. The label comes
+after the caption so that LaTeX stores the correct figure number.
+
+\subsection{Image Size, Scale, and Rotation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.28\linewidth]{images/padma_river.jpg}
+    \hfill
+    \includegraphics[scale=0.16]{images/hubble_cluster.jpg}
+    \hfill
+    \includegraphics[width=0.28\linewidth, angle=8]{images/smoke_satellite.png}
+    \caption{The same figure can demonstrate width, scale, and angle options.}
+    \label{fig:size-scale-angle}
+\end{figure}
+
+Prefer \verb|width=...| with \verb|\linewidth| for predictable layouts. Use
+\verb|scale=...| when you want to resize by a factor, and \verb|angle=...| for
+rotation.
+
+\section{Float Placement: \texttt{h}, \texttt{t}, \texttt{b}, \texttt{p},
+\texttt{!}, and \texttt{H}}
+
+LaTeX floats are allowed to move. The placement option is a suggestion, not a
+command, except for \verb|[H]| from the \texttt{float} package.
+Package note: \texttt{h}, \texttt{t}, \texttt{b}, \texttt{p}, and \texttt{!}
+are built in; \texttt{H} requires \verb|\usepackage{float}|.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{clp{0.48\linewidth}}
+        \toprule
+        Option & Meaning & Teaching note \\
+        \midrule
+        \texttt{h} & here & Try to place the float near this point. \\
+        \texttt{t} & top & Allow placement at the top of a page. \\
+        \texttt{b} & bottom & Allow placement at the bottom of a page. \\
+        \texttt{p} & page & Allow a separate page containing only floats. \\
+        \texttt{!} & override & Relax some internal restrictions such as float
+        area limits. It does not mean ``force exactly here.'' \\
+        \texttt{H} & exactly here & Requires \texttt{float}; useful for demos
+        and draft documents, but should not be overused in polished writing. \\
+        \bottomrule
+    \end{tabular}
+    \caption{Common float placement options.}
+    \label{tab:float-options}
+\end{table}
+
+\subsection{Placement Examples}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.38\linewidth]{images/hubble_cluster.jpg}
+    \caption{A top-position float using \texttt{[t]}.}
+    \label{fig:top-float}
+\end{figure}
+
+\begin{figure}[b]
+    \centering
+    \includegraphics[width=0.38\linewidth]{images/padma_river.jpg}
+    \caption{A bottom-position float using \texttt{[b]}.}
+    \label{fig:bottom-float}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.45\linewidth]{images/smoke_satellite.png}
+    \caption{A flexible float using \texttt{[!htbp]}.}
+    \label{fig:flexible-float}
+\end{figure}
+
+There are no standard capital variants such as \texttt{T} or \texttt{B} for
+ordinary article floats. The important capital option for this lesson is
+\verb|H|, provided by the \texttt{float} package.
+
+\section{Wrapped Figures}
+
+Package note: wrapped figures need \verb|\usepackage{wrapfig}|.
+
+\begin{wrapfigure}{r}{0.36\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/padma_river.jpg}
+    \caption{Wrapped image.}
+    \label{fig:wrapped-padma}
+\end{wrapfigure}
+
+A wrapped figure lets text flow beside an image. This is useful when a small
+figure belongs to the same paragraph as its explanation. Keep enough text
+after the wrapped figure; otherwise, the next paragraph may begin too close to
+the float. Also avoid making wrapped images too wide. A width between
+\verb|0.25\linewidth| and \verb|0.40\linewidth| is often a good starting point.
+Figure~\ref{fig:wrapped-padma} shows a compact layout that is useful when an
+image and its explanation should stay visually close.
+
+\clearpage
+
+\section{Subfigures}
+
+Package note: subfigures in this demo need \verb|\usepackage{subcaption}|.
+
+Subfigures need the \texttt{subcaption} package. Each image sits inside a
+\texttt{subfigure} block. The block width controls the slot; inside the slot,
+use \verb|width=\linewidth| so the image fills that slot.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/bangladesh_satellite.jpg}
+        \caption{Country scale}
+        \label{fig:sub-country}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/padma_river.jpg}
+        \caption{River scale}
+        \label{fig:sub-river}
+    \end{subfigure}
+    \vspace{0.35cm}
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/hubble_cluster.jpg}
+        \caption{Space scale}   
+        \label{fig:sub-space}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/smoke_satellite.png}
+        \caption{Atmospheric view}
+        \label{fig:sub-smoke}
+    \end{subfigure}
+    \caption{Four subfigures arranged as a two-by-two grid.}
+    \label{fig:four-subfigures}
+\end{figure}
+
+\textbf{\textcolor{red}{WARNING: DO NOT put blank line between subfigures. It starts a new paragraph, and forces the next subfigure onto a new line, no matter the sizes.}}
+
+We can reference the full figure as Figure~\ref{fig:four-subfigures}, or a
+single part such as Figure~\ref{fig:sub-river}. The main layout trick is to
+make each subfigure slightly less than half the line width. The \verb|\hfill|
+command separates the two columns, and the blank line with \verb|\vspace|
+starts the second row.
+
+\section{Hyperlinks}
+
+Package note: links and clickable references need \verb|\usepackage{hyperref}|.
+
+The \texttt{hyperref} package makes cross-references, citations, and web links
+clickable. Use \verb|\href| when the displayed text should be different from
+the URL, and \verb|\url| when the URL itself should be printed.
+
+Example: \href{https://www.overleaf.com/learn/latex/Main_Page}{Overleaf Learn
+LaTeX}. A raw URL can also be printed with \verb|\url|:
+\url{https://www.overleaf.com}.
+
+\section{Footnotes}
+
+Package note: ordinary footnotes are built in; no extra package is needed.
+
+Use \verb|\footnote{...}| for short side comments, source notes, or small
+clarifications that should not interrupt the main paragraph.\footnote{This is a
+regular footnote. It appears at the bottom of the page.} Footnotes are numbered
+automatically, and LaTeX handles their placement.
+
+\begin{verbatim}
+This claim needs a short explanation.\footnote{Write the note here.}
+\end{verbatim}
+
+If the same note must be referenced twice, one simple approach is to store the
+footnote number and reuse it:
+
+\begin{verbatim}
+First mention.\footnote{\label{fn:tool}A repeated note.}
+Second mention.\footnotemark[\ref{fn:tool}]
+\end{verbatim}
+
+Avoid long footnotes in short reports. If the note becomes a full paragraph,
+it probably belongs in the main text.
+
+\section{Paper Citations and Bibliography}
+
+Package note: this compiled demo uses BibTeX together with the
+\texttt{natbib} package. Plain BibTeX can work without a citation package, but
+\texttt{natbib} adds better citation commands while still using a
+\texttt{.bib} file and BibTeX.
+
+For CSE reports, students must know how to cite papers, not just websites. The
+workflow is: keep source details in a \texttt{.bib} database, cite those keys
+in the text, and print the bibliography at the end of the document.
+
+\subsection{Plain BibTeX Starting Point}
+
+Plain BibTeX begins with the built-in \verb|\cite{...}| command. These lines
+are intentionally shown as comments because the compiled demo below uses the
+more expressive \texttt{natbib} commands instead.
+
+\begin{verbatim}
+% Single source with plain BibTeX:
+% \cite{vaswani2017attention}
+
+% Multiple sources with plain BibTeX:
+% \cite{krizhevsky2012imagenet,he2016deep}
+\end{verbatim}
+
+\subsection{Natbib Commands in Action}
+
+Use \verb|\citet| when the author name is part of the sentence.
+
+\begin{verbatim}
+\citet{vaswani2017attention} introduced the Transformer architecture.
+\end{verbatim}
+
+Compiled result: \citet{vaswani2017attention} introduced the Transformer
+architecture.
+
+Use \verb|\citep| when the citation is parenthetical evidence at the end of a
+claim.
+
+\begin{verbatim}
+Residual learning became a standard CNN technique \citep{he2016deep}.
+\end{verbatim}
+
+Compiled result: residual learning became a standard CNN technique
+\citep{he2016deep}.
+
+Multiple papers can still be cited together by putting several keys inside the
+same command.
+
+\begin{verbatim}
+\citep{krizhevsky2012imagenet,he2016deep}
+\end{verbatim}
+
+Compiled result: image classification and residual networks can be cited
+together \citep{krizhevsky2012imagenet,he2016deep}.
+
+Sometimes only the author name or only the year is needed.
+
+\begin{verbatim}
+\citeauthor{he2016deep} proposed residual learning in \citeyear{he2016deep}.
+\end{verbatim}
+
+Compiled result: \citeauthor{he2016deep} proposed residual learning in
+\citeyear{he2016deep}.
+
+The package option controls the broad citation style. This document uses the
+numeric option:
+
+\begin{verbatim}
+\usepackage[numbers]{natbib}
+\end{verbatim}
+
+For an author-year demo, one can try the author-year option together with a
+compatible bibliography style such as \texttt{plainnat}.
+
+\begin{verbatim}
+\usepackage[authoryear,round]{natbib}
+\end{verbatim}
+
+\subsection{Including Uncited Sources}
+
+When a source should appear in the bibliography even though it is not cited in
+the paragraph, use \verb|\nocite{...}|. This command does not print anything at
+the current location; it only asks LaTeX and BibTeX to include that entry in the
+reference list.
+
+\begin{verbatim}
+\nocite{lamport1994latex}
+\end{verbatim}
+
+\nocite{lamport1994latex}
+
+The command \verb|\nocite{*}| prints every entry from the \texttt{.bib} file.
+That can be useful for a bibliography demo, but it is usually too broad for a
+finished report.
+
+\subsection{Bibliography Files}
+
+The source details live in \texttt{references.bib}. A paper entry usually
+contains fields such as \texttt{author}, \texttt{title}, \texttt{booktitle} or
+\texttt{journal}, \texttt{year}, and sometimes \texttt{pages}, \texttt{doi}, or
+\texttt{url}.
+
+\begin{verbatim}
+@inproceedings{vaswani2017attention,
+  author = {Ashish Vaswani and others},
+  title = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year = {2017}
+}
+\end{verbatim}
+
+\subsection{Styles and Compile Order}
+
+Change the bibliography style to change how references are printed. This
+document currently uses:
+
+\begin{verbatim}
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{verbatim}
+
+The style command selects the formatting style. The bibliography command tells
+BibTeX to read \texttt{references.bib}.
+Common BibTeX-style options include:
+
+\begin{itemize}
+    \item \texttt{plainnat}: natbib-friendly plain numeric or author-year style.
+    \item \texttt{plain}: numeric labels, sorted alphabetically by author.
+    \item \texttt{abbrv}: like \texttt{plain}, but with abbreviated names.
+    \item \texttt{unsrt}: numeric labels ordered by first citation.
+    \item \texttt{ieeetr}: IEEE-like numeric style, common in engineering.
+    \item \texttt{apalike}: author-year-like references for simple reports.
+\end{itemize}
+
+\section{Algorithms, Pseudocode, and Code Listings}
+
+Package note: pseudocode here uses the \texttt{algorithm} and
+\texttt{algpseudocode} packages. Code listings use the \texttt{listings}
+package.
+
+Technical reports often need pseudocode or small code snippets, and Overleaf
+also treats code listing as a standard topic. Use \texttt{listings} for code
+because it compiles normally. Avoid \texttt{minted} in an introductory setting
+unless shell escape is explicitly allowed.
+
+\begin{algorithm}[H]
+    \caption{Binary Search}
+    \label{alg:binary-search}
+    \begin{algorithmic}[1]
+        \Require Sorted array $A$, target value $x$
+        \Ensure Index of $x$, or $-1$ if not found
+        \State $low \gets 1$, $high \gets n$
+        \While{$low \leq high$}
+            \State $mid \gets \lfloor (low + high)/2 \rfloor$
+            \If{$A[mid] = x$}
+                \State \Return $mid$
+            \ElsIf{$A[mid] < x$}
+                \State $low \gets mid + 1$
+            \Else
+                \State $high \gets mid - 1$
+            \EndIf
+        \EndWhile
+        \State \Return $-1$
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{lstlisting}[language=Python, caption={A small Python function.}, label={lst:python-square}]
+def greet_user(name):
+    # Create a greeting message using an f-string
+    message = f"Hello, {name}! Welcome to Python."
+
+    # Print the greeting message
+    print(message)
+
+    # Return the message in case it's needed elsewhere
+    return message
+
+
+# Example usage
+user_name = "Alice"
+greet_user(user_name)
+\end{lstlisting}
+
+Algorithm~\ref{alg:binary-search} and Listing~\ref{lst:python-square} can be
+referenced just like figures and tables.
+
+\section{Two-Column Documents}
+
+Package note: document-wide two-column layout can be requested in the document
+class option, e.g., \verb|\documentclass[twocolumn]{article}|. The separate
+demo also uses \texttt{graphicx}, \texttt{subcaption}, \texttt{booktabs}, and
+\texttt{hyperref}. Open and compile \texttt{two-column-demo.tex}; it uses a
+full two-column article with \verb|\documentclass[twocolumn]{article}|, normal
+figures, and a wide figure spanning both columns with \texttt{figure*}.
+
+\section{Debugging Checklist for This Lesson}
+
+\begin{itemize}
+    \item If a reference shows as \texttt{??}, compile LaTeX again.
+    \item If a citation shows as \texttt{?}, check the citation.
+    \item If an image is missing, check the file name, extension, and folder.
+    \item If a float is far away, try \verb|[!htbp]| before forcing \verb|[H]|.
+    \item If a subfigure overflows, reduce each subfigure width before changing
+    manual spacing.
+    \item If colored table cells fail, load \verb|\usepackage[table]{xcolor}|.
+\end{itemize}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

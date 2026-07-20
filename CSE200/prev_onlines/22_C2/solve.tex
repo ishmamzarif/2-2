@@ -1,0 +1,144 @@
+\documentclass{article}
+% empty [] options -> geometry falls back to its default margins here
+\usepackage[]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{comment}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{amsthm}
+\usepackage{minitoc}
+\usepackage{authblk}
+
+\title{\textsc{CSE200: Online-1 on \LaTeX}}
+\author{Zarif Ishmam (2305035)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Document preparation systems are essential for producing structured and professional technical documents. \textbf{LATEX} allows authors to focus on content
+while maintaining consistent formatting. This article demonstrates formatted
+text, lists, equations, tables, and figures using commands taught in class.
+\subsection{Text Emphasis and Fonts}
+This sentence contains \textbf{bold text}, \textit{italic text}, \emph{emphasized text}, and \underline{underlined text}.
+Font sizes can also vary such as {\LargeLarge text}, {\smallsmall text}, and 
+{\huge huge text}.
+\section{ List Structures}
+\subsection{Mixed and Nested Lists}
+% itemize -> enumerate -> itemize, three levels deep
+\begin{itemize}
+    \item Primary Feature
+    \item Secondary Feature
+        \begin{enumerate}
+            \item Formatting Control
+            \item Mathematical typesetting
+                \begin{itemize}
+                    \item[-] Inline Math
+                    \item[-] Display Math
+                \end{itemize}
+        \end{enumerate}
+\end{itemize}
+\noindent \textbf{Note} \text{Lists can be customized.}
+
+% note: this "Mathematical Modeling" section is duplicated in the source article itself (title repeats below), kept as-is to match it exactly
+\section{Mathematical Modeling}
+Mathematical expressions are often used to represent data relationships. Consider variables $x_i$, $y$, and $z^2$.
+
+\section{Mathematical Modeling}
+Mathematical expressions are commonly used to describe relationships among variables. Let the variables be $x_i$, $y_j$, and $\sigma^2$.
+
+\subsection{Displayed Equations}
+% single-line numbered equation
+\begin{equation}
+    y_j = \alpha x^2 + \beta x_j + \gamma
+\end{equation}
+
+% split keeps this multi-line derivation under one shared equation number
+\begin{equation}
+\begin{split}
+    T &= \sum_{i = 1}^{n}\left( x_i - \mu \right) ^2 \\
+    &= \sum_{i = 1}^{n}x_i^2 - 2\mu \sum_{i = 1}^{n} x_i + n \mu ^2
+\end{split}
+\end{equation}
+
+% cases for the piecewise definition (unnumbered, via \[ \])
+\[
+f(x_i) = \begin{cases}
+    \frac{x_i^2}{\sigma^2},  \text{if} x_i >= 0 \\
+    \frac{|x_i|}{\sigma}, \text{if} x_i < 0
+\end{cases}
+\]
+
+\section{Tabular Data Presentation}
+% multirow for "Module"/"Module B", multicolumn + cline for the grouped "Score" header
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+         \multirow{2}{*}{\textbf{Module}} & \multicolumn{2}{c|}{\textbf{Score}}  \\ \cline{2-3} & Theory & Lab \\
+         \hline
+         Module A & 75 & 80 \\
+         \hline
+         \multirow{2}{*}{Module B} & 88 & 90 \\ & 85 & 87 \\
+         \hline
+         Module C & 70 & 72 \\
+         \hline
+    \end{tabular}
+    \caption{Module-wise Performance Summary}
+    \label{tab:t1}
+\end{table}
+
+\section{Visual Comparison}
+\subsection{Asymmetric Subfigure Layout}
+% one wide subfigure on its own row, then two narrower ones side by side below
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.6\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{22_C2/A.PNG}
+        \caption{Main Diagram}
+        \label{fig:A}
+    \end{subfigure}
+    \par\medskip
+    \vspace{1cm}
+    \begin{subfigure}{0.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{22_C2/B.PNG}
+        \caption{Main Diagram}
+        \label{fig:B}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{22_C2/C.PNG}
+        \caption{Main Diagram}
+        \label{fig:C}
+    \end{subfigure}
+    \caption{Asymmetric layout with one dominant figure}
+    \label{fig:f1}
+\end{figure}
+
+Figure \ref{fig:f1} illustrates how visual elements can be arranged systematically within a document.
+
+\section*{Conclusion}
+This article highlighted the importance of \textbf{structured writing} using \LaTeX.
+The use of \textit{formatted text}, mathematical expressions, tables, and figures improves both \underline{readability} and presentation quality.
+
+\end{document}

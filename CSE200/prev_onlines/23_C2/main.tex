@@ -21,15 +21,18 @@
 \usepackage{minitoc}
 \usepackage{authblk}
 
+% amsthm theorem-like environment, used later for the weak-field circular orbit proposition
 \newtheorem{proposition}{Proposition}
 
 \title{\textsc{THE SOLAR SYSTEM}}
+% authblk-style \author[1]{...} with the affiliation inlined via \\ instead of a separate \affil call
 \author[1]{Johannes Kepler$^1$ \\ $^1$Imperial Matematician, Prague}
 \date{July 2026}
 
 \begin{document}
 
 \maketitle
+% \tableofcontents auto-builds from \section/\subsection; \newpage keeps it on its own page
 \tableofcontents
 \newpage
 
@@ -44,8 +47,10 @@ Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune
 
 The planets form two groups:
 
+% label={I} is literal here (not a counter format), so both items would print "I" -- kept as in the source article
 \begin{enumerate}[label={I}]
     \item \textbf{Inner Planets}
+        % $\dagger$ used as a custom symbol bullet instead of the default itemize dot
         \begin{itemize}
             \item[$\dagger$] Mercury, Venus, Earth, and Mars belong to this group.
             \item[$\dagger$] They are comparatively small and have solid surfaces.
@@ -59,9 +64,11 @@ The planets form two groups:
         \end{itemize}
 \end{enumerate}
 
+% two \textcolor runs contrasted in the same sentence
 \textcolor{red}{The inner planets are small, dense, and relatively close to the Sun}, whereas \textcolor{blue}{the outer planets are much larger and travel along considerably wider orbits.}
 
 \subsection{Portraits of the Solar System}
+% \ref used mid-sentence without "Figure" prefix; \footnote attaches to the sentence, not to \ref itself
 \ref{fig:fig1} shows the sun and eight planets.
 \footnote{Sizes and distances are schematic.}
 
@@ -73,11 +80,13 @@ Kepler’s three laws describe planetary motion\cite{nasa_kepler}.
 \subsection{First Law: Elliptical Orbits}
 
 A planetary orbit is elliptical, with the Sun at one focus:
+% \hspace{20px} inserts fixed horizontal space before the trailing condition
 \begin{equation}
     \frac{x^2}{a^2} + \frac{y^2}{b^2} = 1, \hspace{20px} a >= b > 0
 \end{equation}
 Here a and b are the semi-axes.
 
+% nine subfigures grouped into three labeled rows (Star / Inner / Outer) via \textbf{...}\par\medskip before each group
 \begin{figure}[H]
     \centering
 
@@ -169,6 +178,7 @@ $$
 Here e is the eccentricity.
 
 In polar form,
+% \label placed on the same line as \begin{equation} works the same as on its own line
 \begin{equation} \label{eq:eq3}
     r(\theta) = \frac{a(1-e^2)}{1 + e \cos \theta}
 \end{equation}
@@ -183,6 +193,7 @@ Equal times sweep equal areas:
 \end{equation} 
 
 Consequently, a planet moves
+% $\diamond$ symbol bullet, same trick as $\dagger$ earlier
 \begin{itemize}
     \item[$\diamond$] faster when it is closer to the Sun, and
     \item[$\diamond$] slower when it is farther from the Sun.
@@ -206,6 +217,7 @@ $$ a_E = 1 AU \hspace{40px} T_E = 1 \ year$$
 where $1 AU \approx 1.496 \times 10^{11}.$ \footnote{AU denotes the mean Earth–Sun distance.} For mars, 
 $a_M = 1.524 AU, $ \ so
 
+% equation* + split: multi-line derivation with NO equation number at all
 \begin{equation*}
 \begin{split}
 \frac{T_M^2}{T_E^2} &= \frac{a_M^3}{a_E^3} \\
@@ -239,6 +251,7 @@ Per orbit
 \begin{equation}
     \Delta \bar{\omega} = \frac{6\pi GM}{a(1-e^2)c^2} 
 \end{equation}
+% amsthm proposition, numbered automatically via the \newtheorem in the preamble
 \begin{proposition}[Weak-field circular orbit]
 \label{prop:circular}
 For a circular orbit of radius $r$,
@@ -259,6 +272,7 @@ are gas giants; the last two are ice giants.
 
 Table \ref{tab:outer_planets} uses scientific and relativistic notation.\footnote{Values are rounded for typesetting practice}
 
+% multirow for "Planet", multicolumn + cline grouping "Orbital parameters" and "Relativistic notation"
 \begin{table}[H]
 \centering
 \caption{Orbital parameters and relativistic notation for the outer planets.}
@@ -285,6 +299,7 @@ Neptune & 30.070 & $8.6  \times 10^{-3}$ & $3.28 \times 10^{-10}$ & $1.81 \times
 Table \ref{tab:outer_planets} compares the four gas giants
 
 
+% unsrtnat orders references by citation order rather than alphabetically
 \bibliographystyle{unsrtnat}
 \bibliography{solar_system}
 \end{document}

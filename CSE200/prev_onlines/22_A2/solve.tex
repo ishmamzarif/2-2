@@ -1,4 +1,5 @@
 \documentclass{article}
+% standard preamble reused across all online solves
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{wrapfig}
@@ -40,6 +41,7 @@ like $I_{ij}$, and exponential terms $e^{x^2}$. These elements are combined to s
 \section{Core Components}
 \subsection{Rendering Pipeline}
 The rendering pipeline consists of the following stages:
+% dash-labeled item mixed in with default bullets, then a nested itemize
 \begin{itemize}
     \item Scene Definition 
     \item Camera Configuration
@@ -53,10 +55,12 @@ The rendering pipeline consists of the following stages:
 \end{itemize}
 
 \subsection{Execution Order}
+% nested enumerate uses [(a)] to force lowercase-letter sub-labels
 \begin{enumerate}
     \item Input Processing
     \item Ray Construction
         \begin{enumerate}
+            % note: both items below use [(a)], the second [(a)] auto-advances to (b) in the pdf
             \item[(a)]Primary Rays
             \item[(a)] Secondary Rays
         \end{enumerate}
@@ -69,6 +73,7 @@ The rendering pipeline consists of the following stages:
 \section{Mathematical Modeling}
 Light interaction with surfaces can be expressed using the following equations.
 
+% equation environment auto-numbers; $$...$$ is unnumbered display math
 \begin{equation}
     L = I_{ij}.\cos (\theta) + R^2
 \end{equation}
@@ -77,6 +82,7 @@ $$
 k = \frac{ab}{cd}
 $$
 
+% split keeps a multi-line derivation under a single equation number
 \begin{equation}
 \begin{split}
     f(x) &= x^2 + 2x + 1 \\
@@ -84,6 +90,7 @@ $$
 \end{split}
 \end{equation}
 
+% cases environment for piecewise definitions
 \[
 f(x) = \begin{cases}
     y & \text{if } y \geq 0 \\
@@ -105,6 +112,7 @@ $$
 
 \section{Performance Comparison}
 
+% multirow spans the "Ray Tracing" rows; multicolumn spans "Hybrid Method" across the first two columns
 \begin{table}[H]
     \centering
     \begin{tabular}{|c|c|c|}
@@ -126,6 +134,7 @@ $$
 The results in ~\ref{tab:t1}  highlight the trade-off between accuracy and computational cost.
 
 \section{Visual Illustration}
+% three subfigures placed side by side with \hfill spacing between them
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.3\textwidth}
