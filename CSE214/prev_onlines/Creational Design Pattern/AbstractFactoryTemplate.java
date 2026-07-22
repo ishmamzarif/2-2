@@ -103,6 +103,7 @@ class DocumentManager {
     }
 
     public void generateDocuments() {
+        // validate 
         System.out.println("--- Generated Documents ---");
         System.out.println(letter.getContent());
         System.out.println(resume.getContent());
@@ -113,7 +114,7 @@ class DocumentManager {
 // ==========================================
 // Main Function (User Selection)
 // ==========================================
-public class Main {
+public class AbstractFactoryTemplate {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Select document mode:");

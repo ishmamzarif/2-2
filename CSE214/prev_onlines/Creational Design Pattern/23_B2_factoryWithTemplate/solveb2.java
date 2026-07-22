@@ -46,7 +46,7 @@ class Pdf implements Report {
  
 abstract class ReportProcessor {
     public abstract Report createReport();
-    public void ProcessReport() {
+    public final void ProcessReport() {
         Report r = createReport();
         r.open();
         r.generate();
