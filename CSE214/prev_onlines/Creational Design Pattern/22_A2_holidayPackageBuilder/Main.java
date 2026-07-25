@@ -46,6 +46,7 @@ interface HolidayPackageBuilder {
     HolidayPackage getResult();
 }
 
+
 // Concrete builder: Relaxation Package
 class RelaxationPackageBuilder implements HolidayPackageBuilder {
     private HolidayPackage pkg = new HolidayPackage();
