@@ -1,0 +1,1879 @@
+<title>Structural Design Patterns</title>
+<style>
+  :root {
+    --bg:#000; --panel:#0c0c0e; --code-bg:#0f1113; --border:#242424;
+    --text:#f2f2f2; --muted:#9aa0a6; --accent:#7cc4ff; --tag:#1c2a38;
+    --kw:#82aaff;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; font-size:16px;
+  }
+  .wrap { max-width:1100px; margin:0 auto; padding:32px 22px 80px; }
+  header.top { border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:8px; }
+  h1 { font-size:30px; margin:0 0 6px; letter-spacing:.3px; }
+  header.top p { color:var(--muted); margin:4px 0; }
+  h2 { font-size:23px; margin:44px 0 6px; padding-top:10px; border-top:1px solid var(--border); }
+  h2 .cnt { color:var(--muted); font-size:15px; font-weight:400; }
+  h3 { font-size:18px; margin:26px 0 6px; }
+  .tag {
+    display:inline-block; background:var(--tag); color:var(--accent);
+    font-size:12px; font-weight:700; padding:2px 8px; border-radius:5px;
+    margin-right:8px; vertical-align:middle; letter-spacing:.5px;
+  }
+  .summary { color:var(--muted); margin:4px 0 10px; font-size:14.5px; }
+  code { font-family:"JetBrains Mono",Consolas,"Courier New",monospace; }
+  p code, li code { background:#17191c; color:#e6c07b; padding:1px 5px; border-radius:4px; font-size:13px; }
+  pre {
+    background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+    padding:16px 18px; overflow-x:auto; margin:0 0 8px;
+  }
+  pre code { color:#d7dbe0; font-size:13px; line-height:1.5; white-space:pre; }
+  .toc {
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:16px 20px; margin:22px 0 8px;
+  }
+  .toc h4 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+  .toc .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:6px 18px; }
+  .toc a { color:var(--text); text-decoration:none; font-size:13.5px; padding:2px 0; border-bottom:1px solid transparent; }
+  .toc a:hover { color:var(--accent); border-bottom-color:var(--accent); }
+  .note {
+    background:#12100a; border:1px solid #3a2f12; border-left:3px solid #d0a54a;
+    border-radius:8px; padding:14px 18px; margin:14px 0;
+  }
+  .note b { color:#f0c869; }
+  .ok { border-left-color:#4a9d5b; background:#0b120d; border-color:#1e3a24; }
+  .ok b { color:#79d68c; }
+  .pill { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:20px; margin-left:6px; }
+  .pill.bug { background:#3a1418; color:#ff8a8a; }
+  .pill.minor { background:#2a2410; color:#e6c07b; }
+  .lead { color:var(--muted); max-width:760px; }
+  table.map { border-collapse:collapse; width:100%; margin:10px 0; font-size:14px; }
+  table.map th, table.map td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+  table.map th { background:var(--panel); color:var(--muted); font-weight:600; }
+  a.jump { color:var(--accent); text-decoration:none; }
+  a.jump:hover { text-decoration:underline; }
+  ul { padding-left:20px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Structural Design Patterns &mdash; CSE 214</h1>
+    <p>All-in-one note of the '21 / '22 / '23 online solutions, grouped by pattern. Syllabus: Decorator, Adapter, Composite, Bridge.</p>
+    <p class="lead">Every solution below compiles and runs. Bugs / discrepancies are called out in the review section.</p>
+  </header>
+
+  <div class="toc">
+    <h4>Contents</h4>
+    <div class="grid">
+      <a href="#review">&#9873; Bug / correctness review</a>
+      <a href="#howto">&#9873; How to spot each pattern</a>
+      <a href="#adapter">Adapter (3)</a>
+      <a href="#composite">Composite (3)</a>
+      <a href="#decorator">Decorator (5)</a>
+      <a href="#bridge">Bridge (2)</a>
+      <a href="#combined">Combined (1)</a>
+      <a href="#templates">Minimal templates</a>
+    </div>
+  </div>
+
+  <h2 id="review">Bug &amp; correctness review</h2>
+  <p class="summary">I compiled and ran all 14 solutions. Findings below &mdash; nothing here is fixed in the code, just reported.</p>
+
+  <div class="note">
+    <b>'23 B2 &mdash; Retail Order</b> <span class="pill bug">discrepancy</span><br>
+    The problem statement says <i>&ldquo;the price of a set menu will be 10 percent less than the total price of the individual items.&rdquo;</i>
+    The solution's <code>SetMenu.getPrice()</code> returns the full sum with <b>no 10% discount</b> (Lunch Combo shows &pound;11, not &pound;9.90; bill &pound;84.00).
+    However, the PDF's own <b>expected output also shows &pound;84.00</b> &mdash; so the code matches the sample output but contradicts the prose. If your online grades on the prose rule, add the discount in <code>SetMenu.getPrice()</code>; if it grades on the sample output, it's already correct.
+  </div>
+
+  <div class="note">
+    <b>'22 A1 &mdash; IoT Notifications</b> <span class="pill minor">cosmetic</span><br>
+    In the first version, <code>EmailNotification.send()</code> returns <code>"Sending Email Notification" + msg</code> with no separating space, so the output reads <code>Sending Email NotificationHello</code>. Purely cosmetic; the decorator logic is correct.
+  </div>
+
+  <div class="note">
+    <b>'21 C1 &mdash; CoffeeTong</b> <span class="pill minor">cosmetic</span><br>
+    Costs are all correct. The ingredient <i>strings</i> don't mention the added ingredient (Americano's extra beans, Cappuccino's cinnamon) &mdash; <code>getIngredients()</code> just forwards the base string. Only matters if the grader checks the ingredient text.
+  </div>
+
+  <div class="note">
+    <b>'21 B1 &mdash; Delivery Discounts</b> <span class="pill minor">comment</span><br>
+    <code>SeasonalDiscount</code>'s comment says <code>// 15% discount</code>, but the code does a flat <code>&minus;100</code>, which is what the spec actually asks for. The code is right; only the comment is misleading.
+  </div>
+
+  <div class="note ok">
+    <b>Everything else</b> &mdash; '21 A1/A2/B2/C2, '22 A2/B1/B2/C1/C2, '23 A1: compile, run, and match their specs. No functional bugs found.
+  </div>
+
+  <div class="note">
+    <b>'23 B1 &mdash; Eid Gift Packages</b> (Composite + packaging) has <b>no Java solution</b> in the folder (empty file), so it isn't included below. It's a Composite (packages contain items/other packages) with a Personal/Corporate split and Premium/Eco gift-box options (a Decorator or Bridge on packaging cost).
+  </div>
+
+  <h2 id="howto">How to spot each pattern</h2>
+  <table class="map">
+    <tr><th>Pattern</th><th>Intent (one line)</th><th>Tell-tale signs in the prompt</th></tr>
+    <tr>
+      <td><a class="jump" href="#adapter">Adapter</a></td>
+      <td>Make an existing incompatible class fit an interface the client expects.</td>
+      <td>&ldquo;legacy&rdquo; / &ldquo;third-party&rdquo; / &ldquo;cannot modify&rdquo; class with the <i>wrong method names</i>; a fixed target interface.</td>
+    </tr>
+    <tr>
+      <td><a class="jump" href="#composite">Composite</a></td>
+      <td>Treat individual objects and groups of objects uniformly (tree).</td>
+      <td>&ldquo;a package can contain items <i>or other packages</i>&rdquo;; totals over a nested structure; add/remove children.</td>
+    </tr>
+    <tr>
+      <td><a class="jump" href="#decorator">Decorator</a></td>
+      <td>Add optional responsibilities to one object at runtime, stackable.</td>
+      <td>&ldquo;optionally add&rdquo; features/discounts in &ldquo;any combination&rdquo;; extend <i>without modifying</i> the core class.</td>
+    </tr>
+    <tr>
+      <td><a class="jump" href="#bridge">Bridge</a></td>
+      <td>Let two dimensions vary independently by composition, not inheritance.</td>
+      <td><i>two</i> things grow separately (event&times;channel, type&times;transport); &ldquo;add either side without touching the other&rdquo;.</td>
+    </tr>
+  </table>
+  <p class="summary">Quick contrast: Decorator and Bridge look similar (both hold a reference), but Decorator wraps the <i>same</i> interface to add behavior and stacks recursively, while Bridge connects <i>two different</i> hierarchies (abstraction vs implementor) that each vary on their own.</p>
+
+  <h2 id="adapter">Adapter <span class="cnt">&mdash; 3 problems</span></h2>
+  <p class="summary">Wrap an incompatible class so it satisfies the interface the client already uses.</p>
+  <div class="toc"><div class="grid"><a href="#s21A1">'21 A1 &middot; Legacy Weather Service</a>
+<a href="#s21C2">'21 C2 &middot; SQL &rarr; NoSQL Database</a>
+<a href="#s22B2">'22 B2 &middot; Smart Home Devices</a></div></div>
+  
+    <div class="sol">
+      <h3 id="s21A1"><span class="tag">'21 &middot; A1</span> Legacy Weather Service</h3>
+      <p class="summary">A weather app expects a <code>WeatherProvider.fetchWeather()</code> interface, but a closed-source <code>LegacyWeatherService</code> only exposes <code>getWeatherData()</code>. Wrap the legacy class in an adapter so the app can use it unchanged.</p>
+      <pre><code>// Legacy Weather Service, which we cannot modify 
+class LegacyWeatherService { 
+    public String getWeatherData() { 
+        return &quot;Legacy weather data&quot;; 
+    } 
+} 
+ 
+// Client Interface expected by the application 
+interface WeatherProvider { 
+    String fetchWeather(); 
+} 
+ 
+// Application class that depends on the WeatherProvider interface 
+class WeatherApp { 
+    private WeatherProvider weatherProvider; 
+ 
+    public WeatherApp(WeatherProvider weatherProvider) { 
+        this.weatherProvider = weatherProvider; 
+    } 
+ 
+    public void displayWeather() { 
+        System.out.println(weatherProvider.fetchWeather()); 
+    } 
+}
+
+class LegacyWeatherServiceAdapter implements WeatherProvider {
+    private LegacyWeatherService adaptee;
+
+    public LegacyWeatherServiceAdapter(LegacyWeatherService legacyWeatherService) {
+        this.adaptee = legacyWeatherService;
+    }
+
+    public String fetchWeather() {
+        return adaptee.getWeatherData();       
+    }
+}
+
+public class _21_A1 {
+    public static void main(String[] args) {
+        LegacyWeatherService legacyWeatherService = new LegacyWeatherService();
+        LegacyWeatherServiceAdapter legacyWeatherServiceAdapter = new LegacyWeatherServiceAdapter(legacyWeatherService);
+
+        WeatherApp weatherApp = new WeatherApp(legacyWeatherServiceAdapter);
+        weatherApp.displayWeather();
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s21C2"><span class="tag">'21 &middot; C2</span> SQL &rarr; NoSQL Database</h3>
+      <p class="summary">Legacy code talks to a <code>DatabaseQuery.executeQuery()</code> interface. A new <code>NoSQLDatabase</code> only offers <code>runQuery()</code>. An adapter lets the NoSQL DB be used through the existing interface without touching old code.</p>
+      <pre><code>// Target Interface expected by the legacy system
+interface DatabaseQuery {
+    void executeQuery(String query);
+}
+
+// Existing Legacy Class
+class SQLDatabase implements DatabaseQuery {
+    @Override
+    public void executeQuery(String sqlQuery) {
+        System.out.println(&quot;Executing SQL query: &quot; + sqlQuery);
+    }
+}
+
+// New Adaptee Class (Incompatible interface)
+class NoSQLDatabase {
+    public void runQuery(String noSQLQuery) {
+        System.out.println(&quot;Executing NoSQL query: &quot; + noSQLQuery);
+    }
+}
+
+// Adapter: Wraps NoSQLDatabase to make it compatible with DatabaseQuery
+class NoSQLAdapter implements DatabaseQuery {
+    private NoSQLDatabase noSQLDatabase;
+
+    public NoSQLAdapter(NoSQLDatabase noSQLDatabase) { 
+        this.noSQLDatabase = noSQLDatabase;
+    }
+
+    @Override
+    public void executeQuery(String query) {
+        // Translates the standard executeQuery call into runQuery
+        noSQLDatabase.runQuery(query);
+    }
+}
+
+public class _21_C2 {
+    public static void main(String[] args) {
+        System.out.println(&quot;=== Legacy System ===&quot;);
+        // 1. Using the existing SQL database natively
+        DatabaseQuery sqlDB = new SQLDatabase();
+        sqlDB.executeQuery(&quot;SELECT * FROM users&quot;);
+
+        System.out.println(&quot;\n=== New Integration ===&quot;);
+        // 2. Seamlessly using the NoSQL database through the Adapter
+        DatabaseQuery noSqlDB = new NoSQLAdapter(new NoSQLDatabase());
+        noSqlDB.executeQuery(&quot;{ \&quot;collection\&quot;: \&quot;users\&quot;, \&quot;action\&quot;: \&quot;find\&quot; }&quot;);
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s22B2"><span class="tag">'22 &middot; B2</span> Smart Home Devices</h3>
+      <p class="summary">A Smart Home app controls devices through <code>SmartDevice{turnOn/turnOff}</code>. Third-party <code>OldSmartBulb</code> (<code>powerOn/powerOff</code>) and <code>LegacyHeater</code> (<code>startHeating/stopHeating</code>) can't be modified. One adapter per device makes them controllable through <code>SmartDevice</code>.</p>
+      <pre><code>// ===== Target interface (fixed, cannot be changed) =====
+interface SmartDevice {
+    void turnOn();
+    void turnOff();
+}
+
+// ===== Existing devices (already compatible) =====
+class SmartLight implements SmartDevice {
+    private boolean isOn = false;
+    public void turnOn() {
+        if (!isOn) {
+            System.out.println(&quot;Turning on&quot;);
+            isOn = true;
+        }
+    }
+    public void turnOff() {
+        if (isOn) {
+            System.out.println(&quot;Turning off&quot;);
+            isOn = false;
+        }
+    }
+}
+
+class SmartFan implements SmartDevice {
+    private boolean isOn = false;
+    public void turnOn() {
+        if (!isOn) {
+            System.out.println(&quot;Turning on&quot;);
+            isOn = true;
+        }
+    }
+    public void turnOff() {
+        if (isOn) {
+            System.out.println(&quot;Turning off&quot;);
+            isOn = false;
+        }
+    }
+}
+
+class SmartAC implements SmartDevice {
+    private boolean isOn = false;
+    public void turnOn() {
+        if (!isOn) {
+            System.out.println(&quot;Turning on&quot;);
+            isOn = true;
+        }
+    }
+    public void turnOff() {
+        if (isOn) {
+            System.out.println(&quot;Turning off&quot;);
+            isOn = false;
+        }
+    }
+}
+
+// ===== Third-party device 1 (incompatible interface, cannot be modified) =====
+class OldSmartBulb {
+    private boolean isOn = false;
+    public void powerOn() {
+        if (!isOn) isOn = true;
+    }
+    public void powerOff() {
+        if (isOn) isOn = false;
+    }
+}
+
+// ===== Third-party device 2 (incompatible interface, cannot be modified) =====
+class LegacyHeater {
+    private boolean isHeating = false;
+    public void startHeating() {
+        if (!isHeating) isHeating = true;
+    }
+    public void stopHeating() {
+        if (isHeating) isHeating = false;
+    }
+}
+
+// ===== Adapter for OldSmartBulb =====
+class OldBulbAdapter implements SmartDevice {
+    private OldSmartBulb oldSmartBulb;
+
+    public OldBulbAdapter(OldSmartBulb oldSmartBulb) {
+        this.oldSmartBulb = oldSmartBulb;
+    }
+
+    public void turnOn() {
+        System.out.println(&quot;Turning on&quot;);
+        oldSmartBulb.powerOn();
+    }
+
+    public void turnOff() {
+        System.out.println(&quot;Turning off&quot;);
+        oldSmartBulb.powerOff();
+    }
+}
+
+// ===== Adapter for LegacyHeater =====
+class LegacyHeaterAdapter implements SmartDevice {
+    private LegacyHeater legacyHeater;
+
+    public LegacyHeaterAdapter(LegacyHeater legacyHeater) {
+        this.legacyHeater = legacyHeater;
+    }
+
+    public void turnOn() {
+        System.out.println(&quot;Turning on&quot;);
+        legacyHeater.startHeating();
+    }
+
+    public void turnOff() {
+        System.out.println(&quot;Turning off&quot;);
+        legacyHeater.stopHeating();
+    }
+}
+
+// ===== Demo =====
+public class _22_B2 {
+    public static void main(String[] args) {
+        SmartDevice ac = new SmartAC();
+        ac.turnOn();
+        ac.turnOff();
+
+        SmartDevice oldBulbAdapter = new OldBulbAdapter(new OldSmartBulb());
+        oldBulbAdapter.turnOn();
+        oldBulbAdapter.turnOff();
+
+        SmartDevice heaterAdapter = new LegacyHeaterAdapter(new LegacyHeater());
+        heaterAdapter.turnOn();
+        heaterAdapter.turnOff();
+
+        // The voice-command app only ever talks to SmartDevice.
+        // Adding another third-party device later just means
+        // writing one new adapter class — nothing above changes.
+    }
+}</code></pre>
+    </div>
+
+  <h2 id="composite">Composite <span class="cnt">&mdash; 3 problems</span></h2>
+  <p class="summary">One interface for both a single leaf and a group; groups recurse over their children.</p>
+  <div class="toc"><div class="grid"><a href="#s21A2">'21 A2 &middot; PC Components &amp; Bundles</a>
+<a href="#s22A2">'22 A2 &middot; ZBazar Grocery Packages</a>
+<a href="#s23B2">'23 B2 &middot; Retail Order (Food / Set Menu / Grocery)</a></div></div>
+  
+    <div class="sol">
+      <h3 id="s21A2"><span class="tag">'21 &middot; A2</span> PC Components &amp; Bundles</h3>
+      <p class="summary">Individual hardware parts and pre-configured bundles must be treated uniformly. A bundle can contain parts or other bundles, and every node can report its total price. Add/remove supported on bundles.</p>
+      <pre><code>import java.util.ArrayList;
+import java.util.List;
+
+// ===== Component =====
+interface PCComponent {
+    double getPrice();
+    void display(String indent);
+}
+
+// ===== Leaf (a single hardware part) =====
+class HardwareComponent implements PCComponent {
+    private String name;
+    private double price;
+
+    public HardwareComponent(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public double getPrice() { return price; }
+
+    public void display(String indent) {
+        System.out.printf(&quot;%s- %s ($%.2f)%n&quot;, indent, name, price);
+    }
+}
+
+// ===== Composite (a bundle: components and/or other bundles) =====
+class Bundle implements PCComponent {
+    private String name;
+    private List&lt;PCComponent&gt; components = new ArrayList&lt;&gt;();
+
+    public Bundle(String name) { this.name = name; }
+
+    public void add(PCComponent component) { components.add(component); }
+    public void remove(PCComponent component) { components.remove(component); }
+
+    public double getPrice() {
+        double total = 0;
+        for (PCComponent c : components) total += c.getPrice();
+        return total;
+    }
+
+    public void display(String indent) {
+        System.out.printf(&quot;%s+ %s (total: $%.2f)%n&quot;, indent, name, getPrice());
+        for (PCComponent c : components) c.display(indent + &quot;  &quot;);
+    }
+}
+
+// ===== Demo =====
+public class _21_A2 {
+    public static void main(String[] args) {
+        PCComponent cpu = new HardwareComponent(&quot;CPU&quot;, 300);
+        PCComponent memory = new HardwareComponent(&quot;Memory&quot;, 100);
+        PCComponent storage = new HardwareComponent(&quot;Storage&quot;, 80);
+        PCComponent gpu = new HardwareComponent(&quot;Graphics Card&quot;, 500);
+
+        // A basic bundle made of individual components
+        Bundle basicGaming = new Bundle(&quot;Basic Gaming Setup&quot;);
+        basicGaming.add(cpu);
+        basicGaming.add(memory);
+        basicGaming.add(storage);
+
+        // A bigger bundle containing another bundle plus an extra component
+        Bundle ultimateGaming = new Bundle(&quot;Ultimate Gaming Setup&quot;);
+        ultimateGaming.add(basicGaming);
+        ultimateGaming.add(gpu);
+
+        ultimateGaming.display(&quot;&quot;);
+        System.out.printf(&quot;%nTotal Price: $%.2f%n&quot;, ultimateGaming.getPrice());
+
+        // Customer removes a component from the inner bundle;
+        // the change is reflected automatically in the outer bundle&#x27;s total
+        basicGaming.remove(storage);
+
+        System.out.println(&quot;\nAfter removing Storage from Basic Gaming Setup:&quot;);
+        ultimateGaming.display(&quot;&quot;);
+        System.out.printf(&quot;%nTotal Price: $%.2f%n&quot;, ultimateGaming.getPrice());
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s22A2"><span class="tag">'22 &middot; A2</span> ZBazar Grocery Packages</h3>
+      <p class="summary">Single grocery items and preset packages are treated the same. A custom bazar can mix single items, preset packages, and other custom packages (nested), reporting total price and weight of the whole tree.</p>
+      <pre><code>import java.util.ArrayList;
+import java.util.List;
+
+// ===== Component =====
+interface BazarItem {
+    String getName();
+    double getPrice();
+    double getWeight();
+    void display(String indent);
+}
+
+// ===== Leaf (a single grocery item) =====
+class SingleItem implements BazarItem {
+    private String name;
+    private double price;
+    private double weight;
+
+    public SingleItem(String name, double price, double weight) {
+        this.name = name;
+        this.price = price;
+        this.weight = weight;
+    }
+
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+    public double getWeight() { return weight; }
+
+    public void display(String indent) {
+        System.out.printf(&quot;%s- %s (price: %.2f, weight: %.2f)%n&quot;, indent, name, price, weight);
+    }
+}
+
+// ===== Composite (a preset package OR a custom package) =====
+class BazarPackage implements BazarItem {
+    private String name;
+    private List&lt;BazarItem&gt; items = new ArrayList&lt;&gt;();
+
+    public BazarPackage(String name) { this.name = name; }
+
+    public void add(BazarItem item) { items.add(item); }
+
+    public String getName() { return name; }
+
+    public double getPrice() {
+        double total = 0;
+        for (BazarItem item : items) total += item.getPrice();
+        return total;
+    }
+
+    public double getWeight() {
+        double total = 0;
+        for (BazarItem item : items) total += item.getWeight();
+        return total;
+    }
+
+    public void display(String indent) {
+        System.out.printf(&quot;%s+ %s (total price: %.2f, total weight: %.2f)%n&quot;,
+                indent, name, getPrice(), getWeight());
+        for (BazarItem item : items) item.display(indent + &quot;  &quot;);
+    }
+}
+
+// ===== Demo =====
+public class _22_A2 {
+    public static void main(String[] args) {
+        // Single items
+        SingleItem rice = new SingleItem(&quot;Rice&quot;, 5.0, 2.0);
+        SingleItem oil = new SingleItem(&quot;Oil&quot;, 3.0, 1.0);
+        SingleItem pulse = new SingleItem(&quot;Pulse&quot;, 2.0, 0.5);
+
+        // Preset packages (made of single items)
+        BazarPackage small = new BazarPackage(&quot;Small Package&quot;);
+        small.add(rice);
+        small.add(oil);
+
+        BazarPackage family = new BazarPackage(&quot;Family Package&quot;);
+        family.add(rice);
+        family.add(oil);
+        family.add(pulse);
+
+        // Custom Bazar: mixture of a preset package, a single item,
+        // and another preset package (a previously created package
+        // would be added the exact same way)
+        BazarPackage customBazar = new BazarPackage(&quot;My Custom Bazar&quot;);
+        customBazar.add(small);
+        customBazar.add(pulse);
+        customBazar.add(family);
+
+        customBazar.display(&quot;&quot;);
+        System.out.printf(&quot;%nTotal Price: %.2f, Total Weight: %.2f%n&quot;,
+                customBazar.getPrice(), customBazar.getWeight());
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s23B2"><span class="tag">'23 &middot; B2</span> Retail Order (Food / Set Menu / Grocery)</h3>
+      <p class="summary">An order is a flat list of <code>OrderItem</code>s processed uniformly: individual foods, set menus (foods only), individual groceries, and nested grocery packages. Prints a hierarchical receipt and totals the bill.</p>
+      <pre><code>import java.util.ArrayList;
+import java.util.List;
+
+interface OrderItem {
+    public int getPrice();
+    public void print(String msg);
+}
+
+class Food implements OrderItem {
+    private int price;
+    private String name;
+
+    public Food(String name, int price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public int getPrice() {
+        return this.price;
+    }
+
+    @Override
+    public void print(String msg) {
+        System.out.printf(&quot;%sFood: %s (£%.2f)%n&quot;, msg, name, (double) price);
+    }
+}
+
+class SetMenu implements OrderItem {
+    List&lt;Food&gt; foods = new ArrayList&lt;&gt;();
+    private String name;
+
+    public SetMenu(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public int getPrice() {
+        int total = 0;
+        for (Food food : foods) {
+            total += food.getPrice();
+        }
+        return total;
+    }
+
+    @Override
+    public void print(String msg) {
+        System.out.println(msg + &quot;Set Menu: &quot; + name);
+        for (Food food : foods) {
+            food.print(msg + &quot;  &quot;);
+        }
+    }
+
+    public void addFood(Food food) {
+        foods.add(food);
+    }
+}
+
+class Grocery implements OrderItem {
+    private int price;
+    private String name;
+
+    public Grocery(String name, int price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public int getPrice() {
+        return this.price;
+    }
+
+    @Override
+    public void print(String msg) {
+        System.out.printf(&quot;%sGrocery: %s (£%.2f)%n&quot;, msg, name, (double) price);
+    }
+}
+
+class GroceryPackage implements OrderItem {
+    List&lt;OrderItem&gt; groceries = new ArrayList&lt;&gt;();
+    private String name;
+
+    public GroceryPackage(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public int getPrice() {
+        int total = 0;
+        for (OrderItem grocery : groceries) {
+            total += grocery.getPrice();
+        }
+        return total;
+    }
+
+    @Override
+    public void print(String msg) {
+        System.out.println(msg + &quot;Package: &quot; + name);
+        for (OrderItem item : groceries) {
+            item.print(msg + &quot;  &quot;);
+        }
+    }
+
+    public void add(OrderItem grocery) {
+        groceries.add(grocery);
+    }
+}
+
+class Order {
+    private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();
+
+    public void add(OrderItem item) {
+        items.add(item);
+    }
+
+    public double getTotalPrice() {
+        double total = 0;
+        for (OrderItem item : items) {
+            total += item.getPrice();
+        }
+        return total;
+    }
+
+    public void printReceipt() {
+        System.out.println(&quot;========== RECEIPT ==========&quot;);
+        for (OrderItem item : items) {
+            item.print(&quot;&quot;);
+            System.out.println();
+        }
+        System.out.println(&quot;-----------------------------&quot;);
+        System.out.printf(&quot;Total Bill: £%.2f%n&quot;, getTotalPrice());
+    }
+}
+
+public class _23_B2 {
+    public static void main(String[] args) {
+        Food burger = new Food(&quot;Burger&quot;, 8);
+        Food pizza = new Food(&quot;Pizza&quot;, 10);
+        Food fries = new Food(&quot;French Fries&quot;, 3);
+        SetMenu lunch = new SetMenu(&quot;Lunch Combo&quot;);
+        lunch.addFood(burger);
+        lunch.addFood(fries);
+        Grocery rice = new Grocery(&quot;Rice&quot;, 20);
+        Grocery oil = new Grocery(&quot;Cooking Oil&quot;, 12);
+        Grocery eggs = new Grocery(&quot;Eggs&quot;, 6);
+        Grocery sugar = new Grocery(&quot;Sugar&quot;, 5);
+        GroceryPackage breakfastPack = new GroceryPackage(&quot;Breakfast Pack&quot;);
+        breakfastPack.add(eggs);
+        breakfastPack.add(sugar);
+        GroceryPackage monthlyPack = new GroceryPackage(&quot;Monthly Essentials&quot;);
+        monthlyPack.add(rice);
+        monthlyPack.add(oil);
+        monthlyPack.add(breakfastPack);
+        Order order = new Order();
+        order.add(pizza);
+        order.add(lunch);
+        order.add(rice);
+        order.add(monthlyPack);
+        order.printReceipt();
+    }
+}</code></pre>
+    </div>
+
+  <h2 id="decorator">Decorator <span class="cnt">&mdash; 5 problems</span></h2>
+  <p class="summary">An abstract wrapper holds a component and delegates; concrete decorators add price/behavior and stack in any order.</p>
+  <div class="toc"><div class="grid"><a href="#s21B1">'21 B1 &middot; Delivery Discounts</a>
+<a href="#s21B2">'21 B2 &middot; Hardware Optional Features</a>
+<a href="#s21C1">'21 C1 &middot; CoffeeTong</a>
+<a href="#s22A1">'22 A1 &middot; IoT Notification Features</a>
+<a href="#s22C1">'22 C1 &middot; ZBazar Ramadan Packages</a></div></div>
+  
+    <div class="sol">
+      <h3 id="s21B1"><span class="tag">'21 &middot; B1</span> Delivery Discounts</h3>
+      <p class="summary">Apply any combination of discounts to a purchase: Loyalty (&times;0.9), Seasonal (flat &minus;100), High-Value (&times;0.98 if &gt; 10000). Each discount wraps the previous price.</p>
+      <pre><code>interface Purchase {
+    double calculatePrice();
+}
+
+class BasePurchase implements Purchase {
+    private double basePrice;
+
+    public BasePurchase(double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    @Override
+    public double calculatePrice() {
+        return basePrice;
+    }
+}
+
+abstract class DiscountDecorator implements Purchase {
+    protected Purchase purchase;
+
+    public DiscountDecorator(Purchase purchase) {
+        this.purchase = purchase;
+    }
+    public abstract double calculatePrice();
+}
+
+class LoyaltyDiscount extends DiscountDecorator {
+    public LoyaltyDiscount(Purchase purchase) {
+        super(purchase);
+    }
+
+    @Override
+    public double calculatePrice() {
+        return purchase.calculatePrice() * 0.9; // 10% discount
+    }
+}
+
+class SeasonalDiscount extends DiscountDecorator {
+    public SeasonalDiscount(Purchase purchase) {
+        super(purchase);
+    }
+
+    @Override
+    public double calculatePrice() {
+        return purchase.calculatePrice() - 100.0; // 15% discount
+    }
+}
+
+class HighValuePurchaseDiscount extends DiscountDecorator {
+    public HighValuePurchaseDiscount(Purchase purchase) {
+        super(purchase);
+    }
+
+    @Override
+    public double calculatePrice() {
+        double currentPrice = purchase.calculatePrice();
+        if (currentPrice &gt; 10000.0) {
+            return currentPrice * 0.98;
+        }
+        return currentPrice;
+    }
+}
+
+
+public class _21_B1 {
+    public static void main(String[] args) {
+        double basePrice = 12000; // Initial price of the product
+        // Create a base purchase
+        Purchase purchase = new BasePurchase(basePrice);
+        // Apply discounts conditionally
+        Purchase discountedPurchase = new LoyaltyDiscount(purchase); // Apply loyalty discount
+        discountedPurchase = new SeasonalDiscount(discountedPurchase); // Apply seasonal discount
+        discountedPurchase = new HighValuePurchaseDiscount(discountedPurchase); // Apply high-value purchase
+        // Calculate final price after all applicable discounts
+        double finalPrice = discountedPurchase.calculatePrice();
+        System.out.println(&quot;Final price after all discounts: &quot; + finalPrice);
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s21B2"><span class="tag">'21 &middot; B2</span> Hardware Optional Features</h3>
+      <p class="summary">Add optional features (extended warranty +$50, installation +$30, performance boost +$100) to a base hardware component without altering the core class. Each decorator adds to price and description.</p>
+      <pre><code>// Component interface representing the basic hardware component
+interface Component {
+    double getPrice();
+    String getDescription();
+}
+
+// Concrete Component representing individual hardware components
+class HardwareComponent implements Component {
+    private String name;
+    private double price;
+
+    public HardwareComponent(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public String getDescription() {
+        return name;
+    }
+}
+
+// Base Decorator
+abstract class HardwareDecorator implements Component {
+    private Component wrapee;
+
+    public HardwareDecorator(Component c) { 
+        this.wrapee = c;
+    }
+    
+    @Override
+    public double getPrice() {
+        return wrapee.getPrice();
+    }
+    
+    @Override
+    public String getDescription() {
+        return wrapee.getDescription();
+    }
+}
+
+// Concrete Decorator 1
+class ExtendedWarranty extends HardwareDecorator {
+    public ExtendedWarranty(Component c) {
+        super(c);
+    }
+    
+    @Override
+    public double getPrice() {
+        return super.getPrice() + 50.0; // Distinct price
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + &quot; + Extended Warranty&quot;;
+    }
+}
+
+// Concrete Decorator 2
+class InstallationService extends HardwareDecorator {
+    public InstallationService(Component c) {
+        super(c);
+    }
+    
+    @Override
+    public double getPrice() {
+        return super.getPrice() + 30.0; // Distinct price
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + &quot; + Installation Service&quot;;
+    }
+}
+
+// Concrete Decorator 3
+class PerformanceBoost extends HardwareDecorator {
+    public PerformanceBoost(Component c) {
+        super(c);
+    }
+    
+    @Override
+    public double getPrice() {
+        return super.getPrice() + 100.0; // Distinct price
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + &quot; + Performance Boost&quot;;
+    }
+}
+ 
+public class _21_B2 {
+    public static void main(String[] args) {
+        // 1. Create a base component
+        Component myGpu = new HardwareComponent(&quot;RTX 4090 GPU&quot;, 1500.0);
+        
+        // 2. Dynamically add features using the Decorator pattern
+        myGpu = new ExtendedWarranty(myGpu);
+        myGpu = new PerformanceBoost(myGpu);
+        
+        // 3. Display the final stacked results
+        System.out.println(&quot;=== Custom Hardware Order ===&quot;);
+        System.out.println(&quot;Items: &quot; + myGpu.getDescription());
+        System.out.println(&quot;Total Price: $&quot; + myGpu.getPrice());
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s21C1"><span class="tag">'21 &middot; C1</span> CoffeeTong</h3>
+      <p class="summary">Base black/milk coffee is decorated into Americano (+extra beans) or Cappuccino (+cinnamon). Costs build up through the wrappers. Driver reads menu choices in a loop.</p>
+      <pre><code>import java.util.ArrayList;
+
+import java.util.List;
+import java.util.Scanner;
+
+interface Coffee {
+    public String getIngredients();
+    public int getCost();
+}
+
+class BasicBlackCoffee implements Coffee {
+    @Override
+    public String getIngredients() {
+        return &quot;Water + Grinded Coffee Beans&quot;;
+    }
+    @Override
+    public int getCost() {
+        return 100 + 30;
+    }
+}
+
+class BasicMilkCoffee implements Coffee {
+    @Override
+    public String getIngredients() {
+        return &quot;Milk + Grinded Coffee Beans&quot;;
+    }
+    @Override
+    public int getCost() {
+        return 100 + 50 + 30;
+    }
+}
+
+abstract class CoffeeType implements Coffee {
+    protected Coffee c;
+
+    public CoffeeType(Coffee coffee) {
+        this.c = coffee;
+    }
+    public String getIngredients() {
+        return c.getIngredients();
+    }
+    public int getCost() {
+        return c.getCost();
+    }
+}
+
+class Americano extends CoffeeType {
+    public Americano(Coffee c) {
+        super(c);
+    }
+    public String getIngredients() {
+        return super.getIngredients();
+    }
+    public int getCost() {
+        return c.getCost() + 30;
+    }
+}
+
+class Cappuccino extends CoffeeType {
+    public Cappuccino(Coffee c) {
+        super(c);
+    }
+    
+    public String getIngredients() {
+        return super.getIngredients();
+    }
+    public int getCost() {
+        return c.getCost() + 50;
+    }
+}
+
+// Order class to handle multiple coffee orders
+class Order {
+    private List&lt;Coffee&gt; coffees = new ArrayList&lt;&gt;();
+
+    public void addCoffee(Coffee coffee) {
+        coffees.add(coffee);
+    }
+
+    public void printOrderDetails() {
+        int totalCost = 0;
+        int coffeeCount = 1;
+        for (Coffee coffee : coffees) {
+            System.out.println(&quot;Coffee &quot; + coffeeCount + &quot;:&quot;);
+            System.out.println(&quot;Ingredients: &quot; + coffee.getIngredients());
+            System.out.println(&quot;Cost: &quot; + coffee.getCost() + &quot; taka&quot;);
+            System.out.println();
+            totalCost += coffee.getCost();
+            coffeeCount++;
+        }
+        System.out.println(&quot;Total Cost for Order: &quot; + totalCost + &quot; taka&quot;);
+    }
+}
+
+// Main Class
+public class _21_C1 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Order order = new Order();
+        while (true) {
+            System.out.println(&quot;Select coffee type (1: Americano, 2: Espresso, 3: Cappuccino, 4:Mocha, 0: Finish): &quot;);
+            int choice = scanner.nextInt();
+            if (choice == 0) 
+                break;
+            Coffee coffee;
+            switch (choice) {
+                case 1:
+                    coffee = new Americano(new BasicBlackCoffee());
+                    break;
+                case 3:
+                    coffee = new Cappuccino(new BasicMilkCoffee());
+                    break;
+                default:
+                    System.out.println(&quot;Invalid choice.&quot;);
+                    continue;
+            }
+            order.addCoffee(coffee);
+        }
+        order.printOrderDetails();
+        scanner.close();
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s22A1"><span class="tag">'22 &middot; A1</span> IoT Notification Features</h3>
+      <p class="summary">A base notification channel (Email/SMS/Push) can be toggled with Encryption, Priority Label, and Logging in any combination. Each feature is a decorator over the channel. (File also shows an alternate <code>Notifier</code> take.)</p>
+      <pre><code>interface Notification {
+    public String send(String msg);
+}
+
+class EmailNotification implements Notification {
+    public String send(String msg) {
+        return &quot;Sending Email Notification&quot; + msg;
+    }
+}
+
+
+class PushNotification implements Notification {
+    public String send(String msg) {
+        return &quot;Sending Push Notification&quot; + msg;
+    }
+}
+
+
+class SMSNotification implements Notification {
+    public String send(String msg) {
+        return &quot;Sending SMS Notification&quot; + msg;
+    }
+}
+
+abstract class NotificationDecorator implements Notification {
+    protected Notification n;
+    public NotificationDecorator(Notification n) {
+        this.n = n;
+    }
+}
+
+class EncryptedNotificationDecorator extends NotificationDecorator {
+    public EncryptedNotificationDecorator(Notification n) {
+        super(n);
+    }
+    public String send(String msg) {
+        return super.n.send(msg) + &quot; with Encryption&quot;;
+    }
+}
+
+class PriorityLabelDecorator extends NotificationDecorator {
+    public PriorityLabelDecorator(Notification n) {
+        super(n);
+    }
+    public String send(String msg) {
+        return super.n.send(msg) + &quot; with Priority&quot;;
+    }
+}
+
+class LogggingDecorator extends NotificationDecorator {
+    public LogggingDecorator(Notification n) {
+        super(n);
+    }
+    public String send(String msg) {
+        return super.n.send(msg) + &quot; with Logging Feature&quot;;
+    }
+} 
+
+public class _22_A1 {
+    public static void main(String[] args) {
+        Notification n = new EmailNotification();
+        System.out.println(n.send(&quot;Hello&quot;));
+
+        EncryptedNotificationDecorator encryptedNotification = new EncryptedNotificationDecorator(n);
+        System.out.println(encryptedNotification.send(&quot;Hello&quot;));
+    }
+}
+
+
+
+
+
+
+// ===== Component =====
+interface Notifier {
+    void send(String message);
+}
+
+// ===== Concrete Components (the 3 notification channels) =====
+class EmailNotifier implements Notifier {
+    public void send(String message) {
+        System.out.println(&quot;Email: &quot; + message);
+    }
+}
+
+class SMSNotifier implements Notifier {
+    public void send(String message) {
+        System.out.println(&quot;SMS: &quot; + message);
+    }
+}
+
+class PushNotifier implements Notifier {
+    public void send(String message) {
+        System.out.println(&quot;Push: &quot; + message);
+    }
+}
+
+// ===== Decorator base class =====
+abstract class NotifierDecorator implements Notifier {
+    protected Notifier wrappee;
+    public NotifierDecorator(Notifier wrappee) {
+        this.wrappee = wrappee;
+    }
+}
+
+// ===== Concrete Decorators (the 3 toggleable features) =====
+class EncryptionDecorator extends NotifierDecorator {
+    public EncryptionDecorator(Notifier wrappee) { super(wrappee); }
+    public void send(String message) {
+        wrappee.send(&quot;[ENCRYPTED] &quot; + message);
+    }
+}
+
+class PriorityDecorator extends NotifierDecorator {
+    public PriorityDecorator(Notifier wrappee) { super(wrappee); }
+    public void send(String message) {
+        wrappee.send(&quot;[HIGH PRIORITY] &quot; + message);
+    }
+}
+
+class LoggingDecorator extends NotifierDecorator {
+    public LoggingDecorator(Notifier wrappee) { super(wrappee); }
+    public void send(String message) {
+        wrappee.send(message);
+        System.out.println(&quot;Log: notification recorded for audit&quot;);
+    }
+}
+
+// ===== Demo =====
+class Demo {
+    public static void main(String[] args) {
+        // Base: user picked Email as the channel
+        Notifier notifier = new EmailNotifier();
+
+        // User toggled ON: Encryption, Priority Label, Logging
+        // (any subset, in any order, could be applied here)
+        notifier = new EncryptionDecorator(notifier);
+        notifier = new PriorityDecorator(notifier);
+        notifier = new LoggingDecorator(notifier);
+
+        notifier.send(&quot;Motion detected at front door&quot;);
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s22C1"><span class="tag">'22 &middot; C1</span> ZBazar Ramadan Packages</h3>
+      <p class="summary">Fixed packages (Standard/Special/Premium) can optionally add a Fruit package, Sweet package, and/or premium wrap in any combination, without modifying the base packages.</p>
+      <pre><code>interface ZBazarPackages {
+    String getDescription();
+
+    double getPrice();
+}
+
+// ConcreteComponent — the base object being decorated
+class StandardPackage implements ZBazarPackages {
+    public String getDescription() {
+        return &quot;StandardPackage: Contains a, b, c&quot;;
+    }
+
+    public double getPrice() {
+        return 10.0;
+    }
+}
+
+class SpecialPackage implements ZBazarPackages {
+    public String getDescription() {
+        return &quot;SpecialPackage: Contains x, y, z&quot;;
+    }
+
+    public double getPrice() {
+        return 15.0;
+    }
+}
+
+class PremiumPackage implements ZBazarPackages {
+    public String getDescription() {
+        return &quot;PremiumPackage: Contains p, q, r&quot;;
+    }
+
+    public double getPrice() {
+        return 20.0;
+    }
+}
+
+// Decorator — abstract wrapper, holds a reference to a Component
+abstract class Decorator implements ZBazarPackages {
+    protected ZBazarPackages wrapped;
+
+    Decorator(ZBazarPackages c) {
+        this.wrapped = c;
+    }
+
+    public String getDescription() {
+        return wrapped.getDescription();
+    }
+
+    public double getPrice() {
+        return wrapped.getPrice();
+    }
+}
+
+// ConcreteDecorators — each adds its own behavior/cost
+class FruitPackageDecorator extends Decorator {
+    FruitPackageDecorator(ZBazarPackages c) {
+        super(c);
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + &quot; + Fruit Package: Contains Mango, Jackfruit&quot;;
+    }
+
+    public double getPrice() {
+        return super.getPrice() + 5.0;
+    }
+}
+
+class SweetPackageDecorator extends Decorator {
+    SweetPackageDecorator(ZBazarPackages c) {
+        super(c);
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + &quot; + Sweet Package: Contains Roshogolla&quot;;
+    }
+
+    public double getPrice() {
+        return super.getPrice() + 3.0;
+    }
+}
+
+class PremiumwrapPackageDecorator extends Decorator {
+    PremiumwrapPackageDecorator(ZBazarPackages c) {
+        super(c);
+    }
+
+    public String getDescription() {
+        return super.getDescription() + &quot; + Premium Wrap: Contains X, Y, Z&quot;;
+    }
+
+    public double getPrice() {
+        return super.getPrice() + 7.0;
+    }
+}
+
+public class _22_C1 {
+    public static void main(String[] args) {
+        // Decorators wrap in any combination, in any order
+        ZBazarPackages item = new SweetPackageDecorator(
+                new FruitPackageDecorator(new PremiumwrapPackageDecorator(new StandardPackage())));
+        System.out.println(item.getDescription());
+        System.out.println(&quot;Price: $&quot; + item.getPrice());
+    }
+}</code></pre>
+    </div>
+
+  <h2 id="bridge">Bridge <span class="cnt">&mdash; 2 problems</span></h2>
+  <p class="summary">The abstraction holds a reference to an implementor; the two hierarchies grow independently.</p>
+  <div class="toc"><div class="grid"><a href="#s22B1">'22 B1 &middot; Dalchal Notifications (Event &times; Channel)</a>
+<a href="#s22C2">'22 C2 &middot; ZBazar Delivery (Type &times; Transport)</a></div></div>
+  
+    <div class="sol">
+      <h3 id="s22B1"><span class="tag">'22 &middot; B1</span> Dalchal Notifications (Event &times; Channel)</h3>
+      <p class="summary">Two dimensions vary independently: <b>event type</b> (confirmed / dispatched / payment-failed) and <b>channel</b> (Email / SMS / Push / WhatsApp). The abstraction (event) holds a reference to an implementor (channel) &mdash; the bridge. Adding either side is one new class.</p>
+      <pre><code>// ===== Implementor (the channel side) =====
+interface NotificationSender {
+    void sendMessage(String message);
+}
+
+// ===== Concrete Implementors (channels — new ones added over time) =====
+class EmailSender implements NotificationSender {
+    public void sendMessage(String message) {
+        System.out.println(&quot;[Email] &quot; + message);
+    }
+}
+
+class SMSSender implements NotificationSender {
+    public void sendMessage(String message) {
+        System.out.println(&quot;[SMS] &quot; + message);
+    }
+}
+
+class PushSender implements NotificationSender {
+    public void sendMessage(String message) {
+        System.out.println(&quot;[Push] &quot; + message);
+    }
+}
+
+class WhatsAppSender implements NotificationSender {
+    public void sendMessage(String message) {
+        System.out.println(&quot;[WhatsApp] &quot; + message);
+    }
+}
+
+// ===== Abstraction (the event side) =====
+abstract class Notification {
+    protected NotificationSender sender;   // the &quot;bridge&quot; to the channel
+
+    public Notification(NotificationSender sender) {
+        this.sender = sender;
+    }
+
+    public abstract void notifyUser();
+}
+
+// ===== Refined Abstractions (event types — new ones added over time) =====
+class BazarConfirmedNotification extends Notification {
+    public BazarConfirmedNotification(NotificationSender sender) { super(sender); }
+    public void notifyUser() {
+        sender.sendMessage(&quot;Your monthly bazar has been confirmed.&quot;);
+    }
+}
+
+class BazarDispatchedNotification extends Notification {
+    public BazarDispatchedNotification(NotificationSender sender) { super(sender); }
+    public void notifyUser() {
+        sender.sendMessage(&quot;Your bazar is on the way!&quot;);
+    }
+}
+
+class PaymentFailedNotification extends Notification {
+    public PaymentFailedNotification(NotificationSender sender) { super(sender); }
+    public void notifyUser() {
+        sender.sendMessage(&quot;URGENT: Your payment failed. Please update your payment method.&quot;);
+    }
+}
+
+// ===== Demo =====
+public class _22_B1 {
+    public static void main(String[] args) {
+        // Same event, different channels
+        Notification confirmedByEmail = new BazarConfirmedNotification(new EmailSender());
+        Notification confirmedByWhatsApp = new BazarConfirmedNotification(new WhatsAppSender());
+
+        // Different event, different channel
+        Notification failedBySMS = new PaymentFailedNotification(new SMSSender());
+        Notification dispatchedByPush = new BazarDispatchedNotification(new PushSender());
+
+        confirmedByEmail.notifyUser();
+        confirmedByWhatsApp.notifyUser();
+        failedBySMS.notifyUser();
+        dispatchedByPush.notifyUser();
+
+        // Adding a new channel or a new event type later only means
+        // adding one new class on the relevant side — nothing above changes.
+    }
+}</code></pre>
+    </div>
+
+    <div class="sol">
+      <h3 id="s22C2"><span class="tag">'22 &middot; C2</span> ZBazar Delivery (Type &times; Transport)</h3>
+      <p class="summary"><b>Delivery type</b> (Standard / Scheduled / Express) has its own pricing/time logic; <b>transport</b> (Bike / Van / Drone) handles physical dispatch. The delivery abstraction bridges to a transport implementor so either can grow independently.</p>
+      <pre><code>// Implementor — the &quot;how&quot; side (e.g. transport method / channel)
+interface TransportMethod {
+    void dispatchPackage(String orderId);
+}
+
+class BikeTransport implements TransportMethod {
+    @Override
+    public void dispatchPackage(String orderId) {
+        System.out.println(&quot;Dispatching order &quot; + orderId + &quot; via BIKE COURIER.&quot;);
+    }
+}
+
+// VanTransport.java
+class VanTransport implements TransportMethod {
+    @Override
+    public void dispatchPackage(String orderId) {
+        System.out.println(&quot;Dispatching order &quot; + orderId + &quot; via DELIVERY VAN.&quot;);
+    }
+}
+
+// DroneTransport.java
+class DroneTransport implements TransportMethod {
+    @Override
+    public void dispatchPackage(String orderId) {
+        System.out.println(&quot;Dispatching order &quot; + orderId + &quot; via AUTONOMOUS DRONE.&quot;);
+        System.out.println(&quot; -&gt; Drone safety checks passed. Flight path calculated.&quot;);
+    }
+}
+
+// Abstraction — the &quot;what&quot; side (e.g. delivery type / event type)
+abstract class DeliveryOption {
+    // The Bridge
+    protected TransportMethod transport;
+
+    public DeliveryOption(TransportMethod transport) {
+        this.transport = transport;
+    }
+
+    // Business logic specific to the delivery type
+    public abstract double calculatePrice();
+    public abstract String getEstimatedTime();
+    
+    // The template method that brings it all together
+    public void processOrder(String orderId) {
+        System.out.println(&quot;\n--- Processing Order: &quot; + orderId + &quot; ---&quot;);
+        System.out.println(&quot;Estimated Time: &quot; + getEstimatedTime());
+        System.out.println(&quot;Delivery Cost: $&quot; + calculatePrice());
+        
+        // Delegate the actual physical delivery across the bridge
+        transport.dispatchPackage(orderId);
+    }
+}
+
+class StandardDelivery extends DeliveryOption {
+    public StandardDelivery(TransportMethod transport) {
+        super(transport);
+    }
+
+    @Override
+    public double calculatePrice() {
+        return 2.0; // Standard flat rate
+    }
+
+    @Override
+    public String getEstimatedTime() {
+        return &quot;Within 24 hours&quot;;
+    }
+}
+
+class ScheduledDelivery extends DeliveryOption {
+    public ScheduledDelivery(TransportMethod transport) {
+        super(transport);
+    }
+
+    @Override
+    public double calculatePrice() {
+        return 7.0; // Premium rate for speed
+    }
+
+    @Override
+    public String getEstimatedTime() {
+        return &quot;Within 34 hours&quot;;
+    }
+}
+
+class ExpressDelivery extends DeliveryOption {
+    public ExpressDelivery(TransportMethod transport) {
+        super(transport);
+    }
+
+    @Override
+    public double calculatePrice() {
+        return 8.0; // Premium rate for speed
+    }
+
+    @Override
+    public String getEstimatedTime() {
+        return &quot;Within 4 hours&quot;;
+    }
+}
+
+public class _22_C2 {
+    public static void main(String[] args) {
+        // Setup transport technologies
+        TransportMethod bike = new BikeTransport();
+        TransportMethod drone = new DroneTransport();
+
+        // 1. A standard delivery order fulfilled by a bike courier
+        DeliveryOption order1 = new StandardDelivery(bike);
+        order1.processOrder(&quot;ORD-1001&quot;);
+
+        // 2. An express delivery order fulfilled by the new drone technology
+        DeliveryOption order2 = new ExpressDelivery(drone);
+        order2.processOrder(&quot;ORD-1002&quot;);
+
+        // 3. A standard delivery that dynamically switches to a drone for logistics
+        DeliveryOption order3 = new StandardDelivery(drone);
+        order3.processOrder(&quot;ORD-1003&quot;);
+    }    
+}</code></pre>
+    </div>
+
+  <h2 id="combined">Combined patterns <span class="cnt">&mdash; 1 problem</span></h2>
+  <p class="summary">Some prompts want more than one pattern at once.</p>
+  <div class="toc"><div class="grid"><a href="#s23A1">'23 A1 &middot; Gift Shop (Decorator + Bridge)</a></div></div>
+  
+    <div class="sol">
+      <h3 id="s23A1"><span class="tag">'23 &middot; A1</span> Gift Shop (Decorator + Bridge)</h3>
+      <p class="summary">A gift item can be optionally <b>wrapped</b> (Decorator: +$2). Delivery combines a <b>region</b> (Local / National / International &mdash; the abstraction) with an optional <b>mode</b> (Express / Priority &mdash; the implementor), a Bridge where <code>mode == null</code> means standard delivery.</p>
+      <pre><code>// ===== Gift item (Component for the Decorator) =====
+interface GiftItem {
+    int getPrice();
+    String getDetails();
+}
+
+class Vase implements GiftItem {
+    private String name;
+    private int price;
+
+    public Vase(String name, int price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public int getPrice() { return price; }
+    public String getDetails() { return name; }
+}
+
+// ===== Decorator (optional wrapping add-on) =====
+abstract class Decorator implements GiftItem {
+    GiftItem wrappee;
+    public Decorator(GiftItem wrappee) {
+        this.wrappee = wrappee;
+    }
+}
+
+class WrapperDecorator extends Decorator {
+    public WrapperDecorator(GiftItem wrappee) {
+        super(wrappee);
+    }
+    @Override
+    public int getPrice() {
+        return wrappee.getPrice() + 2;
+    }
+    @Override
+    public String getDetails() {
+        return wrappee.getDetails() + &quot; [WRAPPED]&quot;;
+    }
+}
+
+// ===== Implementor (delivery mode) =====
+interface DeliveryMode {
+    int getExtraCharge();
+    String getTimeOverride(boolean international);
+}
+
+class ExpressDelivery implements DeliveryMode {
+    public int getExtraCharge() { return 10; }
+    public String getTimeOverride(boolean international) {
+        return international ? &quot;1 week&quot; : &quot;2 days&quot;;
+    }
+}
+
+class PriorityDelivery implements DeliveryMode {
+    public int getExtraCharge() { return 25; }
+    public String getTimeOverride(boolean international) {
+        return international ? &quot;5 days&quot; : &quot;1 day&quot;;
+    }
+}
+
+// ===== Abstraction (delivery region) =====
+abstract class DeliveryRegion {
+    protected DeliveryMode mode;   // null = standard delivery, no express/priority
+
+    public DeliveryRegion(DeliveryMode mode) {
+        this.mode = mode;
+    }
+
+    public abstract int getBaseCharge();
+    public abstract String getDefaultTime();
+    public abstract boolean isInternational();
+
+    public int getTotalCharge() {
+        return getBaseCharge() + (mode == null ? 0 : mode.getExtraCharge());
+    }
+
+    public String getEstimatedTime() {
+        if (mode == null) return getDefaultTime();
+        return mode.getTimeOverride(isInternational());
+    }
+}
+
+// ===== Refined Abstractions (regions — new ones added over time) =====
+class LocalDelivery extends DeliveryRegion {
+    private int miles;
+    public LocalDelivery(int miles, DeliveryMode mode) {
+        super(mode);
+        this.miles = miles;
+    }
+    public int getBaseCharge() { return miles * 1; }
+    public String getDefaultTime() { return &quot;1 week&quot;; }
+    public boolean isInternational() { return false; }
+}
+
+class NationalDelivery extends DeliveryRegion {
+    private int miles;
+    public NationalDelivery(int miles, DeliveryMode mode) {
+        super(mode);
+        this.miles = miles;
+    }
+    public int getBaseCharge() { return miles * 1 + 20; }
+    public String getDefaultTime() { return &quot;1-2 weeks&quot;; }
+    public boolean isInternational() { return false; }
+}
+
+class InternationalDelivery extends DeliveryRegion {
+    public InternationalDelivery(DeliveryMode mode) {
+        super(mode);
+    }
+    public int getBaseCharge() { return 500; }
+    public String getDefaultTime() { return &quot;2-3 weeks&quot;; }
+    public boolean isInternational() { return true; }
+}
+
+// ===== Ties a gift item to its (optional) delivery =====
+class GiftOrder {
+    private GiftItem item;
+    private DeliveryRegion delivery;   // null = no delivery requested
+
+    public GiftOrder(GiftItem item, DeliveryRegion delivery) {
+        this.item = item;
+        this.delivery = delivery;
+    }
+
+    public int getTotalCost() {
+        int total = item.getPrice();
+        if (delivery != null) total += delivery.getTotalCharge();
+        return total;
+    }
+
+    public void printSummary() {
+        System.out.println(&quot;Item: &quot; + item.getDetails());
+        System.out.println(&quot;Total Cost: $&quot; + getTotalCost());
+        if (delivery != null) {
+            System.out.println(&quot;Estimated Delivery Time: &quot; + delivery.getEstimatedTime());
+        }
+    }
+}
+
+// ===== Demo: Case 1 =====
+public class _23_A1 {
+    public static void main(String[] args) {
+        GiftItem vase = new Vase(&quot;Decorative Vase&quot;, 40);
+        GiftItem wrappedVase = new WrapperDecorator(vase);
+
+        DeliveryRegion localDelivery = new LocalDelivery(10, null);   // no express/priority chosen
+
+        GiftOrder order = new GiftOrder(wrappedVase, localDelivery);
+        order.printSummary();
+    }
+}</code></pre>
+    </div>
+
+  <h2 id="templates">Minimal templates</h2>
+  <p class="summary">Bare-bones skeletons to adapt in the exam &mdash; each is a complete, runnable file.</p>
+  
+    <div class="sol">
+      <h3 id="t-adapter">Adapter &mdash; template</h3>
+      <pre><code>// TARGET: interface the client already speaks
+interface Target {
+    void request();
+}
+
+// ADAPTEE: existing/3rd-party class with an incompatible method (cannot change it)
+class Adaptee {
+    void specificRequest() { System.out.println(&quot;adaptee work&quot;); }
+}
+
+// ADAPTER: implements Target, wraps an Adaptee, translates the call
+class Adapter implements Target {
+    private Adaptee adaptee;
+    Adapter(Adaptee adaptee) { this.adaptee = adaptee; }
+    public void request() { adaptee.specificRequest(); }   // translate
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Target t = new Adapter(new Adaptee());
+        t.request();     // client only knows Target
+    }
+}</code></pre>
+    </div>
+  
+    <div class="sol">
+      <h3 id="t-composite">Composite &mdash; template</h3>
+      <pre><code>import java.util.*;
+
+// COMPONENT: common type for both single items and groups
+interface Component {
+    double getPrice();
+    void print(String indent);
+}
+
+// LEAF: a single object, no children
+class Leaf implements Component {
+    private String name; private double price;
+    Leaf(String name, double price) { this.name = name; this.price = price; }
+    public double getPrice() { return price; }
+    public void print(String indent) {
+        System.out.println(indent + &quot;- &quot; + name + &quot; ($&quot; + price + &quot;)&quot;);
+    }
+}
+
+// COMPOSITE: holds children (leaves and/or other composites)
+class Composite implements Component {
+    private String name;
+    private List&lt;Component&gt; children = new ArrayList&lt;&gt;();
+    Composite(String name) { this.name = name; }
+    public void add(Component c) { children.add(c); }
+    public void remove(Component c) { children.remove(c); }
+    public double getPrice() {                 // recurse over children
+        double total = 0;
+        for (Component c : children) total += c.getPrice();
+        return total;
+    }
+    public void print(String indent) {
+        System.out.println(indent + &quot;+ &quot; + name + &quot; ($&quot; + getPrice() + &quot;)&quot;);
+        for (Component c : children) c.print(indent + &quot;  &quot;);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Composite box = new Composite(&quot;Box&quot;);
+        box.add(new Leaf(&quot;A&quot;, 10));
+        Composite inner = new Composite(&quot;Inner&quot;);
+        inner.add(new Leaf(&quot;B&quot;, 5));
+        box.add(inner);                        // group inside a group
+        box.print(&quot;&quot;);
+        System.out.println(&quot;Total: &quot; + box.getPrice());
+    }
+}</code></pre>
+    </div>
+  
+    <div class="sol">
+      <h3 id="t-decorator">Decorator &mdash; template</h3>
+      <pre><code>// COMPONENT: common interface
+interface Component {
+    double getPrice();
+    String getDescription();
+}
+
+// CONCRETE COMPONENT: the base object being decorated
+class BaseComponent implements Component {
+    public double getPrice() { return 100.0; }
+    public String getDescription() { return &quot;Base&quot;; }
+}
+
+// DECORATOR: abstract wrapper, holds a Component and delegates to it
+abstract class Decorator implements Component {
+    protected Component wrappee;
+    Decorator(Component c) { this.wrappee = c; }
+    public double getPrice() { return wrappee.getPrice(); }
+    public String getDescription() { return wrappee.getDescription(); }
+}
+
+// CONCRETE DECORATOR: adds its own bit on top of the wrapped object
+class FeatureA extends Decorator {
+    FeatureA(Component c) { super(c); }
+    public double getPrice() { return super.getPrice() + 20.0; }
+    public String getDescription() { return super.getDescription() + &quot; + A&quot;; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Component item = new BaseComponent();
+        item = new FeatureA(item);             // stack any number, any order
+        System.out.println(item.getDescription() + &quot; = $&quot; + item.getPrice());
+    }
+}</code></pre>
+    </div>
+  
+    <div class="sol">
+      <h3 id="t-bridge">Bridge &mdash; template</h3>
+      <pre><code>// IMPLEMENTOR: the &quot;how&quot; side (varies independently)
+interface Implementor {
+    void operationImpl(String msg);
+}
+
+// CONCRETE IMPLEMENTORS
+class ImplA implements Implementor {
+    public void operationImpl(String msg) { System.out.println(&quot;[A] &quot; + msg); }
+}
+class ImplB implements Implementor {
+    public void operationImpl(String msg) { System.out.println(&quot;[B] &quot; + msg); }
+}
+
+// ABSTRACTION: the &quot;what&quot; side, holds a reference to an Implementor (the bridge)
+abstract class Abstraction {
+    protected Implementor impl;
+    Abstraction(Implementor impl) { this.impl = impl; }
+    public abstract void operation();
+}
+
+// REFINED ABSTRACTIONS
+class RefinedX extends Abstraction {
+    RefinedX(Implementor impl) { super(impl); }
+    public void operation() { impl.operationImpl(&quot;X did work&quot;); }
+}
+class RefinedY extends Abstraction {
+    RefinedY(Implementor impl) { super(impl); }
+    public void operation() { impl.operationImpl(&quot;Y did work&quot;); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // mix any abstraction with any implementor
+        new RefinedX(new ImplA()).operation();
+        new RefinedY(new ImplB()).operation();
+    }
+}</code></pre>
+    </div>
+</div>
