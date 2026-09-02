@@ -2,24 +2,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 interface Observer {
-    void update(String message);
+    void update(String type, String message);
 }
 
 class Commander implements Observer {
-    public void update(String message) {
-        System.out.println("Commander received: " + message);
+    public void update(String type, String message) {
+        if (type.equals("Commander") || type.equals("All")) {
+            System.out.println("Commander received: " + message);
+        }
     }
 }
 
 class Scouts implements Observer {
-    public void update(String message) {
-        System.out.println("Scouts received: " + message + " -> Dispatch riders!");
+    public void update(String type, String message) {
+        if (type.equals("Scout") || type.equals("All")) {
+            System.out.println("Scouts received: " + message + " -> Dispatch riders!");
+        }
     }
 }
 
 class SupplyTeam implements Observer {
-    public void update(String message) {
-        System.out.println("Supply Team received: " + message + " -> Update inventory!");
+    public void update(String type, String message) {
+        if (type.equals("Supply") || type.equals("All")) {
+            System.out.println("Supply Team received: " + message + " -> Update inventory!");
+        }
     }
 }
 
@@ -37,12 +43,12 @@ class RavenBoard {
     void postMessage(String message) {
         System.out.println("New scroll: \"" + message + "\"");
         for (Observer o : observers) {
-            o.update(message);
+            o.update("All", message);
         }
     }
 }
 
-public class _22A2 {ß
+public class _22A2 {
     public static void main(String[] args) {
         RavenBoard board = new RavenBoard();
         Observer commander = new Commander();
