@@ -1,0 +1,22 @@
+\begin{tikzpicture}[x=1.35cm, y=1.1cm]
+  \coordinate (s) at (0,0);
+  \coordinate (a) at (1.8,1.0);
+  \coordinate (b) at (1.8,-1.0);
+  \coordinate (c) at (3.6,0);
+  \coordinate (t) at (5.4,0);
+  \draw[storyedge] (s) -- node[storyweight] {1} (a);
+  \draw[storyedge] (a) -- node[storyweight] {1} (c);
+  \draw[storyedge] (s) -- node[storyweight] {1} (b);
+  \draw[storyedge] (b) -- node[storyweight] {2} (c);
+  \draw[storyedge] (c) -- node[storyweight] {3} (t);
+  \node[storystart] at (s) {$s$};
+  \node[storyh, above=11pt] at (s) {$h=0$};
+  \node[storynode] at (a) {$a$};
+  \node[storyh, above=11pt] at (a) {$h=4$};
+  \node[storynode] at (b) {$b$};
+  \node[storyh, below=11pt] at (b) {$h=1$};
+  \node[storynode] at (c) {$c$};
+  \node[storyh, above=11pt] at (c) {$h=1$};
+  \node[storygoal] at (t) {$t$};
+  \node[storyh, above=11pt] at (t) {$h=0$};
+\end{tikzpicture}

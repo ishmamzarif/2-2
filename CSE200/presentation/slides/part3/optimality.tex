@@ -1,0 +1,188 @@
+% !TEX root = main.tex
+\newcommand{\OptimalityHeading}{%
+  \only<1-5>{Can a different estimate change the answer?}%
+  \only<6>{We didn't get the shortest path}%
+  \only<7>{A cheaper route was still there}}
+% One idea per overlay: the same road data, with a deliberately unsafe estimate.
+\newcommand{\ResetOptimality}{%
+  \def\OptParents{}\def\OptCurrent{}\def\OptClosed{}\def\OptOpen{}\def\OptFocus{}%
+  \def\OptActive{}\def\OptRouteEdges{}\def\OptRouteNodes{}%
+  \def\OptRouteColor{cbGreen}\def\OptGrid{0}\def\OptLShape{0}%
+  \let\OptHeuristics\StoryHeuristics}
+
+% Bind the same surface to the Manhattan/admissibility state data.
+\newcommand{\OptimalityGraph}{%
+  \begingroup
+  \let\IsoCurrent\OptCurrent\let\IsoClosed\OptClosed\let\IsoOpen\OptOpen
+  \let\IsoParents\OptParents\let\IsoActive\OptActive\let\IsoFocus\OptFocus
+  \let\IsoRoute\OptRouteEdges\let\IsoRouteNodes\OptRouteNodes
+  \let\IsoRouteColor\OptRouteColor\def\IsoReverse{0}
+  \let\IsoGridVisible\OptGrid\let\IsoLVisible\OptLShape
+  \IsoCitySurface
+  \foreach \n/\hv in \OptHeuristics {\NodeCostContent{\n}{\n}{\hv}}
+  \endgroup}
+
+\newcommand{\CompletedStoryGraph}{%
+  \begingroup\LoadState{25}
+  \begin{scope}[graphviewport]\RoadGraph\StoryNodeContents\end{scope}
+  \endgroup}
+
+\newcommand{\HeuristicQuestionScene}[1]{%
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \CompletedStoryGraph
+    \ifnum#1=1
+      \node[anchor=west,align=left,text width=5.05cm,font=\sffamily\Large\bfseries,text=rblue]
+        at (\InfoX,3.4) {Will any heuristic function work here?};
+    \else
+      \node[anchor=west,align=left,text width=5.05cm,font=\sffamily\Large\bfseries,text=rblue]
+        at (\InfoX,3.8) {Let's try Manhattan distance.};
+      \node[anchor=west,font=\sffamily\normalsize,text=cbOrange]
+        at (\InfoX,2.1) {Horizontal + vertical distance.};
+    \fi
+  \end{tikzpicture}}
+
+
+% Three arithmetic reveals, then candidate/commit pairs from checked snapshots.
+\newcommand{\OptimalityScene}[1]{%
+  \begingroup\ResetOptimality
+  \def\QueueValues{}\def\QueueMark{}\def\ChangedCells{}\def\CodeLines{}
+  \def\OptTitle{The route we know}\def\OptDetail{}\def\ParentDetail{}
+  \def\RunCost{---}\def\UseQueue{0}
+  \ifnum#1=1
+    \let\OptRouteEdges\GoodRoute\let\OptRouteNodes\GoodPathNodes
+    \def\OptDetail{\SingleLineRoute{\GoodPathText}\\[10pt]Cost: $\GoodCost$}
+  \else
+    \ifnum#1>3 \let\OptHeuristics\ManhattanHeuristics\fi\def\OptGrid{1}
+  \fi
+  \ifnum#1>1\ifnum#1<5
+    \def\OptLShape{3}\def\OptTitle{Build the estimate}
+    \ifnum#1>2 \def\OptLShape{2}\fi
+  \fi\fi
+  \ifnum#1=5
+    \def\UseQueue{1}\def\OptCurrent{D}\def\OptOpen{D}\def\QueueValues{D/0/\ManhattanStart/\ManhattanStart}\def\QueueMark{D}
+    \def\OptTitle{Restart: select D}\def\OptDetail{$g(D)=0,\quad f(D)=\ManhattanStart$}
+  \fi
+  \ifnum#1>5\ifnum#1<14
+    \def\UseQueue{1}
+    \ifnum#1<8 \LoadOptimality{1}\fi
+    \ifnum#1>7\ifnum#1<10 \LoadOptimality{2}\fi\fi
+    \ifnum#1>9\ifnum#1<13 \LoadOptimality{3}\fi\fi
+    \ifnum#1=13 \LoadOptimality{4}\fi
+    \let\QueueValues\OptQueue\let\OptDetail\OptCalculation
+    \let\ChangedCells\OptChangedCells
+    \let\ParentDetail\OptParentDetail
+    \def\OptTitle{Update OPEN}
+    \ifnum#1=6 \def\OptTitle{D: calculate the candidates}\fi
+    \ifnum#1=7 \def\OptTitle{Commit: B now comes first}\fi
+    \ifnum#1=8 \def\OptTitle{Select B}\fi
+    \ifnum#1=9 \def\OptTitle{Commit: H now comes first}\fi
+    \ifnum#1=10 \def\OptTitle{Select H}\fi
+    \ifnum#1=11 \def\OptTitle{Commit: S enters OPEN}\fi
+    \ifnum#1=12 \def\OptTitle{S has the smallest priority}\fi
+    \ifnum#1=13 \def\OptTitle{Extract S}\def\RunCost{\BadCost}\fi
+    \ifnum#1<11
+      \ifodd#1
+        \let\QueueMark\OptNext
+      \else
+        \let\QueueValues\OptBeforeQueue\let\OptOpen\OptBeforeOpen
+        \let\OptParents\OptBeforeParents\def\ChangedCells{}\def\ParentDetail{}
+      \fi
+    \fi
+    \ifnum#1=12 \def\QueueMark{S}\def\ChangedCells{}\def\ParentDetail{}
+      \def\OptDetail{$f(S)=\OptFS < f(N)=\OptFN$}\fi
+    \let\OptFocus\OptCurrent
+  \fi\fi
+  \ifnum#1>13
+    \LoadOptimality{4}\def\RunCost{\BadCost}
+    \let\OptRouteEdges\BadRoute\let\OptRouteNodes\BadPathNodes\def\OptRouteColor{cbOrange}
+    \def\OptTitle{Returned route}
+    \def\OptDetail{\SingleLineRoute{\BadPathText}\\[12pt]This run: $\BadCost$}
+    \ifnum#1=15
+      \let\OptRouteEdges\GoodRoute\let\OptRouteNodes\GoodPathNodes\def\OptRouteColor{cbGreen}
+      \def\OptTitle{Optimal route}
+      \def\OptDetail{\SingleLineRoute{\GoodPathText}\\[12pt]Better route: $\GoodCost < \BadCost$}
+    \fi
+  \fi
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \begin{scope}[overlay]
+      \ifnum#1=1 \CompletedStoryGraph\else\OptimalityGraph\fi
+      \node[paneltitle,text width=4.85cm] at (\InfoX,5.98) {\OptTitle};
+      \ifnum\UseQueue=1
+        \QueuePanel
+        \node[anchor=north west,align=left,font=\normalsize,text=rbluedk,inner sep=0pt]
+          at (\InfoX,2.3) {\OptDetail};
+        \node[anchor=west,font=\small,text=cbGreen,inner sep=0pt] at (\InfoX,1.35) {\ParentDetail};
+        \node[anchor=west,font=\sffamily\small,text=neutralg,inner sep=0pt] at (\InfoX,.78) {OPEN: smallest $f$ first};
+      \else
+        \ifnum#1>1\ifnum#1<5
+          \foreach \yy/\label in {4.6/Horizontal,3.65/Vertical,2.65/Total estimate}{%
+            \node[anchor=west,font=\sffamily\small,text=neutralg,inner sep=0pt] at (\InfoX,\yy) {\label};}
+          \node[anchor=west,font=\large,text=cbOrange] at (11.3,4.6) {$\Delta x=\ManhattanDX$};
+          \ifnum#1>2 \node[anchor=west,font=\large,text=cbOrange] at (11.3,3.65) {$\Delta y=\ManhattanDY$};\fi
+          \ifnum#1=4 \node[anchor=west,font=\large,text=rblue,inner sep=0pt] at (\InfoX,2.05) {$h_M(N)=\ManhattanDX+\ManhattanDY=\ManhattanN$};\fi
+          \node[anchor=west,align=left,font=\small,text=neutralg,inner sep=0pt] at (\InfoX,1.15) {Schematic grid units;\\not measured road costs.};
+        \fi\fi
+        \node[anchor=west,align=left,font=\large,text=rbluedk,inner sep=0pt] at (\InfoX,3.2) {\OptDetail};
+      \fi
+      \node[anchor=west,font=\sffamily\small,text=neutralg,inner sep=0pt] at (\InfoX,.18)
+        {Known best: \textcolor{cbGreen}{\GoodCost}\quad This run: \textcolor{cbOrange}{\RunCost}};
+    \end{scope}
+  \end{tikzpicture}\endgroup}
+
+% The estimate line of pages 27-28. Frame 8 redraws the identical object, so this
+% geometry lives in exactly one place. #1=1 adds the over-estimate band.
+\newcommand{\EstimateAxisX}[1]{2+.7*(#1)}
+\newcommand{\EstimateAxis}[1]{%
+  \pgfmathsetmacro{\truthx}{\EstimateAxisX{\RemainingN}}
+  \fill[cbGreenLt,rounded corners=2pt] (2,2.92) rectangle (\truthx,3.28);
+  \ifnum#1=1 \fill[cbRedLt] (\truthx,2.92) rectangle (12.4,3.28);\fi
+  \draw[neutralg,line width=.7pt,-{Stealth}] (2,3.1)--(12.5,3.1);
+  \foreach \xx in {2,\truthx}{\draw[cbGreen,line width=1pt] (\xx,2.88)--(\xx,3.32);}
+  \node[font=\normalsize,below=8pt] at (2,2.9) {$0$};
+  \node[font=\normalsize,text=cbGreen,below=8pt] at (\truthx,2.9) {Exact: $h^*(N)=\RemainingN$};}
+% One estimate landing on the line: value, colour, label above the stem.
+\newcommand{\EstimateMark}[3]{%
+  \pgfmathsetmacro{\markx}{\EstimateAxisX{#1}}
+  \draw[#2,line width=1pt,-{Stealth}] (\markx,4.05)--(\markx,3.38);
+  \fill[#2] (\markx,3.1) circle (.085);
+  \node[font=\large,text=#2,above] at (\markx,4.05) {#3};}
+
+\newcommand{\AdmissibilityRange}[1]{%
+  \ifnum#1=3 \EstimateAxis{1}\else\EstimateAxis{0}\fi
+  \ifnum#1=2
+    \pgfmathsetmacro{\estimatex}{\EstimateAxisX{\OriginalN}}
+    \EstimateMark{\OriginalN}{cbGreen}{$h(N)=\OriginalN$}
+    \node[font=\sffamily\normalsize,text=cbGreen] at (\estimatex,4.95) {Under-estimation};
+    \node[font=\Large,text=rbluedk] at (7,5.7) {$0\le h(n)\le h^*(n)$};
+    \node[font=\sffamily\normalsize,text=rbluedk] at (7,1.15) {Underestimate or equal the true remaining cost.};
+  \else
+    \EstimateMark{\ManhattanN}{cbRed}{$h_M(N)=\ManhattanN$}
+    \node[font=\sffamily\large\bfseries,text=cbRed] at (7,5.45) {Over-estimation};
+    \node[font=\sffamily\normalsize,text=rbluedk] at (7,1.15) {Optimality is no longer guaranteed.};
+    \node[font=\sffamily\small,text=neutralg] at (7,.55) {Manhattan overestimates on this weighted road graph.};
+  \fi}
+
+\newcommand{\AdmissibilityScene}[1]{%
+  \begingroup\ResetOptimality
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \begin{scope}[overlay]
+      \ifnum#1=1
+        \let\OptRouteEdges\RemainingRoute\def\OptRouteNodes{N,B,H,S}\def\OptGrid{1}\let\OptHeuristics\ManhattanHeuristics\OptimalityGraph
+        \node[paneltitle] at (\InfoX,5.25) {What is the true cost left?};
+        \node[anchor=west,align=left,font=\large,text=rbluedk] at (\InfoX,3.2)
+          {$\RemainingText$\\[20pt]$h^*(N)=\RemainingSum$\\[12pt]$\phantom{h^*(N)}=\mathbf{\RemainingN}$};
+      \fi
+      \ifnum#1=2 \AdmissibilityRange{2}\fi
+      \ifnum#1=3 \AdmissibilityRange{3}\fi
+      \ifnum#1=4
+        \let\OptRouteEdges\RemainingRoute\def\OptRouteNodes{N,B,H,S}\OptimalityGraph
+        \node[paneltitle] at (\InfoX,5.25) {Keep the better route in play};
+        \node[anchor=west,align=left,font=\large,text=rbluedk] at (\InfoX,3.2)
+          {$f(N)=\KnownN+\OriginalN=\mathbf{\SafePriorityN}$\\[18pt]$\SafePriorityN<\BadCost$\\[18pt]{\normalsize Explore N before a cost-\BadCost\ goal.}};
+        \node[font=\sffamily\small,text=neutralg] at (7,.22) {A valid lower bound keeps the cheaper route worth exploring.};
+      \fi
+    \end{scope}
+  \end{tikzpicture}\endgroup}

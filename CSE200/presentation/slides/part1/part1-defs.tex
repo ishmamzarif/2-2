@@ -1,0 +1,651 @@
+% part1-defs.tex -- part 1 macros and styles (Zarif Ishmam)
+%   loaded by part1_v2_backup.tex and by combined.tex
+
+\title[A* Search Algorithm]{A* Search Algorithm}
+\subtitle{Known cost plus an educated guess}
+\author{Zarif Ishmam - 2305035 \and Tonmoy Biswas - 2305038 \and Proteek Rosul - 2305042}
+\institute{CSE200 $\cdot$ CSE, BUET}
+
+% ================= from bd_map.tex (preamble part, verbatim) ==========
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{booktabs}
+
+% ================= map styles, verbatim from map-copy.tex =============
+\providecolor{rblue}{HTML}{2E2E9C}
+\providecolor{rbluedk}{HTML}{1C1C6B} 
+\providecolor{rbluelt}{HTML}{E7E7F7}
+\providecolor{cbGreen}{HTML}{0B7A3B}
+\providecolor{cbGreenLt}{HTML}{E4F2E9}
+\providecolor{cbRed}{HTML}{B01B2E}
+\providecolor{cbRedLt}{HTML}{FAE7E9}
+\providecolor{neutralg}{gray}{0.46}
+\providecolor{gridgray}{gray}{0.82}
+\providecolor{closedc}{gray}{0.80}
+
+\newcommand{\bdscalex}{0.94cm}
+\newcommand{\bdscaley}{1.02cm}
+
+\tikzset{
+  bdcoast/.style  = {draw=gridgray, line width=0.7pt,
+                     dash pattern=on 2.0pt off 1.6pt, rounded corners=0.8pt},
+  bdland/.style   = {fill=black!3},
+  bdedge/.style   = {draw=gridgray, line width=0.3pt,
+                     dash pattern=on 1.1pt off 1.1pt},
+  bdcity/.style   = {circle, fill=neutralg, draw=none,
+                     minimum size=1.25mm, inner sep=0pt},
+  bdclosed/.style = {bdcity, fill=closedc, draw=neutralg, line width=0.25pt,
+                     minimum size=1.45mm},
+  bdtree/.style   = {draw=rblue!55, line width=0.7pt},
+  bdpath/.style   = {draw=cbGreen, line width=1.5pt, line cap=round,
+                     line join=round},
+  bdstart/.style  = {bdcity, fill=cbGreenLt, draw=cbGreen, line width=0.8pt,
+                     minimum size=2.3mm},
+  bdgoal/.style   = {bdcity, fill=cbRedLt, draw=cbRed, line width=0.8pt,
+                     minimum size=2.3mm, double, double distance=0.4pt},
+  bdlab/.style    = {font=\fontsize{4.0}{4.6}\selectfont, text=neutralg,
+                     inner sep=1pt},
+  bdlabhi/.style  = {bdlab, text=rbluedk,
+                     font=\fontsize{4.4}{5}\selectfont\bfseries},
+}
+\newcommand{\bdring}[2]{\only<#1->{\foreach \n in {#2}{\node[bdclosed] at (\n) {};}}}
+\newcommand{\bdtreeedges}[2]{\only<#1->{\foreach \a/\b in {#2}{\draw[bdtree] (\a)--(\b);}}}
+% ======================================================================
+
+\providecolor{crimson}{HTML}{B01B2E}
+\tikzset{bdgoalgreen/.style = {bdcity, fill=cbGreenLt, draw=cbGreen,
+                               line width=0.8pt, minimum size=2.3mm,
+                               double, double distance=0.4pt}}
+
+% The map is split in three so its static drawing can be made once
+% (\bdmakebox, below) while every frame only re-declares the names.
+\newcommand{\bdcoastdraw}{%
+    \draw[bdcoast, bdland]
+      (88.32,26.52) -- (88.45,26.63) -- (88.62,26.44) -- (88.72,26.18) --
+      (88.90,26.30) -- (89.05,26.36) -- (89.22,26.22) -- (89.38,26.42) --
+      (89.58,26.18) -- (89.68,26.30) -- (89.82,26.02) -- (89.86,25.72) --
+      (89.96,25.34) -- (90.18,25.20) -- (90.48,25.15) -- (90.72,25.23) --
+      (91.02,25.17) -- (91.28,25.21) -- (91.58,25.12) -- (91.82,25.20) --
+      (92.06,25.17) -- (92.30,25.04) -- (92.36,24.82) -- (92.16,24.54) --
+      (92.06,24.24) -- (91.76,24.14) -- (91.60,23.98) -- (91.46,23.74) --
+      (91.56,23.54) -- (91.40,23.34) -- (91.20,23.18) -- (91.36,23.04) --
+      (91.58,22.96) -- (92.02,23.16) -- (92.26,23.24) -- (92.36,22.98) --
+      (92.20,22.70) -- (92.46,22.34) -- (92.62,22.14) -- (92.58,21.92) --
+      (92.50,21.58) -- (92.41,21.28) -- (92.36,21.02) -- (92.32,20.75) --
+      (92.18,20.95) -- (92.06,21.20) -- (91.96,21.44) -- (91.88,21.70) --
+      (91.80,21.96) -- (91.70,22.18) -- (91.52,22.42) -- (91.32,22.60) --
+      (91.20,22.74) -- (91.08,22.28) -- (90.98,22.56) -- (90.86,22.20) --
+      (90.74,22.00) -- (90.58,22.44) -- (90.46,22.12) -- (90.34,21.92) --
+      (90.22,21.80) -- (90.04,21.96) -- (89.88,21.88) -- (89.68,21.84) --
+      (89.48,21.76) -- (89.28,21.80) -- (89.10,21.92) -- (88.98,22.14) --
+      (88.84,22.34) -- (88.72,22.60) -- (88.90,23.00) -- (88.74,23.26) --
+      (88.58,23.50) -- (88.50,23.80) -- (88.86,24.02) -- (88.58,24.20) --
+      (88.30,24.30) -- (88.04,24.56) -- (87.98,24.86) -- (88.14,25.16) --
+      (88.40,25.22) -- (88.56,25.50) -- (88.30,25.76) -- (88.10,25.96) --
+      (88.18,26.26) --
+      cycle;
+}
+
+\newcommand{\bdcoords}{%
+    \coordinate (panchagarh)      at (88.55,26.33);
+    \coordinate (thakurgaon)      at (88.46,26.03);
+    \coordinate (nilphamari)      at (88.86,25.93);
+    \coordinate (lalmonirhat)     at (89.45,25.92);
+    \coordinate (kurigram)        at (89.65,25.81);
+    \coordinate (rangpur)         at (89.24,25.75);
+    \coordinate (dinajpur)        at (88.64,25.63);
+    \coordinate (gaibandha)       at (89.54,25.33);
+    \coordinate (joypurhat)       at (89.03,25.09);
+    \coordinate (sunamganj)       at (91.40,25.07);
+    \coordinate (sherpur)         at (90.02,25.02);
+    \coordinate (jamalpur)        at (89.94,24.92);
+    \coordinate (sylhet)          at (91.87,24.90);
+    \coordinate (netrokona)       at (90.73,24.88);
+    \coordinate (bogura)          at (89.37,24.85);
+    \coordinate (naogaon)         at (88.94,24.80);
+    \coordinate (mymensingh)      at (90.40,24.75);
+    \coordinate (chapainawabganj) at (88.28,24.60);
+    \coordinate (moulvibazar)     at (91.78,24.48);
+    \coordinate (sirajganj)       at (89.71,24.45);
+    \coordinate (kishoreganj)     at (90.78,24.44);
+    \coordinate (natore)          at (89.00,24.42);
+    \coordinate (rajshahi)        at (88.60,24.37);
+    \coordinate (habiganj)        at (91.42,24.37);
+    \coordinate (tangail)         at (89.92,24.25);
+    \coordinate (pabna)           at (89.24,24.00);
+    \coordinate (gazipur)         at (90.42,23.99);
+    \coordinate (brahmanbaria)    at (91.11,23.96);
+    \coordinate (narsingdi)       at (90.72,23.92);
+    \coordinate (kushtia)         at (89.12,23.90);
+    \coordinate (manikganj)       at (90.00,23.86);
+    \coordinate (dhaka)           at (90.41,23.81);
+    \coordinate (meherpur)        at (88.63,23.77);
+    \coordinate (rajbari)         at (89.64,23.76);
+    \coordinate (chuadanga)       at (88.85,23.64);
+    \coordinate (narayanganj)     at (90.50,23.62);
+    \coordinate (faridpur)        at (89.84,23.60);
+    \coordinate (munshiganj)      at (90.53,23.55);
+    \coordinate (jhenaidah)       at (89.17,23.54);
+    \coordinate (magura)          at (89.42,23.49);
+    \coordinate (cumilla)         at (91.18,23.46);
+    \coordinate (chandpur)        at (90.66,23.23);
+    \coordinate (shariatpur)      at (90.35,23.20);
+    \coordinate (jashore)         at (89.21,23.17);
+    \coordinate (narail)          at (89.50,23.16);
+    \coordinate (madaripur)       at (90.19,23.16);
+    \coordinate (khagrachhari)    at (91.98,23.10);
+    \coordinate (feni)            at (91.40,23.02);
+    \coordinate (gopalganj)       at (89.83,23.01);
+    \coordinate (lakshmipur)      at (90.83,22.94);
+    \coordinate (noakhali)        at (91.10,22.87);
+    \coordinate (khulna)          at (89.56,22.82);
+    \coordinate (satkhira)        at (89.07,22.72);
+    \coordinate (barishal)        at (90.37,22.70);
+    \coordinate (bhola)           at (90.65,22.69);
+    \coordinate (bagerhat)        at (89.79,22.65);
+    \coordinate (rangamati)       at (92.17,22.65);
+    \coordinate (jhalokati)       at (90.20,22.64);
+    \coordinate (pirojpur)        at (89.98,22.58);
+    \coordinate (patuakhali)      at (90.33,22.36);
+    \coordinate (chattogram)      at (91.78,22.36);
+    \coordinate (bandarban)       at (92.22,22.19);
+    \coordinate (barguna)         at (90.13,22.15);
+    \coordinate (coxsbazar)       at (92.01,21.44);
+}
+
+\newcommand{\bdnet}{%
+    \foreach \a/\b in {%
+      panchagarh/thakurgaon, panchagarh/nilphamari, thakurgaon/dinajpur,
+      nilphamari/dinajpur, nilphamari/rangpur, nilphamari/lalmonirhat,
+      lalmonirhat/rangpur, lalmonirhat/kurigram, dinajpur/rangpur,
+      dinajpur/joypurhat, dinajpur/naogaon, rangpur/kurigram,
+      rangpur/gaibandha, kurigram/gaibandha, gaibandha/bogura,
+      gaibandha/joypurhat, gaibandha/jamalpur, joypurhat/naogaon,
+      joypurhat/bogura, naogaon/bogura, naogaon/natore,
+      naogaon/chapainawabganj, naogaon/rajshahi, chapainawabganj/rajshahi,
+      rajshahi/natore, natore/bogura, natore/sirajganj,
+      natore/pabna, natore/kushtia, bogura/sirajganj,
+      sirajganj/pabna, sirajganj/tangail, sirajganj/jamalpur,
+      pabna/kushtia, pabna/rajbari, kushtia/chuadanga,
+      kushtia/jhenaidah, kushtia/meherpur, kushtia/rajbari,
+      meherpur/chuadanga, chuadanga/jhenaidah, chuadanga/jashore,
+      jhenaidah/magura, jhenaidah/jashore, magura/narail,
+      magura/faridpur, magura/rajbari, narail/jashore,
+      narail/khulna, narail/gopalganj, jashore/satkhira,
+      jashore/khulna, satkhira/khulna, khulna/bagerhat,
+      bagerhat/pirojpur, bagerhat/gopalganj, gopalganj/faridpur,
+      gopalganj/madaripur, gopalganj/pirojpur, gopalganj/barishal,
+      rajbari/faridpur, rajbari/manikganj, faridpur/madaripur,
+      faridpur/manikganj, madaripur/shariatpur, madaripur/barishal,
+      shariatpur/chandpur, shariatpur/munshiganj, shariatpur/barishal,
+      pirojpur/jhalokati, pirojpur/barguna, pirojpur/barishal,
+      jhalokati/barishal, jhalokati/barguna, jhalokati/patuakhali,
+      barguna/patuakhali, patuakhali/barishal, patuakhali/bhola,
+      barishal/bhola, bhola/lakshmipur, bhola/noakhali,
+      lakshmipur/noakhali, lakshmipur/chandpur, lakshmipur/cumilla,
+      noakhali/cumilla, noakhali/feni, noakhali/chattogram,
+      feni/cumilla, feni/chattogram, feni/khagrachhari,
+      chandpur/cumilla, chandpur/munshiganj, cumilla/brahmanbaria,
+      cumilla/munshiganj, brahmanbaria/narsingdi, brahmanbaria/kishoreganj,
+      brahmanbaria/habiganj, brahmanbaria/narayanganj, narsingdi/kishoreganj,
+      narsingdi/gazipur, narsingdi/narayanganj, narsingdi/dhaka,
+      munshiganj/narayanganj, munshiganj/dhaka, munshiganj/manikganj,
+      narayanganj/dhaka, dhaka/gazipur, dhaka/manikganj,
+      gazipur/tangail, gazipur/mymensingh, gazipur/kishoreganj,
+      manikganj/tangail, tangail/jamalpur, tangail/mymensingh,
+      jamalpur/sherpur, jamalpur/mymensingh, sherpur/mymensingh,
+      mymensingh/netrokona, mymensingh/kishoreganj, netrokona/kishoreganj,
+      netrokona/sunamganj, kishoreganj/habiganj, habiganj/sunamganj,
+      habiganj/moulvibazar, sunamganj/sylhet, sylhet/moulvibazar,
+      khagrachhari/rangamati, khagrachhari/chattogram, rangamati/chattogram,
+      rangamati/bandarban, bandarban/chattogram, bandarban/coxsbazar,
+      chattogram/coxsbazar}
+      {\draw[bdedge] (\a)--(\b);}
+
+    \foreach \n in {bagerhat, bandarban, barguna, barishal, bhola, bogura,
+      brahmanbaria, chandpur, chapainawabganj, chattogram, chuadanga, coxsbazar,
+      cumilla, dhaka, dinajpur, faridpur, feni, gaibandha,
+      gazipur, gopalganj, habiganj, jamalpur, jashore, jhalokati,
+      jhenaidah, joypurhat, khagrachhari, khulna, kishoreganj, kurigram,
+      kushtia, lakshmipur, lalmonirhat, madaripur, magura, manikganj,
+      meherpur, moulvibazar, munshiganj, mymensingh, naogaon, narail,
+      narayanganj, narsingdi, natore, netrokona, nilphamari, noakhali,
+      pabna, panchagarh, patuakhali, pirojpur, rajbari, rajshahi,
+      rangamati, rangpur, satkhira, shariatpur, sherpur, sirajganj,
+      sunamganj, sylhet, tangail, thakurgaon}
+      {\node[bdcity] at (\n) {};}
+}
+
+% SPEED: the coast, 133 roads and 64 dots never change, yet ~50 overlay
+% pages redrew them.  \bdmakebox draws them ONCE into a box (it is called
+% right after \begin{document}); \bdbase then drops that box at the map's
+% south-west corner and re-declares the 64 names the overlays draw on.
+% The box records TikZ's own bounding box of the drawing (\bdbbx, \bdbby =
+% its south-west corner) and is placed back on exactly that corner, so
+% every picture keeps its size and position to the point.
+\newsavebox{\bdbasebox}
+\makeatletter
+\newcommand{\bdmakebox}{%
+  \sbox{\bdbasebox}{%
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley, shift={(-87.98,-20.75)},
+                        every node/.style={inner sep=0pt}]
+      \bdcoastdraw \bdcoords \bdnet
+      \pgfpointanchor{current bounding box}{south west}%
+      \xdef\bdbbx{\the\pgf@x}\xdef\bdbby{\the\pgf@y}%
+    \end{tikzpicture}}}
+\makeatother
+% (\bdbbx,\bdbby) is in the map's own (shifted) coordinate system, the one
+% every map picture uses, so the box goes back AT that point.
+\newcommand{\bdbase}{%
+  \node[inner sep=0pt, outer sep=0pt, anchor=south west]
+    at (\bdbbx,\bdbby) {\usebox{\bdbasebox}};
+  \bdcoords}
+
+\newcommand{\bdlabels}{%
+    \node[bdlabhi, anchor=east,  xshift=-1.3mm] at (dhaka)      {Dhaka};
+    \node[bdlabhi, anchor=west,  xshift= 1.4mm] at (sylhet)     {Sylhet};
+    \node[bdlab,   anchor=west,  xshift= 1.2mm] at (chattogram) {Chattogram};
+    \node[bdlab,   anchor=east,  xshift=-1.2mm] at (khulna)     {Khulna};
+    \node[bdlab,   anchor=east,  xshift=-1.2mm] at (rajshahi)   {Rajshahi};
+    \node[bdlab,   anchor=east,  xshift=-1.2mm] at (rangpur)    {Rangpur};
+}
+
+\newcommand{\bdroute}{%
+  \draw[bdpath] (dhaka) -- (narsingdi) -- (brahmanbaria) -- (habiganj)
+                -- (moulvibazar) -- (sylhet);
+  \foreach \n in {narsingdi, brahmanbaria, habiganj, moulvibazar}
+    {\node[bdcity, fill=cbGreen, minimum size=1.6mm] at (\n) {};}}
+
+\newcommand{\bdroutelabels}{%
+  \node[bdlab, text=cbGreen, anchor=south east, xshift=-0.6mm] at (narsingdi)    {Narsingdi};
+  \node[bdlab, text=cbGreen, anchor=north,      yshift=-1.2mm] at (brahmanbaria) {Brahmanbaria};
+  \node[bdlab, text=cbGreen, anchor=north east, xshift=-0.8mm] at (habiganj)     {Habiganj};
+  \node[bdlab, text=cbGreen, anchor=west,       xshift= 1.2mm] at (moulvibazar)  {Moulvibazar};}
+
+\newcommand{\bdends}{%
+  \node[bdstart]     at (dhaka)  {};
+  \node[bdgoalgreen] at (sylhet) {};}
+
+\newcommand{\bdsettled}{%
+    \bdtreeedges{1}{dhaka/gazipur, dhaka/narayanganj, dhaka/munshiganj, dhaka/narsingdi,
+                     dhaka/manikganj, munshiganj/chandpur, narsingdi/brahmanbaria, munshiganj/shariatpur,
+                     manikganj/faridpur, gazipur/tangail}
+    \bdtreeedges{1}{manikganj/rajbari, gazipur/kishoreganj, shariatpur/madaripur, munshiganj/cumilla,
+                     gazipur/mymensingh, chandpur/lakshmipur, tangail/sirajganj, rajbari/magura,
+                     rajbari/pabna, brahmanbaria/habiganj}
+    \bdtreeedges{1}{shariatpur/barishal, kishoreganj/netrokona, madaripur/gopalganj, lakshmipur/noakhali,
+                     rajbari/kushtia, lakshmipur/bhola, magura/jhenaidah, barishal/jhalokati,
+                     cumilla/feni, tangail/jamalpur}
+    \bdtreeedges{1}{mymensingh/sherpur, magura/narail, sirajganj/bogura, habiganj/moulvibazar,
+                     barishal/patuakhali, gopalganj/bagerhat, barishal/pirojpur, kushtia/chuadanga,
+                     sirajganj/natore, narail/jashore}
+    \bdtreeedges{1}{kushtia/meherpur, narail/khulna, patuakhali/barguna, netrokona/sunamganj,
+                     bogura/joypurhat, bogura/naogaon, feni/khagrachhari, jamalpur/gaibandha,
+                     moulvibazar/sylhet}
+
+    \bdring{1}{gazipur, narayanganj, munshiganj, narsingdi, manikganj,
+               chandpur, brahmanbaria, shariatpur, faridpur, tangail}
+    \bdring{1}{rajbari, kishoreganj, madaripur, cumilla, mymensingh,
+               lakshmipur, sirajganj, magura, pabna, habiganj}
+    \bdring{1}{barishal, netrokona, gopalganj, noakhali, kushtia,
+               bhola, jhenaidah, jhalokati, feni, jamalpur}
+    \bdring{1}{sherpur, narail, bogura, moulvibazar, patuakhali,
+               bagerhat, pirojpur, chuadanga, natore, jashore}
+    \bdring{1}{meherpur, khulna, barguna, sunamganj, joypurhat,
+               naogaon, khagrachhari, gaibandha, sylhet}
+}
+
+% ---- the path, as a flow chart of green boxes ------------------------
+\tikzset{
+  fbox/.style     = {draw=cbGreen, fill=cbGreenLt, line width=0.7pt,
+                     text=cbGreen, font=\scriptsize\bfseries,
+                     minimum width=2.5cm, minimum height=0.40cm,
+                     inner sep=1pt, align=center},
+  fboxend/.style  = {fbox, fill=cbGreen, text=white},
+  farrow/.style   = {-{Stealth[length=1.6mm]}, draw=cbGreen, line width=0.7pt},
+}
+\newcommand{\pathflow}{%
+  \begin{tikzpicture}[every node/.style={inner sep=1pt}]
+    \foreach \i/\nm [count=\k from 0] in {%
+        1/Dhaka, 2/Narsingdi, 3/Brahmanbaria,
+        4/Habiganj, 5/Moulvibazar, 6/Sylhet}{%
+      \ifnum\i=1 \node[fboxend] (f\i) at (0,-0.68*\k) {\nm};
+      \else\ifnum\i=6 \node[fboxend] (f\i) at (0,-0.68*\k) {\nm};
+      \else \node[fbox] (f\i) at (0,-0.68*\k) {\nm};
+      \fi\fi}
+    \foreach \a/\b in {1/2, 2/3, 3/4, 4/5, 5/6}{\draw[farrow] (f\a) -- (f\b);}
+  \end{tikzpicture}}
+
+% ---- greedy best-first: its own route colour (cbOrange, as in part1) ----
+\tikzset{
+  bdgpath/.style  = {draw=cbOrange, line width=1.5pt, line cap=round,
+                     line join=round},
+  bdgstep/.style  = {bdcity, fill=cbOrange, minimum size=1.6mm},
+  gfbox/.style    = {draw=cbOrange, fill=cbOrangeLt, line width=0.7pt,
+                     text=cbOrange, font=\scriptsize\bfseries,
+                     minimum width=2.5cm, minimum height=0.40cm,
+                     inner sep=1pt, align=center},
+  gfboxend/.style = {gfbox, fill=cbOrange, text=white},
+  gfarrow/.style  = {-{Stealth[length=1.6mm]}, draw=cbOrange, line width=0.7pt},
+}
+
+% the six districts greedy expands, in order, one per overlay from #1
+\newcommand{\bdgsteps}[1]{%
+  \only<#1->{\node[bdgstep] at (dhaka) {};}%
+  \foreach \k/\a/\b in {1/dhaka/narsingdi, 2/narsingdi/kishoreganj,
+                        3/kishoreganj/habiganj, 4/habiganj/moulvibazar,
+                        5/moulvibazar/sylhet}{%
+    \pgfmathtruncatemacro{\ov}{#1+\k}%
+    \only<\ov->{\draw[bdgpath] (\a)--(\b); \node[bdgstep] at (\b) {};}}}
+
+\newcommand{\bdgroute}{%
+  \draw[bdgpath] (dhaka) -- (narsingdi) -- (kishoreganj) -- (habiganj)
+                 -- (moulvibazar) -- (sylhet);
+  \foreach \n in {narsingdi, kishoreganj, habiganj, moulvibazar}
+    {\node[bdgstep] at (\n) {};}}
+
+\newcommand{\bdgroutelabels}{%
+  \node[bdlab, text=cbOrange, anchor=south east, xshift=-0.6mm] at (narsingdi)   {Narsingdi};
+  \node[bdlab, text=cbOrange, anchor=south,      yshift= 1.4mm] at (kishoreganj) {Kishoreganj};
+  \node[bdlab, text=cbOrange, anchor=north,      yshift=-1.3mm] at (habiganj)    {Habiganj};
+  \node[bdlab, text=cbOrange, anchor=west,       xshift= 1.2mm] at (moulvibazar) {Moulvibazar};}
+
+\newcommand{\gpathflow}{%
+  \begin{tikzpicture}[every node/.style={inner sep=1pt}]
+    \foreach \i/\nm [count=\k from 0] in {%
+        1/Dhaka, 2/Narsingdi, 3/Kishoreganj,
+        4/Habiganj, 5/Moulvibazar, 6/Sylhet}{%
+      \ifnum\i=1 \node[gfboxend] (h\i) at (0,-0.68*\k) {\nm};
+      \else\ifnum\i=6 \node[gfboxend] (h\i) at (0,-0.68*\k) {\nm};
+      \else \node[gfbox] (h\i) at (0,-0.68*\k) {\nm};
+      \fi\fi}
+    \foreach \a/\b in {1/2, 2/3, 3/4, 4/5, 5/6}{\draw[gfarrow] (h\a) -- (h\b);}
+  \end{tikzpicture}}
+
+% ================= 3D grid, verbatim from part1_3d.tex ================
+% cam={az}{el}{cm per x unit}{cm per y unit}: an orthographic camera for
+% plain tikz.  az < 0 looks from the south-west; el = viewing elevation
+% (90 = straight down); z shares the y unit.
+\tikzset{
+  cam/.code n args = {4}{%
+    \pgfmathsetmacro\camxx{(#3)*cos(#1)}%
+    \pgfmathsetmacro\camxy{-(#3)*sin(#1)*sin(#2)}%
+    \pgfmathsetmacro\camyx{(#4)*sin(#1)}%
+    \pgfmathsetmacro\camyy{(#4)*cos(#1)*sin(#2)}%
+    \pgfmathsetmacro\camzy{(#4)*cos(#2)}%
+    \edef\camkeys{\noexpand\pgfkeysalso{%
+      x={(\camxx cm,\camxy cm)}, y={(\camyx cm,\camyy cm)},
+      z={(0cm,\camzy cm)}}}%
+    \camkeys},
+}
+
+% tiles and wall blocks as polygons, since `rectangle' ignores the camera
+\newcommand{\ptile}[3]{% #1 colour, #2 col, #3 row
+  \fill[#1] ({#2+\gpad},{#3+\gpad},0) -- ({#2+1-\gpad},{#3+\gpad},0)
+    -- ({#2+1-\gpad},{#3+1-\gpad},0) -- ({#2+\gpad},{#3+1-\gpad},0) -- cycle;}
+\newcommand{\wallh}{0.55}
+\newcommand{\pblock}[2]{% #1 col, #2 row -- south-west camera: south, west, top
+  \fill[gwall!78!white]
+    ({#1+\gpad},{#2+\gpad},0) -- ({#1+1-\gpad},{#2+\gpad},0)
+    -- ({#1+1-\gpad},{#2+\gpad},\wallh) -- ({#1+\gpad},{#2+\gpad},\wallh) -- cycle;
+  \fill[gwall]
+    ({#1+\gpad},{#2+\gpad},0) -- ({#1+\gpad},{#2+1-\gpad},0)
+    -- ({#1+\gpad},{#2+1-\gpad},\wallh) -- ({#1+\gpad},{#2+\gpad},\wallh) -- cycle;
+  \fill[gwall!45!white]
+    ({#1+\gpad},{#2+\gpad},\wallh) -- ({#1+1-\gpad},{#2+\gpad},\wallh)
+    -- ({#1+1-\gpad},{#2+1-\gpad},\wallh) -- ({#1+\gpad},{#2+1-\gpad},\wallh) -- cycle;}
+\newcommand{\gwallsthree}{% far to near, for the south-west camera
+  \foreach \c in {12,...,4}{\pblock{\c}{7}}%
+  \foreach \r in {6,5,4}{\pblock{12}{\r}}%
+  \foreach \c in {12,...,4}{\pblock{\c}{3}}}
+
+% the routes, from grids/mini-*.tex
+\newcommand{\greedyroute}{(1.5,4.5) -- (11.5,4.5) -- (11.5,6.5) -- (3.5,6.5)
+  -- (3.5,8.5) -- (14.5,8.5) -- (14.5,6.5)}
+\newcommand{\astarroute}{(1.5,4.5) -- (3.5,4.5) -- (3.5,8.5) -- (14.5,8.5)
+  -- (14.5,6.5)}
+\newcommand{\dijkstraroute}{\astarroute}
+
+% expansion order of each search (gen_grid.py), and lookup tables:
+% \csname dj-c-r\endcsname = step at which cell (c,r) was expanded
+\newcommand{\djorder}{%
+  1/4, 2/4, 0/4, 1/5, 1/3, 3/4, 2/5, 2/3, 0/5, 0/3, 1/6, 1/2, 4/4, 3/5,
+  3/3, 2/6, 2/2, 0/6, 0/2, 1/7, 1/1, 5/4, 4/5, 3/6, 3/2, 2/7, 2/1, 0/7,
+  0/1, 1/8, 1/0, 6/4, 5/5, 4/6, 3/7, 4/2, 3/1, 2/8, 2/0, 0/8, 0/0, 1/9,
+  7/4, 6/5, 5/6, 3/8, 5/2, 4/1, 3/0, 2/9, 0/9, 8/4, 7/5, 6/6, 4/8, 3/9,
+  6/2, 5/1, 4/0, 9/4, 8/5, 7/6, 5/8, 4/9, 7/2, 6/1, 5/0, 10/4, 9/5, 8/6,
+  6/8, 5/9, 8/2, 7/1, 6/0, 11/4, 10/5, 9/6, 7/8, 6/9, 9/2, 8/1, 7/0, 11/5,
+  10/6, 8/8, 7/9, 10/2, 9/1, 8/0, 11/6, 9/8, 8/9, 11/2, 10/1, 9/0, 10/8,
+  9/9, 12/2, 11/1, 10/0, 11/8, 10/9, 13/2, 12/1, 11/0, 12/8, 11/9, 14/2,
+  13/3, 13/1, 12/0, 13/8, 12/9, 15/2, 14/3, 14/1, 13/4, 13/0, 14/8, 13/9,
+  13/7, 15/3, 15/1, 14/4, 14/0, 13/5, 15/8, 14/9, 14/7, 13/6, 15/4, 15/0,
+  14/5, 15/9, 15/7, 14/6}
+\newcommand{\grorder}{%
+  1/4, 2/4, 3/4, 4/4, 5/4, 6/4, 7/4, 8/4, 9/4, 10/4, 11/4, 11/5, 11/6,
+  10/6, 10/5, 9/6, 9/5, 8/6, 8/5, 7/6, 7/5, 6/6, 6/5, 5/6, 5/5, 4/6, 4/5,
+  3/6, 3/5, 2/6, 3/7, 2/5, 1/6, 2/7, 3/8, 4/8, 5/8, 6/8, 7/8, 8/8, 9/8,
+  10/8, 11/8, 12/8, 13/8, 14/8, 14/7, 14/6}
+\newcommand{\asorder}{%
+  1/4, 2/4, 1/5, 3/4, 2/5, 1/6, 4/4, 3/5, 2/6, 5/4, 4/5, 3/6, 6/4, 5/5,
+  4/6, 7/4, 6/5, 5/6, 8/4, 7/5, 6/6, 9/4, 8/5, 7/6, 10/4, 9/5, 8/6, 11/4,
+  10/5, 9/6, 11/5, 10/6, 11/6, 0/4, 1/3, 2/3, 0/5, 3/3, 0/6, 1/7, 2/7, 3/7,
+  0/3, 1/2, 2/2, 3/2, 0/7, 1/8, 2/8, 3/8, 4/2, 4/8, 5/2, 5/8, 6/2, 6/8,
+  7/2, 7/8, 8/2, 8/8, 9/2, 9/8, 10/2, 10/8, 11/2, 11/8, 12/2, 12/8, 13/2,
+  13/8, 14/2, 13/3, 14/8, 13/7, 14/3, 13/4, 14/7, 13/6, 14/4, 13/5, 14/6}
+\foreach \c/\r [count=\n] in \djorder {\expandafter\xdef\csname dj-\c-\r\endcsname{\n}}
+\foreach \c/\r [count=\n] in \grorder {\expandafter\xdef\csname gr-\c-\r\endcsname{\n}}
+\foreach \c/\r [count=\n] in \asorder {\expandafter\xdef\csname as-\c-\r\endcsname{\n}}
+
+% one small 3D grid: expanded cells, route, walls.
+% #1 = dj / gr / as, #2 = route, #3 = route colour
+\newcommand{\gridpanel}[3]{%
+  \begin{tikzpicture}[cam={-24}{54}{0.235}{0.235}, line cap=round,
+                      line join=round]
+    \foreach \c in {0,...,15}{\foreach \r in {0,...,9}{%
+      \ifcsname #1-\c-\r\endcsname \ptile{gclose}{\c}{\r}%
+      \else \ptile{gfree}{\c}{\r}\fi}}
+    \ptile{gstart}{1}{4}\ptile{ggoal}{14}{6}
+    \draw[#3, line width=1.4pt] #2;
+    \gwallsthree
+  \end{tikzpicture}}
+% SPEED: the Summary shows these three panels on 7 overlays; they are
+% drawn once into boxes right after \begin{document}.
+\newsavebox{\gpdj}\newsavebox{\gpgr}\newsavebox{\gpas}
+% ======================================================================
+
+% ================= 3D surfaces, from part1_3d.tex (3D-4) ==============
+% g a cone at S, h a cone at G, f = g + h a trough from S to G -- drawn
+% under the three boxes of "Combining the two --- A*".  Verbatim except
+% \surfscale: part1_3d draws them at 0.56, three in a row here need 0.54.
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\pgfplotsset{
+  colormap={hblue}{color=(rbluedk) color=(rbluemd) color=(rbluelt)},
+  colormap={horange}{color=(cbOrange!70!black) color=(cbOrange) color=(cbOrangeLt)},
+  colormap={hgreen}{color=(cbGreen!70!black) color=(cbGreen) color=(cbGreenLt)},
+  land3d/.style   = {axis lines=none, clip=false},
+  land view/.code n args = {3}{%
+    \pgfmathsetmacro\lvxx{#3*cos(#1)}%
+    \pgfmathsetmacro\lvxy{-#3*sin(#1)*sin(#2)}%
+    \pgfmathsetmacro\lvyx{#3*sin(#1)}%
+    \pgfmathsetmacro\lvyy{#3*cos(#1)*sin(#2)}%
+    \pgfmathsetmacro\lvzy{#3*cos(#2)}%
+    \edef\lvkeys{\noexpand\pgfkeysalso{%
+      x={(\lvxx cm,\lvxy cm)}, y={(\lvyx cm,\lvyy cm)}, z={(0cm,\lvzy cm)}}}%
+    \lvkeys},
+  tilesurf/.style = {surf, shader=faceted, faceted color=white,
+                     line width=0.4pt, z buffer=sort, point meta=z},
+}
+\tikzset{
+  sball/.style = {circle, fill=gstart, draw=white, line width=0.7pt,
+                  minimum size=3.2mm, inner sep=0pt},
+  gball/.style = {sball, fill=ggoal},
+}
+\def\kD{0.45}\def\sgx{1.6}
+\newcommand{\surfscale}{0.54}
+\newcommand{\surfpanel}[4]{% #1 colormap, #2 height expression, #3 S height, #4 G height
+  \begin{tikzpicture}
+    \begin{axis}[land3d, land view={-28}{30}{\surfscale}, colormap name=#1,
+                 point meta min=0, point meta max=3.6,
+                 xmin=-3.2, xmax=3.2, ymin=-2, ymax=2, zmin=0, zmax=3.6]
+      \draw[gridgray, line width=0.4pt] (-3.2,-2,0) -- (3.2,-2,0)
+        -- (3.2,2,0) -- (-3.2,2,0) -- cycle;
+      \addplot3[tilesurf, domain=-3.2:3.2, y domain=-2:2,
+                samples=17, samples y=11] {#2};
+      % reserve the whole box up to zmax: the axis' own bounding box stops
+      % short of it, so a tall surface would poke out of its table row
+      \path (-3.2,-2,3.6) (3.2,-2,3.6) (3.2,2,3.6) (-3.2,2,3.6);
+      \node[sball, minimum size=2.6mm] at (-\sgx,0,#3) {};
+      \node[gball, minimum size=2.6mm] at (\sgx,0,#4) {};
+    \end{axis}
+  \end{tikzpicture}}
+% the f = g + h trough, with its floor -- the S-G segment -- drawn in
+\newcommand{\fsurfpanel}{%
+  \begin{tikzpicture}
+    \begin{axis}[land3d, land view={-28}{30}{\surfscale}, colormap name=hgreen,
+                 point meta min=0, point meta max=3.6,
+                 xmin=-3.2, xmax=3.2, ymin=-2, ymax=2, zmin=0, zmax=3.6]
+      \draw[gridgray, line width=0.4pt] (-3.2,-2,0) -- (3.2,-2,0)
+        -- (3.2,2,0) -- (-3.2,2,0) -- cycle;
+      \addplot3[tilesurf, domain=-3.2:3.2, y domain=-2:2,
+                samples=17, samples y=11]
+        {\kD*(veclen(x+\sgx,y)+veclen(x-\sgx,y))};
+      \path (-3.2,-2,3.6) (3.2,-2,3.6) (3.2,2,3.6) (-3.2,2,3.6);  % as in \surfpanel
+      \draw[cbGreen!60!black, line width=1.8pt]
+        (-\sgx,0,{\kD*2*\sgx}) -- (\sgx,0,{\kD*2*\sgx});
+      \node[sball, minimum size=2.6mm] at (-\sgx,0,{\kD*2*\sgx}) {};
+      \node[gball, minimum size=2.6mm] at (\sgx,0,{\kD*2*\sgx}) {};
+    \end{axis}
+  \end{tikzpicture}}
+% ======================================================================
+
+% ================= game map, in 3D  (applications frame, Game AI) =====
+%  An 11 x 7 tile map seen by the south-west camera (cam, above).  A
+%  step costs the terrain it enters: grass 1, mud 3, water 5; rocks and
+%  trees are not walkable.  Checked with Dijkstra: the green route is
+%  the cheapest (17 steps, cost 17); the dashed one is the shortest
+%  (11 steps) but swims the river, cost 19.
+\colorlet{gmgrass}{cbGreen!24!white}
+\colorlet{gmmud}{cbOrange!40!white}
+\colorlet{gmwater}{rbluemd!45!cyan!38!white}
+\colorlet{gmearth}{cbOrange!40!gwall}
+\colorlet{gmwood}{cbOrange!60!gwall}
+% which tiles are water / mud: \csname gmw-c-r\endcsname, gmm-c-r
+\foreach \c in {5,6}{\foreach \r in {0,...,6}{%
+  \expandafter\xdef\csname gmw-\c-\r\endcsname{1}}}
+\foreach \c/\r in {7/3, 8/3, 7/4, 8/4}{%
+  \expandafter\xdef\csname gmm-\c-\r\endcsname{1}}
+
+\newcommand{\gmfloor}{-0.42}   % bottom of the earth block
+\newcommand{\gmband}{0.07}     % coloured band under a tile's top
+% one tile as a slab: #1 col, #2 row, #3 top z, #4 colour.  South and
+% west faces (earth, capped by a band of the tile colour), then the top.
+\newcommand{\gmslab}[4]{%
+  \fill[gmearth!90!black]
+    (#1,#2,\gmfloor) -- ({#1+1},#2,\gmfloor) -- ({#1+1},#2,{#3-\gmband})
+    -- (#1,#2,{#3-\gmband}) -- cycle;
+  \fill[gmearth!68!black]
+    (#1,#2,\gmfloor) -- (#1,{#2+1},\gmfloor) -- (#1,{#2+1},{#3-\gmband})
+    -- (#1,#2,{#3-\gmband}) -- cycle;
+  \fill[#4!80!black]
+    (#1,#2,{#3-\gmband}) -- ({#1+1},#2,{#3-\gmband}) -- ({#1+1},#2,#3)
+    -- (#1,#2,#3) -- cycle;
+  \fill[#4!62!black]
+    (#1,#2,{#3-\gmband}) -- (#1,{#2+1},{#3-\gmband}) -- (#1,{#2+1},#3)
+    -- (#1,#2,#3) -- cycle;
+  \fill[#4, draw=white, line width=0.3pt]
+    (#1,#2,#3) -- ({#1+1},#2,#3) -- ({#1+1},{#2+1},#3) -- (#1,{#2+1},#3)
+    -- cycle;}
+% a rock: grey block #3 high on tile (#1,#2), inset from the tile edge
+\newcommand{\gmrock}[3]{%
+  \fill[gwall!78!white]
+    ({#1+.1},{#2+.1},0) -- ({#1+.9},{#2+.1},0) -- ({#1+.9},{#2+.1},#3)
+    -- ({#1+.1},{#2+.1},#3) -- cycle;
+  \fill[gwall]
+    ({#1+.1},{#2+.1},0) -- ({#1+.1},{#2+.9},0) -- ({#1+.1},{#2+.9},#3)
+    -- ({#1+.1},{#2+.1},#3) -- cycle;
+  \fill[gwall!45!white]
+    ({#1+.1},{#2+.1},#3) -- ({#1+.9},{#2+.1},#3) -- ({#1+.9},{#2+.9},#3)
+    -- ({#1+.1},{#2+.9},#3) -- cycle;}
+% a tree on tile (#1,#2): shadow, trunk, round canopy
+\newcommand{\gmtree}[2]{%
+  \fill[black, opacity=0.16] ({#1+0.5},{#2+0.5},0) ellipse (0.15cm and 0.065cm);
+  \fill[gmwood!80!black] ({#1+0.44},{#2+0.5},0) -- ({#1+0.56},{#2+0.5},0)
+    -- ({#1+0.56},{#2+0.5},0.42) -- ({#1+0.44},{#2+0.5},0.42) -- cycle;
+  \shade[ball color=cbGreen!75!white] ({#1+0.5},{#2+0.5},0.62) circle (0.16cm);}
+% the NPC on tile (#1,#2); leaves the coordinate (gmn) at its feet
+\newcommand{\gmnpc}[2]{%
+  \coordinate (gmn) at ({#1+0.5},{#2+0.5},0);
+  \fill[black, opacity=0.22] (gmn) ellipse (0.12cm and 0.05cm);
+  \shade[left color=rbluemd, right color=rbluedk, rounded corners=0.06cm]
+    ($(gmn)+(-0.075cm,0)$) rectangle ($(gmn)+(0.075cm,0.26cm)$);
+  \shade[ball color=hlyellow!70!cbOrange] ($(gmn)+(0,0.335cm)$) circle (0.075cm);}
+% the goal flag on tile (#1,#2)
+\newcommand{\gmflag}[2]{%
+  \coordinate (gmf) at ({#1+0.5},{#2+0.5},0);
+  \fill[black, opacity=0.2] (gmf) ellipse (0.1cm and 0.045cm);
+  \draw[gwall, line width=0.9pt] (gmf) -- ++(0,0.58cm);
+  \fill[ggoal] ($(gmf)+(0.02cm,0.58cm)$) -- ++(0.3cm,-0.09cm)
+    -- ++(-0.3cm,-0.09cm) -- cycle;}
+
+\newcommand{\gamemap}{%
+  \begin{tikzpicture}[cam={-24}{42}{0.47}{0.47}, line cap=round,
+                      line join=round]
+    % terrain, far to near
+    \foreach \r in {6,...,0}{\foreach \c in {10,...,0}{%
+      \ifcsname gmw-\c-\r\endcsname \gmslab{\c}{\r}{-0.12}{gmwater}%
+      \else\ifcsname gmm-\c-\r\endcsname \gmslab{\c}{\r}{0}{gmmud}%
+      \else \gmslab{\c}{\r}{0}{gmgrass}\fi\fi}}
+    % start and goal tiles
+    \fill[gstart!35!white, draw=white, line width=0.3pt]
+      (0,1,0) -- (1,1,0) -- (1,2,0) -- (0,2,0) -- cycle;
+    \fill[ggoal!30!white, draw=white, line width=0.3pt]
+      (10,2,0) -- (11,2,0) -- (11,3,0) -- (10,3,0) -- cycle;
+    % the bridge over the river, row 5: deck, planks, rails
+    \fill[gmwood!75!black] (5,5.14,-0.03) -- (7,5.14,-0.03)
+      -- (7,5.14,0.03) -- (5,5.14,0.03) -- cycle;
+    \fill[gmwood!45!white] (5,5.14,0.03) -- (7,5.14,0.03)
+      -- (7,5.86,0.03) -- (5,5.86,0.03) -- cycle;
+    \foreach \x in {5.25,5.5,...,6.8}{%
+      \draw[gmwood!80!black, line width=0.3pt] (\x,5.14,0.03) -- (\x,5.86,0.03);}
+    \foreach \y in {5.86,5.14}{%
+      \foreach \x in {5.08,6,6.92}{%
+        \draw[gmwood!85!black, line width=0.5pt] (\x,\y,0.03) -- (\x,\y,0.17);}
+      \draw[gmwood!85!black, line width=0.5pt] (5.08,\y,0.17) -- (6.92,\y,0.17);}
+    % the shortest route (dashed, swims the river) and the cheapest
+    \draw[crimson, line width=0.9pt, dash pattern=on 2pt off 1.5pt]
+      (0.5,1.5,0.03) -- (5,1.5,0.03) -- (5.15,1.5,-0.1) -- (7,1.5,-0.1)
+      -- (7,1.5,0.03) -- (10.5,1.5,0.03) -- (10.5,2.5,0.03);
+    \draw[cbGreen, line width=1.5pt]
+      (0.5,1.5,0.03) -- (1.5,1.5,0.03) -- (1.5,4.5,0.03) -- (3.5,4.5,0.03)
+      -- (3.5,5.5,0.03) -- (9.5,5.5,0.03) -- (9.5,2.5,0.03) -- (10.5,2.5,0.03);
+    \foreach \c/\r in {1/1, 1/2, 1/3, 1/4, 2/4, 3/4, 3/5, 4/5, 5/5, 6/5,
+                       7/5, 8/5, 9/5, 9/4, 9/3, 9/2}{%
+      \fill[cbGreen, draw=white, line width=0.3pt]
+        ({\c+0.5},{\r+0.5},0.03) circle (1.0pt);}
+    % everything standing on the map, far to near
+    \gmtree{1}{6}
+    \gmtree{10}{4}\gmtree{4}{4}
+    \gmrock{3}{3}{0.45}\gmrock{2}{3}{0.7}
+    \gmflag{10}{2}\gmtree{8}{2}\gmrock{2}{2}{0.5}
+    \gmnpc{0}{1}
+    \gmtree{8}{0}\gmtree{3}{0}
+    \node[font=\tiny, text=rbluedk, anchor=east, fill=white,
+          fill opacity=0.85, text opacity=1, rounded corners=1pt,
+          inner sep=1pt] at ($(gmn)+(-0.12cm,0.3cm)$) {NPC};
+  \end{tikzpicture}}
+
+\newcommand{\gmkey}[1]{\textcolor{#1}{\rule[-0.15ex]{5pt}{5pt}}}
+\newcommand{\gamelegend}{%
+  {\tiny
+   step cost:\enspace
+   \gmkey{gmgrass}\,grass 1\enspace \gmkey{gmmud}\,mud 3\enspace
+   \gmkey{gmwater}\,water 5\enspace \gmkey{gwall}\,rock, tree: blocked\par
+   \vspace{1pt}
+   \textcolor{cbGreen}{\rule[0.5ex]{9pt}{1.3pt}}\,cheapest: 17 steps,
+   cost \textbf{17}\qquad
+   \textcolor{crimson}{\rule[0.5ex]{2.5pt}{0.9pt}\hspace{1.5pt}%
+     \rule[0.5ex]{2.5pt}{0.9pt}\hspace{1.5pt}\rule[0.5ex]{2.5pt}{0.9pt}}\,%
+   shortest: 11 steps, cost 19\par}}
+% ======================================================================
+

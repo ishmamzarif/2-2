@@ -1,0 +1,22 @@
+\section{Conclusion}\label{sec:conclusion}
+
+A* meets both requirements of Section~\ref{sec:requirements}. The cost so far
+$g$ keeps it optimal, as in Dijkstra's algorithm, and the estimate $h$ directs
+it toward the destination, as in greedy best-first search.
+
+With a consistent heuristic, A* expands every vertex at most once and returns a
+shortest path (Theorem~\ref{thm:consistent}). With an admissible but
+inconsistent heuristic, a shortest path is guaranteed only when closed vertices
+can be reopened (Theorem~\ref{thm:admissible}), and with an overestimating
+heuristic no guarantee remains. The worst-case cost equals that of Dijkstra's
+algorithm, but A* expands only vertices with $\delta(s,u) + h(u) \le C^{*}$
+(Proposition~\ref{prop:expanded}). In our experiments it expanded 81 cells
+against 137 on the grid and eight districts against 50 on the map of Bangladesh,
+always returning a shortest path.
+
+Since a larger admissible heuristic leaves fewer vertices to expand, choosing a
+heuristic that is cheap and as close as possible to the true cost is the main
+design decision when A* is applied to a new problem.
+
+\paragraph{Code availability.} The programs that produce every trace, table and
+experimental result of this report are available at \url{\repourl}.

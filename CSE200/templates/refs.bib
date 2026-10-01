@@ -1,0 +1,101 @@
+% =============================================================================
+%  refs.bib -- the bibliography database for cse200-demo.tex
+% =============================================================================
+%  Cite these keys from the .tex with \cite{...} / \citep{...} / \citet{...},
+%  then pull the list in with:
+%      \bibliographystyle{unsrtnat}
+%      \bibliography{refs}          <-- the file name, WITHOUT ".bib"
+%
+%  Compile order: pdflatex -> bibtex -> pdflatex -> pdflatex
+%  (or just: latexmk -pdf cse200-demo.tex)
+%
+%  ENTRY TYPES you are likely to need (each is written with a leading "at"
+%  sign in a real entry -- omitted here because BibTeX would try to parse them
+%  even inside a comment):
+%      book          author, title, publisher, year   (+ edition, address)
+%      article       author, title, journal, year     (+ volume, number, pages, doi)
+%      inproceedings author, title, booktitle, year   (+ pages, publisher)
+%      techreport    author, title, institution, year
+%      misc          author, title, year, howpublished, note, url
+%      phdthesis     author, title, school, year
+%
+%  GOTCHAS
+%    - A stray "at" sign anywhere in this file, even in a comment, makes
+%      BibTeX try to read an entry and emit "I'm skipping whatever remains"
+%    - An ampersand inside a field must be escaped: John Wiley \& Sons
+%    - Accents:  Rapha\"el   Acad\'emie   G\"odel
+%    - To stop BibTeX lowercasing a word in a title, brace it: {DNA}
+%    - The key (the first thing after the brace) is what you type in \cite{}
+%      and it is case-sensitive.
+% =============================================================================
+
+@book{kreyszig2011,
+    author    = {E. Kreyszig},
+    title     = {Advanced Engineering Mathematics},
+    edition   = {10th},
+    publisher = {John Wiley \& Sons},
+    year      = {2011}
+}
+
+@book{ogata2010,
+    author    = {K. Ogata},
+    title     = {Modern Control Engineering},
+    edition   = {5th},
+    publisher = {Prentice Hall},
+    year      = {2010}
+}
+
+@book{adams2004,
+    author    = {C. C. Adams},
+    title     = {The Knot Book: An Elementary Introduction to the Mathematical
+                 Theory of Knots},
+    edition   = {2nd},
+    publisher = {American Mathematical Society},
+    year      = {2004}
+}
+
+@article{sarfati2021,
+    author  = {Rapha\"el Sarfati and Julie C. Hayes and Orit Peleg},
+    title   = {Self-Organization in Natural Swarms of {Photinus carolinus}
+               Synchronous Fireflies},
+    journal = {Science Advances},
+    volume  = {7},
+    number  = {28},
+    pages   = {eabg9259},
+    year    = {2021},
+    doi     = {10.1126/sciadv.abg9259}
+}
+
+@article{church2012,
+    author  = {George M. Church and Yuan Gao and Sriram Kosuri},
+    title   = {Next-Generation Digital Information Storage in {DNA}},
+    journal = {Science},
+    volume  = {337},
+    number  = {6102},
+    pages   = {1628},
+    year    = {2012},
+    doi     = {10.1126/science.1226355}
+}
+
+@inproceedings{vaswani2017,
+    author    = {Ashish Vaswani and Noam Shazeer and Niki Parmar and others},
+    title     = {Attention Is All You Need},
+    booktitle = {Advances in Neural Information Processing Systems},
+    year      = {2017}
+}
+
+@book{lamport1994,
+    author    = {Leslie Lamport},
+    title     = {{LaTeX}: A Document Preparation System},
+    edition   = {2nd},
+    publisher = {Addison-Wesley},
+    year      = {1994}
+}
+
+@misc{nasa_planets,
+    author       = {{National Aeronautics and Space Administration}},
+    title        = {About the Planets},
+    year         = {2026},
+    howpublished = {\url{https://science.nasa.gov/solar-system/}},
+    note         = {Solar System Exploration}
+}

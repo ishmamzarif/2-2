@@ -1,0 +1,40 @@
+\begin{tikzpicture}[x=1cm, y=1cm]
+  \fill[black!10] (-0.529,-0.393) -- (7.052,-1.657) -- (8.132,1.475) -- (0.551,2.739) -- cycle;
+  \draw[draw=rblue!14, fill=rbluelt!35, line width=0.6pt] (-0.529,-0.243) -- (7.052,-1.507) -- (8.132,1.625) -- (0.551,2.889) -- cycle;
+  \coordinate (D) at (0.432,1.253);
+  \coordinate (N) at (2.333,1.598);
+  \coordinate (B) at (3.802,0.691);
+  \coordinate (H) at (5.702,1.037);
+  \coordinate (S) at (7.171,0.130);
+  \coordinate (G) at (0.950,0.173);
+  \coordinate (K) at (4.234,1.944);
+  \coordinate (C) at (5.584,-0.599);
+  \draw[draw=algdijkstra, line width=2pt] (D) -- (N);
+  \draw[draw=rblue!55, line width=1pt] (D) -- (B);
+  \draw[draw=algdijkstra, line width=2pt] (N) -- (B);
+  \draw[draw=algdijkstra, line width=2pt] (B) -- (H);
+  \draw[draw=algdijkstra, line width=2pt] (H) -- (S);
+  \draw[draw=rblue!55, line width=1pt] (D) -- (G);
+  \draw[draw=rblue!55, line width=1pt] (N) -- (K);
+  \draw[draw=rblue!55, line width=1pt] (K) -- (H);
+  \draw[draw=rblue!55, line width=1pt] (B) -- (C);
+  \draw[draw=rblue!55, line width=1pt] (C) -- (S);
+  \node[isoweight] at ($(D)!0.5!(N)$) {2};
+  \node[isoweight] at ($(D)!0.5!(B)$) {5};
+  \node[isoweight] at ($(N)!0.5!(B)$) {1};
+  \node[isoweight] at ($(B)!0.5!(H)$) {2};
+  \node[isoweight] at ($(H)!0.5!(S)$) {3};
+  \node[isoweight] at ($(D)!0.5!(G)$) {1};
+  \node[isoweight] at ($(N)!0.5!(K)$) {3};
+  \node[isoweight] at ($(K)!0.5!(H)$) {4};
+  \node[isoweight] at ($(B)!0.5!(C)$) {3};
+  \node[isoweight] at ($(C)!0.5!(S)$) {10};
+  \isodisc{D}{algdijkstra!15}{algastar}{D}{7}
+  \isodisc{N}{algdijkstra!15}{algdijkstra}{N}{5}
+  \isodisc{B}{algdijkstra!15}{algdijkstra}{B}{4}
+  \isodisc{H}{algdijkstra!15}{algdijkstra}{H}{2}
+  \isodisc{S}{algdijkstra!15}{cbRed}{S}{0}
+  \isodisc{G}{gray!30}{gray}{G}{8}
+  \isodisc{K}{gray!30}{gray}{K}{4}
+  \isodisc{C}{gray!30}{gray}{C}{7}
+\end{tikzpicture}

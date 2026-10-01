@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+  \begin{axis}[land3d, land view={-32}{34}{0.42}]
+    \floorA
+    \addplot3[tilesurf, colormap name=hblue, samples=13, samples y=13,
+              domain=0:12, y domain=0:12]
+      {\kA*veclen(x-\gAx, y-\gAy)};
+    \draw[neutralg, line width=0.6pt, {Bar[width=1.6mm]}-{Bar[width=1.6mm]}]
+      (12,0,0) -- \liftA{12}{0}
+      node[tagbox, text=neutralg, midway, left=2pt] {$h(v)$};
+    \draw[edgpath, line cap=round, line join=round]
+      \liftA{2}{10} -- \liftA{3}{9} -- \liftA{4}{8} -- \liftA{5}{7}
+      -- \liftA{6}{6} -- \liftA{7}{5} -- \liftA{7}{4} -- \liftA{7}{3};
+    \draw[move3d,cbRed] \liftA{2}{10} -- \liftA{1}{11};
+    \node[tagbox, text=cbRed, above=3pt] at \liftA{1}{11} {uphill: $\Delta f=+2$};
+    \node[tagbox, text=cbGreen, left=5pt] at \liftA{4}{8} {downhill: $\Delta f=0$};
+    \node[sball] at \liftA{2}{10} {};
+    \node[tag, text=gstart, below left=3pt] at \liftA{2}{10} {$s$};
+    \node[gball] at \liftA{7}{3} {};
+    \node[tag, text=ggoal, below=6pt] at \liftA{7}{3} {$t$, \ $h=0$};
+  \end{axis}
+\end{tikzpicture}

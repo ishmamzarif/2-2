@@ -1,0 +1,28 @@
+\newcommand{\defsgraph}[2]{%
+  \begin{tikzpicture}[x=0.9cm, y=0.9cm]
+    \coordinate (A) at (0,0.9);   \coordinate (p) at (1.6,1.8);
+    \coordinate (q) at (1.6,0);   \coordinate (r) at (3.2,0.9);
+    \coordinate (B) at (4.8,0.9);
+    \ifx\relax#1\relax\else
+      \draw[#2, line width=5pt, line cap=round, line join=round] #1;
+    \fi
+    \foreach \a/\b/\w in {A/p/2, A/q/4, p/q/1, p/r/5, q/r/2, r/B/3}
+      {\draw[storyedge] (\a) -- node[storyweight] {\w} (\b);}
+    \node[storystart] at (A) {$A$};
+    \node[storynode]  at (p) {$p$};
+    \node[storynode]  at (q) {$q$};
+    \node[storynode]  at (r) {$r$};
+    \node[storygoal]  at (B) {$B$};
+  \end{tikzpicture}}
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \defsgraph{}{}
+  \caption{A weighted graph with five vertices and six edges.}\label{fig:defs-a}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \defsgraph{(A) -- (q) -- (r) -- (B)}{alggreedy!45}
+  \caption{The path $(A,q,r,B)$ has cost $4 + 2 + 3 = 9$.}\label{fig:defs-b}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \defsgraph{(A) -- (p) -- (q) -- (r) -- (B)}{algastar!45}
+  \caption{The shortest path $(A,p,q,r,B)$ has cost $2 + 1 + 2 + 3 = 8$.}\label{fig:defs-c}
+\end{subfigure}

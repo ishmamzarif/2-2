@@ -1,0 +1,214 @@
+% !TEX program = pdflatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage[section]{placeins}
+\usepackage{tablefootnote}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, positioning, shapes.geometric}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[most]{tcolorbox}
+\usepackage[numbers]{natbib}
+\usepackage[titles]{tocloft}
+\usepackage{hyperref}
+
+\setlist{itemsep=2pt, topsep=4pt}
+\setcounter{tocdepth}{2}
+\setlength{\cftbeforesecskip}{0pt}
+\makeatletter
+\setlength{\@fptop}{0pt}\setlength{\@fpsep}{20pt plus 4pt}\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\captionsetup{font=small}
+\setlength{\abovecaptionskip}{6pt}
+\renewcommand{\topfraction}{0.85}\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.1}\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{5}
+\setlength{\floatsep}{18pt plus 4pt minus 2pt}
+\setlength{\textfloatsep}{20pt plus 4pt minus 4pt}
+\setlength{\intextsep}{18pt plus 4pt minus 2pt}
+
+\definecolor{rblue}{HTML}{2E2E9C}
+\definecolor{rbluedk}{HTML}{1C1C6B}
+\definecolor{rbluemd}{HTML}{5A5AC4}
+\definecolor{rbluelt}{HTML}{E7E7F7}
+\definecolor{cbOrange}{HTML}{D97706}
+\definecolor{cbOrangeLt}{HTML}{FDF0DC}
+\definecolor{cbGreen}{HTML}{0B7A3B}
+\definecolor{cbGreenLt}{HTML}{E4F2E9}
+\definecolor{cbRed}{HTML}{B01B2E}
+\definecolor{cbRedLt}{HTML}{FAE7E9}
+\definecolor{neutralg}{gray}{0.46}
+\definecolor{hlyellow}{HTML}{FFE9A8}
+\definecolor{gridgray}{gray}{0.82}
+\definecolor{closedc}{gray}{0.80}
+\definecolor{gfree}{HTML}{F4EDEE}
+\definecolor{gopen}{HTML}{DEBBC2}
+\definecolor{gclose}{HTML}{BE7F89}
+\definecolor{gwall}{HTML}{3F3F46}
+\definecolor{gstart}{HTML}{0B7A3B}
+\definecolor{ggoal}{HTML}{B01B2E}
+\definecolor{blkInk}{HTML}{20242E}
+\colorlet{algdijkstra}{rbluemd}
+\colorlet{alggreedy}{cbOrange}
+\colorlet{algastar}{cbGreen}
+\definecolor{inkgray}{gray}{0.40}
+
+\hypersetup{colorlinks=true, linkcolor=rbluedk, citecolor=rbluedk,
+            urlcolor=rbluedk, pdftitle={The A* Search Algorithm},
+            pdfauthor={Zarif Ishmam, Tonmoy Biswas, Proteek Rosul}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+
+\tcbset{rptbox/.style={enhanced, boxrule=0.6pt, arc=2pt,
+        left=6pt, right=6pt, top=4pt, bottom=4pt,
+        before skip=8pt, after skip=8pt}}
+\tcolorboxenvironment{definition}{rptbox, colback=rbluelt!45, colframe=rblue!70}
+\tcolorboxenvironment{theorem}{rptbox, colback=cbGreenLt!70, colframe=cbGreen!80}
+\tcolorboxenvironment{lemma}{rptbox, colback=cbGreenLt!45, colframe=cbGreen!55}
+\tcolorboxenvironment{proposition}{rptbox, colback=cbGreenLt!45, colframe=cbGreen!55}
+\tcolorboxenvironment{corollary}{rptbox, colback=cbGreenLt!45, colframe=cbGreen!55}
+\tcolorboxenvironment{example}{rptbox, colback=cbOrangeLt!60, colframe=cbOrange!70}
+
+\newcommand{\cty}[1]{\textsf{#1}}
+
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\newcommand{\nil}{\textsc{nil}}
+
+\makeatletter\newcommand{\inputrows}[1]{\@@input #1 }\makeatother
+
+\makeatletter
+\AtBeginDocument{%
+  \expandafter\renewcommand\expandafter\subsection\expandafter
+    {\expandafter\@fb@secFB\subsection}%
+  \expandafter\renewcommand\expandafter\subsubsection\expandafter
+    {\expandafter\@fb@secFB\subsubsection}}
+\makeatother
+
+\newcommand{\repourl}{https://github.com/ishmamzarif/a-star-report}
+
+\tikzset{
+  maplandfill/.style = {fill=gray!8},
+  mapborder/.style   = {draw=gray!55, line width=0.5pt, line join=round},
+  mapedge/.style     = {draw=gray!40, line width=0.35pt},
+  mapdot/.style      = {circle, fill=white, draw=gray!60, line width=0.3pt,
+                        minimum size=1.3mm, inner sep=0pt},
+  mapstart/.style    = {circle, fill=algastar, draw=white, line width=0.5pt,
+                        minimum size=2.2mm, inner sep=0pt},
+  mapgoal/.style     = {circle, fill=cbRed, draw=white, line width=0.5pt,
+                        minimum size=2.2mm, inner sep=0pt},
+  maplabel/.style    = {font=\footnotesize, inner sep=2pt},
+  maproute/.style    = {line width=1.3pt, line cap=round, line join=round},
+  gridline/.style    = {draw=gray!35, line width=0.2pt},
+  gridletter/.style  = {circle, text=white, font=\tiny\bfseries,
+                        minimum size=2.6mm, inner sep=0pt},
+  storyedge/.style   = {draw=rblue!55, line width=0.8pt},
+  storyweight/.style = {fill=white, font=\footnotesize, inner sep=1.2pt,
+                        text=rbluedk},
+  storynode/.style   = {circle, draw=rblue, fill=white, line width=0.8pt,
+                        minimum size=6mm, inner sep=0pt, font=\small\bfseries},
+  storystart/.style  = {storynode, draw=algastar, fill=algastar!12},
+  storygoal/.style   = {storynode, draw=cbRed, fill=cbRed!10},
+  storyh/.style      = {font=\footnotesize, inner sep=0pt},
+}
+
+\input{figures3d/support3d}
+\input{figures/bars}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \includegraphics[height=3.4cm, trim=205 0 205 0, clip]{images/buet_logo.png}\par
+  \vspace{0.6cm}
+  {\large Bangladesh University of Engineering and Technology\par}
+  \vspace{2pt}
+  {\normalsize Department of Computer Science and Engineering\par}
+  \vspace{2.2cm}
+
+  {\normalsize\scshape CSE200: Technical Writing and Presentation\par}
+  \vspace{0.9cm}
+  \rule{\textwidth}{0.6pt}\par
+  \vspace{0.5cm}
+  {\LARGE\bfseries The A* Search Algorithm\par}
+  \vspace{0.35cm}
+  {\large Heuristic shortest-path search, its correctness and its cost\par}
+  \vspace{0.5cm}
+  \rule{\textwidth}{0.6pt}\par
+  \vspace{1.6cm}
+
+  {\normalsize
+  \begin{tabular}{@{}ll@{}}
+    Course name:  & CSE200\\
+    Course title: & Technical Writing and Presentation\\
+    Subsection:   & A2\\
+    Group:        & 03\\
+  \end{tabular}\par}
+  \vspace{1.3cm}
+
+  {\normalsize\textbf{Submitted by}\par}
+  \vspace{0.3cm}
+  \begin{tabular}{@{}l@{\hspace{2.5em}}l@{}}
+    \toprule
+    Name & Roll\\
+    \midrule
+    Zarif Ishmam  & 2305035\\
+    Tonmoy Biswas & 2305038\\
+    Proteek Rosul & 2305042\\
+    \bottomrule
+  \end{tabular}\par
+  \vfill
+\end{titlepage}
+
+\pagenumbering{roman}
+\input{sections/00-abstract}
+\clearpage
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\input{sections/01-introduction}
+\input{sections/02-preliminaries}
+\input{sections/03-predecessors}
+\input{sections/04-astar}
+\input{sections/05-heuristics}
+\input{sections/06-correctness}
+\input{sections/07-complexity}
+\input{sections/08-efficiency}
+\input{sections/09-case-study}
+\input{sections/10-variants}
+\input{sections/11-conclusion}
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+\end{document}

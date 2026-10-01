@@ -1,0 +1,328 @@
+\section{Heuristic functions}\label{sec:heuristics}
+
+The heuristic is the only application-specific part of A*. This section defines
+the conditions under which A* is correct, presents the distance heuristics of
+our experiments, and shows how a heuristic guides or misleads the search.
+
+\subsection{Requirements}\label{sec:h-requirements}
+
+A good heuristic $h$ meets three requirements.
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{It is cheap to compute}, because A* computes it for every
+    vertex it reaches.
+  \item \textbf{It never overestimates}: $h(v) \le h^{*}(v)$ for every $v$. This
+    makes A* return a shortest path (Section~\ref{sec:correctness}).
+  \item \textbf{It is close to $h^{*}$}, because larger values leave fewer
+    vertices for A* to expand (Section~\ref{sec:efficiency}).
+\end{enumerate}
+The best heuristic is therefore as large as possible without exceeding the
+true cost.
+
+\subsection{Admissible heuristics}\label{sec:admissible}
+
+Requirement~(ii) is called admissibility.
+
+\begin{definition}[Admissible heuristic]\label{def:admissible}
+A heuristic $h$ is \emph{admissible} if $0 \le h(v) \le h^{*}(v)$ for every
+vertex $v$.
+\end{definition}
+
+An admissible heuristic is optimistic. The heuristic of the running example
+is admissible (Table~\ref{tab:story-h}); Section~\ref{sec:overestimate} gives
+one that is not. At the destination an admissible heuristic is zero, since
+$0 \le h(t) \le h^{*}(t) = 0$.
+
+\subsection{Consistent heuristics}\label{sec:consistent}
+
+Algorithm~\ref{alg:astar} needs a stronger condition.
+
+\begin{definition}[Consistent heuristic]\label{def:consistent}
+A heuristic $h$ is \emph{consistent} if $h(t) = 0$ and
+\begin{equation}\label{eq:consistent}
+  h(u) \le w(u,v) + h(v)
+\end{equation}
+for every edge $(u,v)$.
+\end{definition}
+
+In words, one step lowers the estimate by at most the cost of that step, a
+triangle inequality (Figure~\ref{fig:consistency}). On undirected graphs it must
+hold in both directions of every edge. The heuristic of the running example is
+consistent; for instance, $h(\cty{N}) = 5 = w(\cty{N}, \cty{B}) + h(\cty{B})$.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[x=1cm, y=1cm]
+    \node[storynode] (u) at (0,1.4) {$u$};
+    \node[storynode] (v) at (3.6,0.2) {$v$};
+    \node[storygoal] (t) at (1.8,-1.8) {$t$};
+    \draw[storyedge, -{Stealth[length=2mm]}] (u) -- node[above right=1pt,
+      font=\small] {$w(u,v)$} (v);
+    \draw[alggreedy, line width=0.8pt, dashed, -{Stealth[length=2mm]}] (v) --
+      node[right=3pt, font=\small] {$h(v)$} (t);
+    \draw[alggreedy, line width=0.8pt, dashed, -{Stealth[length=2mm]}] (u) --
+      node[left=3pt, font=\small] {$h(u)$} (t);
+  \end{tikzpicture}
+  \caption{Consistency as a triangle inequality: $h(u) \le w(u,v) + h(v)$ for
+    every edge $(u,v)$.}\label{fig:consistency}
+\end{figure}
+
+Consistency is the stronger condition.
+
+\begin{lemma}\label{lem:cons-adm}
+Every consistent heuristic is admissible.
+\end{lemma}
+
+\begin{proof}
+Let $h$ be a consistent heuristic. By Definition~\ref{def:heuristic}, $h$
+takes nonnegative values, so it remains to show that $h(v) \le h^{*}(v)$ for
+every vertex $v$. If $t$ is not reachable from $v$, then $h^{*}(v) = \infty$
+and there is nothing to prove. Otherwise let $(v = u_0, u_1, \dots, u_m = t)$ be a shortest path from
+$v$ to $t$. We show by induction on $m - i$ that
+$h(u_i) \le \delta(u_i, t)$. For $i = m$ we have $h(t) = 0 = \delta(t,t)$. For
+$i < m$, Inequality~\eqref{eq:consistent} and the induction hypothesis give
+\[
+  h(u_i) \le w(u_i, u_{i+1}) + h(u_{i+1})
+         \le w(u_i, u_{i+1}) + \delta(u_{i+1}, t) = \delta(u_i, t),
+\]
+where the last equality holds because every part of a shortest path is itself a
+shortest path. For $i = 0$ this is $h(v) \le h^{*}(v)$.
+\end{proof}
+
+The converse is false; Example~\ref{ex:inconsistent} gives an admissible
+heuristic that is not consistent.
+
+\subsection{Distance heuristics}\label{sec:distance-h}
+
+On maps and grids the usual heuristics are distances between the coordinates
+of a vertex $v = (x_v, y_v)$ and of the destination $t = (x_t, y_t)$.
+
+\begin{definition}[Manhattan and Euclidean distance]\label{def:distances}
+The \emph{Manhattan distance} and the \emph{Euclidean distance} from $v$ to $t$
+are
+\begin{align}
+  h_{M}(v) &= |x_v - x_t| + |y_v - y_t|, \label{eq:manhattan}\\
+  h_{E}(v) &= \sqrt{(x_v - x_t)^2 + (y_v - y_t)^2}, \label{eq:euclidean}
+\end{align}
+respectively. In three dimensions each formula gains a term for the third
+coordinate.
+\end{definition}
+
+The Manhattan distance follows the axes, like a car on a street grid; the
+Euclidean distance is the straight line. For a displacement of $(4, 3, 2)$ they
+are 9 and $\sqrt{29} \approx 5.39$ (Figure~\ref{fig:euclid-box}). As surfaces
+around the destination they form a pyramid and a cone
+(Figure~\ref{fig:cone-pyramid}), and the pyramid never lies below the cone.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/euclid-box}
+  \caption{The Manhattan distance (orange, along the edges of the box) and the
+    Euclidean distance (blue, straight through the box) from $A$ to
+    $B$.}\label{fig:euclid-box}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/cone-pyramid}
+  \caption{The two distance heuristics as surfaces around the destination $t$. At the
+    point $v$ with offset $(2,1)$ from $t$ the pyramid is higher: 3 against
+    $\sqrt{5} \approx 2.24$.}\label{fig:cone-pyramid}
+\end{figure}
+
+\begin{proposition}\label{prop:manh-eucl}
+For any two points $v$ and $t$ of the plane, $h_{E}(v) \le h_{M}(v)$, with
+equality if and only if $v$ and $t$ agree in at least one coordinate.
+\end{proposition}
+
+\begin{proof}
+Let $a = |x_v - x_t|$ and $b = |y_v - y_t|$. Both distances are nonnegative, so
+it suffices to compare their squares. We have
+$h_{M}(v)^2 = (a+b)^2 = a^2 + b^2 + 2ab = h_{E}(v)^2 + 2ab$. Since
+$2ab \ge 0$, it follows that $h_{E}(v) \le h_{M}(v)$, with equality exactly when
+$ab = 0$, that is, when $a = 0$ or $b = 0$.
+\end{proof}
+
+Table~\ref{tab:which-h} shows where each distance is admissible. On a unit-cost
+grid with four neighbors per cell, the Manhattan distance equals the true number
+of moves when no obstacle intervenes. With straight-line edge weights, no chain
+of edges is shorter than the straight line, so the straight-line distance is
+admissible, while the larger Manhattan distance may overestimate.
+
+\begin{table}[htbp]
+  \centering
+  \caption{When a distance heuristic never overestimates.}\label{tab:which-h}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{5.4cm}P{3.6cm}P{4.6cm}@{}}
+    \toprule
+    Graph & Admissible heuristic & Reason\\
+    \midrule
+    Grid with four neighbors per cell, every move of cost 1
+      (Section~\ref{sec:grid})
+      & Manhattan distance & every move changes one coordinate by 1\\
+    Edge weights equal to straight-line distances
+      (Section~\ref{sec:mapgraph})
+      & Euclidean or great-circle distance & no chain of edges is shorter
+        than the direct line\\
+    Edge weights unrelated to the coordinates
+      (Section~\ref{sec:overestimate})
+      & neither, in general & a distance can exceed the true cost\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In both cases the admissible heuristic is also consistent: neighboring grid
+cells differ by exactly 1 in Manhattan distance, and a straight line is never
+longer than a detour through a neighbor.
+
+\subsection{How a heuristic guides the search}\label{sec:landscape}
+
+Lifting every vertex to height $h(v)$ turns the heuristic into a funnel around
+the destination (Figure~\ref{fig:landscape-a}). Table~\ref{tab:slope} shows how
+the key changes for a unit move on a grid with the Euclidean heuristic
+(Figure~\ref{fig:landscape-b}).
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.50\textwidth}\centering
+    \input{figures3d/landscape}
+    \caption{A $12 \times 12$ map lifted by the Euclidean heuristic. The path
+      from $s$ runs downhill to $t$.}\label{fig:landscape-a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.46\textwidth}\centering
+    \input{figures3d/slope}
+    \caption{Four unit moves out of a vertex $v$ at distance 6 from
+      $t$.}\label{fig:landscape-b}
+  \end{subfigure}
+  \caption{The heuristic as a landscape.}\label{fig:landscape}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Change of the key for a unit move out of a vertex at distance 6 from
+    the destination, with the Euclidean heuristic.}\label{tab:slope}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Move & $\Delta g$ & $\Delta h$ & $\Delta f$\\
+    \midrule
+    toward the destination    & $+1$ & $-1$ & \textcolor{algastar}{$0$}\\
+    away from the destination & $+1$ & $+1$ & \textcolor{cbRed}{$+2$}\\
+    sideways           & $+1$ & $\sqrt{37} - 6 \approx +0.08$ & $\approx +1.08$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+A move toward the destination leaves the key unchanged, while a move away raises
+it by 2. Such moves are not forbidden, only postponed, so A* expands vertices in
+the direction of the destination first.
+
+\subsection{Misleading heuristics}\label{sec:bad-h}
+
+Table~\ref{tab:bad-h} lists three ways in which a heuristic can mislead A*.
+Only an overestimating heuristic can cost the shortest path; the other two only
+waste work.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Three ways in which a heuristic can mislead A*.}\label{tab:bad-h}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{2.6cm}P{3.4cm}P{2.1cm}P{5.6cm}@{}}
+    \toprule
+    Kind & Property & Shortest path & Effect\\
+    \midrule
+    \textcolor{cbRed}{Overestimating} & not admissible & not guaranteed
+      & A* behaves like greedy best-first search; on the running example the
+        returned cost rises from 8 to 10 (Section~\ref{sec:overestimate})\\
+    Uninformative & admissible, nearly constant & guaranteed
+      & $h(v) = 1$ for every $v \neq t$ (admissible if every edge costs at
+        least 1) adds the same constant to almost every key, so A* expands
+        almost the same vertices as Dijkstra's algorithm\\
+    \textcolor{alggreedy}{Blind to obstacles} & admissible, ignores walls
+      & guaranteed & A* expands dead ends that appear close to the destination, such
+        as the inside of the U-shaped wall of Section~\ref{sec:grid}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{An overestimating heuristic}\label{sec:overestimate}
+
+We place the cities of the running example on a grid at $\cty{D} = (0,4)$, $\cty{N} = (4,6)$,
+$\cty{B} = (8,4)$, $\cty{H} = (12,6)$, $\cty{S} = (16,4)$, $\cty{G} = (2,1)$,
+$\cty{K} = (8,8)$ and $\cty{C} = (13,1)$ (Figure~\ref{fig:story-m}), and use the Manhattan distance $h_{M}$ to \cty{S} as the heuristic. The grid
+units are unrelated to the edge weights, and $h_{M}$ overestimates in six of the
+eight cities (Table~\ref{tab:story-hm}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Two heuristics for the running example and the true remaining cost.
+    Red values overestimate.}\label{tab:story-hm}
+  \begin{tabular}{@{}lcccccccc@{}}
+    \toprule
+    City & \cty{D} & \cty{G} & \cty{N} & \cty{K} & \cty{B} & \cty{C} & \cty{H} & \cty{S}\\
+    \midrule
+    Heuristic $h$ (Table~\ref{tab:story-h}) & 7 & 8 & 5 & 4 & 4 & 7 & 2 & 0\\
+    Manhattan distance $h_{M}$ & \textcolor{cbRed}{16} & \textcolor{cbRed}{17}
+      & \textcolor{cbRed}{14} & \textcolor{cbRed}{12} & \textcolor{cbRed}{8}
+      & 6 & \textcolor{cbRed}{6} & 0\\
+    True cost $h^{*}$     & 8 & 9 & 6 & 7 & 5 & 8 & 3 & 0\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+With $h_{M}$, A* returns $(\cty{D}, \cty{B}, \cty{H}, \cty{S})$ of cost 10
+(Table~\ref{tab:trace-m}). The cause is $h_{M}(\cty{N}) = 14$, more than twice
+$h^{*}(\cty{N}) = 6$: after step 1, \cty{N} has key 16 and \cty{B} key 13, so
+the search reaches \cty{S} with $g = 10$ before expanding \cty{N}. With
+$h(\cty{N}) = 5$, the key of \cty{N} would be $7 < 10$. When $h$ dominates $g$,
+A* behaves like greedy best-first search and returns the same path.
+
+\begin{table}[htbp]
+  \centering
+  \caption{A* on the running example with the Manhattan distance $h_{M}$, which
+    overestimates.}\label{tab:trace-m}
+  \small
+  \begin{tabular}{@{}c>{\raggedright}P{4.8cm}cc>{\raggedright\arraybackslash}P{3.4cm}@{}}
+    \toprule
+    Step & $Q$ before extraction (vertex: key) & Extracted & $g + h_{M} = f$
+      & Updates\\
+    \midrule
+    \inputrows{figures/trace_manhattan.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{0.62\textwidth}{!}{\input{figures/story_iso_manhattan}}
+  \caption{The running example on its grid, with the Manhattan distance $h_{M}$
+    in each disc. A* now returns the orange path, which is not the shortest
+    one.}\label{fig:story-m}
+\end{figure}
+
+Figure~\ref{fig:estimates} compares three estimates for \cty{N}; only the one
+above the true cost leads A* astray.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[x=0.8cm, y=1cm]
+    \fill[algastar!15] (0,-0.12) rectangle (6,0.12);
+    \fill[cbRed!10] (6,-0.12) rectangle (15.2,0.12);
+    \draw[inkgray, line width=0.6pt, -{Stealth[length=2mm]}] (0,0) -- (15.6,0);
+    \foreach \x in {0,2,...,14}
+      {\draw[inkgray] (\x,-0.08) -- (\x,0.08);
+       \node[font=\scriptsize, text=inkgray, below=3pt] at (\x,-0.08) {\x};}
+    \draw[algastar, line width=1pt] (6,-0.25) -- (6,0.25);
+    \node[font=\small, text=algastar, below=16pt] at (6,0) {$h^{*}(\cty{N}) = 6$};
+    \foreach \x/\c/\lab/\note in {0/inkgray/{$h = 0$}/{no information},
+                                  5/algastar/{$h(\cty{N}) = 5$}/{admissible},
+                                  14/cbRed/{$h_M(\cty{N}) = 14$}/{overestimate}}
+      {\draw[\c, line width=0.9pt, -{Stealth[length=2mm]}] (\x,0.85) -- (\x,0.18);
+       \fill[\c] (\x,0) circle (2.2pt);
+       \node[font=\small, text=\c, above] at (\x,0.85) {\lab};
+       \node[font=\scriptsize, text=\c, above=13pt] at (\x,0.85) {\note};}
+    \node[font=\footnotesize, text=algastar] at (3,-1.25) {admissible range:
+      $0 \le h(\cty{N}) \le h^{*}(\cty{N})$};
+    \node[font=\footnotesize, text=cbRed] at (10.6,-1.25) {overestimates};
+  \end{tikzpicture}
+  \caption{Three estimates of the remaining cost from \cty{N}, compared with the
+    true cost $h^{*}(\cty{N}) = 6$.}\label{fig:estimates}
+\end{figure}

@@ -1,0 +1,31 @@
+\begin{tikzpicture}[cam={18}{28}{1.0}{1.09}, line cap=round, line join=round,
+                    every node/.style={inner sep=0pt}]
+  \def\kz{0.0098}
+  \bdfloor
+  \lifttree{2}{dhaka/gazipur, dhaka/narayanganj, dhaka/munshiganj, dhaka/narsingdi,
+               dhaka/manikganj, munshiganj/chandpur, narsingdi/brahmanbaria,
+               munshiganj/shariatpur, manikganj/faridpur, gazipur/tangail}
+  \lifttree{3}{manikganj/rajbari, gazipur/kishoreganj, shariatpur/madaripur,
+               munshiganj/cumilla, gazipur/mymensingh, chandpur/lakshmipur,
+               tangail/sirajganj, rajbari/magura, rajbari/pabna, brahmanbaria/habiganj}
+  \lifttree{4}{shariatpur/barishal, kishoreganj/netrokona, madaripur/gopalganj,
+               lakshmipur/noakhali, rajbari/kushtia, lakshmipur/bhola,
+               magura/jhenaidah, barishal/jhalokati, cumilla/feni, tangail/jamalpur}
+  \lifttree{5}{mymensingh/sherpur, magura/narail, sirajganj/bogura,
+               habiganj/moulvibazar, barishal/patuakhali, gopalganj/bagerhat,
+               barishal/pirojpur, kushtia/chuadanga, sirajganj/natore, narail/jashore}
+  \lifttree{6}{kushtia/meherpur, narail/khulna, patuakhali/barguna,
+               netrokona/sunamganj, bogura/joypurhat, bogura/naogaon,
+               feni/khagrachhari, jamalpur/gaibandha, moulvibazar/sylhet}
+  \draw[edgpath, line width=1.8pt] \bdup{dhaka} -- \bdup{narsingdi}
+    -- \bdup{brahmanbaria} -- \bdup{habiganj} -- \bdup{moulvibazar}
+    -- \bdup{sylhet};
+  \node[liftnode, fill=crimson] at \bdup{jashore} {};
+  \node[liftnode, fill=crimson] at \bdup{naogaon} {};
+  \node[tagbox, text=crimson, anchor=east, xshift=-3pt] at \bdup{jashore} {Jashore 185};
+  \node[tagbox, text=crimson, anchor=east, xshift=-3pt] at \bdup{naogaon} {Naogaon 209};
+  \node[sball, minimum size=2.4mm] at (dhaka) {};
+  \node[tag, text=gstart, anchor=north, yshift=-3pt] at (dhaka) {\textbf{Dhaka}};
+  \node[gball, minimum size=2.4mm] at \bdup{sylhet} {};
+  \node[tag, text=ggoal, anchor=west, xshift=4pt] at \bdup{sylhet} {\textbf{Sylhet 215}};
+\end{tikzpicture}

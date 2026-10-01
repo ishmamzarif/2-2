@@ -1,0 +1,18 @@
+\begin{tikzpicture}[x=1cm, y=1cm]
+  \fill[gray!12, rounded corners=4pt] (-0.5,-0.55) rectangle (4.5,0.55);
+  \node[font=\scriptsize, text=inkgray, anchor=south] at (2,0.55) {closed vertices (in $S$)};
+  \node[storystart] (s) at (0,0) {$s$};
+  \node[storynode, fill=gray!30, draw=gray] (a) at (2,0) {};
+  \node[storynode, fill=gray!30, draw=gray] (y) at (4,0) {$y$};
+  \node[storynode, fill=rbluelt] (x) at (6,0) {$x$};
+  \node[storynode, fill=hlyellow, draw=alggreedy] (u) at (10,0) {$u$};
+  \draw[storyedge, line width=1.2pt] (s) -- (a) -- (y) -- (x);
+  \draw[storyedge, line width=1.2pt, dashed] (x) -- node[above, font=\scriptsize,
+    text=inkgray] {rest of $P$} (u);
+  \node[font=\scriptsize, text=rbluedk, below=10pt, align=center] at (x)
+    {first vertex not in $S$\\in $Q$ with $g(x) = \delta(s,x)$};
+  \node[font=\scriptsize, text=alggreedy!80!black, below=10pt, align=center] at (u)
+    {being extracted\\supposed $g(u) > \delta(s,u)$};
+  \node[draw=cbRed, fill=cbRed!5, font=\small, rounded corners=2pt, inner sep=4pt]
+    at (8,1.25) {$f(x) \le \delta(s,u) + h(u) < f(u)$};
+\end{tikzpicture}

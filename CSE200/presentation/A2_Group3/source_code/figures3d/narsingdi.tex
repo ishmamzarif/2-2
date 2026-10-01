@@ -1,0 +1,29 @@
+\begin{tikzpicture}[cam={20}{40}{3.3}{3.64}, line cap=round, line join=round,
+                    every node/.style={inner sep=0pt}]
+  \def\kz{0.0047}
+  \nefloor
+  \draw[edgpath, line width=1.6pt] (dhaka) -- (narsingdi);
+  \draw[edgorange, line width=1.4pt] (narsingdi) -- (kishoreganj) -- (habiganj)
+    -- (moulvibazar) -- (sylhet);
+  \draw[edgpath, line width=1.4pt] (narsingdi) -- (brahmanbaria) -- (habiganj);
+  \node[wlab, fill=black!2] at ($(narsingdi)!0.5!(kishoreganj)+(-0.08,0,0)$) {58.1};
+  \node[wlab, fill=black!2] at ($(narsingdi)!0.5!(brahmanbaria)+(0,0.065,0)$) {39.9};
+  \node[wlab, fill=black!2, text=cbGreen] at ($(dhaka)!0.5!(narsingdi)+(-0.02,0.07,0)$) {33.8};
+  \prism{kishoreganj}{0}{91.9}{cbGreen}
+  \prism{kishoreganj}{91.9}{213.3}{cbOrange}
+  \prism{brahmanbaria}{0}{73.7}{cbGreen}
+  \prism{brahmanbaria}{73.7}{203.5}{cbOrange}
+  \node[tagbox, anchor=south, yshift=2pt] at \bdlift{kishoreganj}{213.3} {$f=213.3$};
+  \node[tagbox, anchor=south, yshift=2pt] at \bdlift{brahmanbaria}{203.5} {$f=\mathbf{203.5}$};
+  \node[sball, minimum size=2.4mm] at (dhaka) {};
+  \node[cball, minimum size=2.6mm] at (narsingdi) {};
+  \node[oball] at (kishoreganj) {};
+  \node[oball] at (brahmanbaria) {};
+  \node[gball, minimum size=2.4mm] at (sylhet) {};
+  \node[maplab, anchor=east, xshift=-4pt] at (dhaka) {Dhaka};
+  \node[maplab, anchor=north, yshift=-5pt, text=cbOrange!80!black] at (narsingdi) {\textbf{Narsingdi}};
+  \node[maplab, anchor=east, xshift=-5pt] at (kishoreganj) {Kishoreganj};
+  \node[maplab, anchor=north, yshift=-5pt] at (brahmanbaria) {Brahmanbaria};
+  \node[maplab, anchor=north, yshift=-3pt] at (habiganj) {Habiganj};
+  \node[maplab, anchor=west, xshift=4pt] at (sylhet) {Sylhet};
+\end{tikzpicture}

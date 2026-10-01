@@ -1,0 +1,243 @@
+\documentclass[a4paper]{article}
+\usepackage[margin=8mm, top=7mm, bottom=7mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{multicol}
+\usepackage[table]{xcolor}
+\usepackage{amsmath, amssymb}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{array}
+
+\definecolor{hdr}{RGB}{0,76,153}
+\definecolor{rule}{RGB}{190,200,215}
+
+\setlength{\parindent}{0pt}
+\setlength{\columnsep}{5mm}
+\setlength{\columnseprule}{0.3pt}
+\renewcommand{\columnseprulecolor}{\color{rule}}
+\pagestyle{empty}
+
+\titleformat{\section}{\normalfont\bfseries\footnotesize\color{hdr}}{}{0pt}{\MakeUppercase}
+\titlespacing{\section}{0pt}{4pt}{1pt}
+
+\newcommand{\C}[1]{\texttt{\footnotesize #1}}
+\newenvironment{rows}{\vspace{1pt}\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.35cm}@{}>{\raggedright\arraybackslash}p{2.4cm}@{}}}{\end{tabular}\vspace{2pt}\par}
+\newcommand{\R}[2]{\C{#1} & #2 \\}
+
+\begin{document}
+{\footnotesize
+\begin{center}
+{\normalsize\bfseries\color{hdr} CSE 200 --- LaTeX Online 1 Cheat Sheet}\\[1pt]
+{\tiny Marks: Equations 15.4 $\cdot$ Tables 7.6 $\cdot$ Figures 5.7 $\cdot$ Refs 5.0 $\cdot$ Structure 4.1 $\cdot$ Lists/format 4.1 $\cdot$ Algorithms 2.9 $\cdot$ Compile 2.6 $\cdot$ Listings 1.6 $\cdot$ Theorem 1.0}
+\end{center}
+\vspace{-4pt}
+\begin{multicols}{3}
+\raggedright
+
+\section{Preamble}
+\C{\textbackslash documentclass[11pt,a4paper]\{article\}}\par
+\C{[twocolumn]} for 23\_A1 / 23\_C1 style.\par
+\C{fontenc[T1] geometry graphicx float wrapfig}\par
+\C{caption subcaption booktabs array multirow}\par
+\C{enumitem xcolor[table] amsmath amssymb}\par
+\C{amsfonts amsthm listings algorithm}\par
+\C{algpseudocode comment natbib[numbers]}\par
+\C{hyperref authblk} \ (hyperref LAST)\par
+\C{\textbackslash newtheorem\{proposition\}\{Proposition\}}
+
+\section{Compile}
+\C{pdflatex} $\times$2, or with .bib:\par
+\C{pdflatex $\to$ bibtex main $\to$ pdflatex $\times$2}\par
+\C{latexmk -pdf main.tex} $\cdot$ \C{-shell-escape} for minted
+
+\section{Text}
+\begin{rows}
+\R{\textbackslash textbf \textbackslash textit \textbackslash emph}{bold italic emph}
+\R{\textbackslash underline \textbackslash texttt}{underline mono}
+\R{\textbackslash textsc \textbackslash textsf}{smallcaps, sans}
+\R{\textbackslash textsl \textbackslash textrm}{slanted, roman}
+\R{\{\textbackslash tiny .. \textbackslash Huge\}}{10 sizes}
+\R{``x'' \ `x'}{quotes}
+\R{-- \ ---}{en dash, em dash}
+\R{\textbackslash\% \textbackslash\& \textbackslash\$ \textbackslash\# \textbackslash\_ \textbackslash\{ \textbackslash\}}{escapes}
+\R{\textbackslash\textbackslash \ \textbackslash\textbackslash[6pt]}{break, break+space}
+\R{\textbackslash noindent \textbackslash newpage \textbackslash clearpage}{}
+\R{\textbackslash hspace\{20px\} \textbackslash quad \textbackslash hfill}{}
+\R{\textbackslash centering}{no extra space}
+\end{rows}
+
+\section{Colour (xcolor)}
+\C{\textbackslash textcolor\{red\}\{x\} \ \textbackslash colorbox\{c\}\{x\}}\par
+\C{\textbackslash definecolor\{blue\}\{RGB\}\{0,76,153\}}\par
+\C{teal!70!black} = 70\% teal + 30\% black
+
+\section{Lists (enumitem)}
+\C{itemize / enumerate / description}\par
+\C{[label=\textbackslash arabic*.]} 1. \quad \C{[label=(\textbackslash alph*)]} (a)\par
+\C{[label=(\textbackslash Alph*)]} (A) \quad \C{[label=\{(\textbackslash Roman*)\}]} (I)\par
+\C{[label=(\textbackslash roman*)]} (i) \quad \C{[label=]} no label\par
+\C{[leftmargin=*, itemsep=.5em]}\par
+\C{\textbackslash item[\$\textbackslash dagger\$]} $\dagger$ \ \C{\textbackslash diamond} $\diamond$ \ \C{\textbackslash oplus} $\oplus$\par
+\C{\textbackslash rhd} $\rhd$ \ \C{\textbackslash ast} $\ast$ \ \C{\textbackslash star} $\star$ \ \C{\textbackslash circ} $\circ$ \ \C{\textbackslash nmid} $\nmid$ \ \C{\textbackslash ni} $\ni$
+
+\section{Maths}
+\C{\$x\$ \ \textbackslash[ \ \textbackslash] \ equation \ equation*}\par
+\C{align} one number per line\par
+\C{equation+split} one number total\par
+\C{align*/equation*} none $\cdot$ \C{gather} no align pt\par
+\C{\&} align column $\cdot$ \C{\textbackslash\textbackslash} end line\par
+\begin{rows}
+\R{\textbackslash frac \textbackslash dfrac \textbackslash tfrac}{fractions}
+\R{\textbackslash sqrt\{x\} \textbackslash sqrt[3]\{x\}}{roots}
+\R{\textbackslash left( \textbackslash right)}{auto size}
+\R{\textbackslash lceil \textbackslash rceil \textbackslash lfloor \textbackslash rfloor}{$\lceil\ \rceil\ \lfloor\ \rfloor$}
+\R{\textbackslash left. .. \textbackslash right|\_\{x=1\}}{one-sided}
+\R{\textbackslash sum\_\{i=1\}\^{}\{n\} \textbackslash int\_0\^{}\textbackslash infty}{}
+\R{\textbackslash lim\textbackslash limits\_\{x\textbackslash to a\}}{limits below}
+\R{\textbackslash text\{if \}}{words in math}
+\R{\textbackslash mathbb \textbackslash mathcal \textbackslash mathrm \textbackslash mathbf}{}
+\R{\textbackslash DeclareMathOperator*}{argmax}
+\end{rows}
+\C{cases}: \C{0, \& t<0 \textbackslash\textbackslash \ e\^{}\{-t\}, \& t\textbackslash ge 0}\par
+Matrices: \C{pmatrix ( ) \ bmatrix [ ] \ Bmatrix \{ \}}\par
+\C{vmatrix | | \ Vmatrix || || \ matrix} none\par
+\C{\textbackslash cdots \textbackslash vdots \textbackslash ddots}\par
+\C{\textbackslash ref \ \textbackslash eqref} (adds parens) \C{\textbackslash pageref}
+
+\section{Theorem (amsthm)}
+\C{\textbackslash newtheorem\{thm\}\{Theorem\}[section]}\par
+\C{\textbackslash newtheorem\{lem\}[thm]\{Lemma\}} shared ctr\par
+\C{\textbackslash begin\{proposition\}[Name]\textbackslash label\{p:x\}}\par
+\C{\textbackslash begin\{proof\} .. \textbackslash end\{proof\}} auto $\square$
+
+\section{Tables}
+\C{l c r} $\cdot$ \C{p\{5cm\}} wraps $\cdot$ \C{m\{\} b\{\}}\par
+\C{|} rule $\cdot$ \C{\textbackslash hline} $\cdot$ \C{\textbackslash cline\{2-4\}} partial\par
+\C{\textbackslash toprule \textbackslash midrule \textbackslash bottomrule} (booktabs)\par
+\C{\textbackslash multicolumn\{2\}\{c|\}\{X\}} merge across\par
+\C{\textbackslash multirow\{3\}\{*\}\{X\}} merge down, then\par
+\quad leave that cell empty + use \C{\textbackslash cline}\par
+\C{\textbackslash renewcommand\{\textbackslash arraystretch\}\{1.8\}}\par
+\C{\textbackslash rowcolor\{gray!25\}} first in row\par
+\C{\textbackslash cellcolor\{blue!10\}} first in cell\par
+\C{\textbackslash rowcolors\{2\}\{gray!10\}\{white\}} stripes\par
+\textbf{Caption ABOVE tables. Label AFTER caption.}
+
+\section{Figures}
+\C{\textbackslash includegraphics[width=0.4\textbackslash linewidth]\{f\}}\par
+\C{scale= \ height= \ angle= \ keepaspectratio}\par
+\C{\textbackslash graphicspath\{\{figures/\}\}}\par
+\C{[h t b p ! H]} --- H = float pkg, exactly here\par
+\textbf{Caption BELOW figures.}\par
+\C{subfigure\{0.3\textbackslash textwidth\}} + \C{\textbackslash hfill}, image at\par
+\quad \C{width=\textbackslash linewidth}. \textbf{No blank lines between!}\par
+New row: \C{\textbackslash par\textbackslash medskip}. Group label:\par
+\quad \C{\textbackslash textbf\{Inner Planets\}\textbackslash par\textbackslash medskip}\par
+\C{wrapfigure\{r\}\{0.4\textbackslash textwidth\}} + text after\par
+\C{figure*} \C{table*} span both columns \C{[t]}
+
+\section{Code \& algorithms}
+\C{\textbackslash lstset\{basicstyle=\textbackslash ttfamily\textbackslash small,}\par
+\C{ keywordstyle=\textbackslash color\{customblue\}\textbackslash bfseries,}\par
+\C{ commentstyle=\textbackslash color\{teal!70!black\},}\par
+\C{ stringstyle=\textbackslash color\{red!70!black\},}\par
+\C{ frame=single, numbers=left, breaklines=true,}\par
+\C{ showstringspaces=false, columns=fullflexible\}}\par
+\C{\textbackslash begin\{lstlisting\}[language=Python,}\par
+\C{ caption=\{..\}, label=\{lst:x\}]}\par
+\C{\textbackslash lstinputlisting[language=Python]\{f.py\}}\par
+\C{\textbackslash verb|x|} $\cdot$ \C{verbatim} $\cdot$ \C{comment}\par
+\C{\textbackslash begin\{algorithm\}[H]\textbackslash caption\{\}\textbackslash label\{\}}\par
+\C{\textbackslash begin\{algorithmic\}[1]}\par
+\C{\textbackslash Require \textbackslash Ensure \textbackslash State \textbackslash Return \textbackslash gets}\par
+\C{\textbackslash If\{\}\textbackslash ElsIf\{\}\textbackslash Else\textbackslash EndIf}\par
+\C{\textbackslash For\{\}\textbackslash EndFor \textbackslash While\{\}\textbackslash EndWhile}\par
+\C{\textbackslash Repeat\textbackslash Until\{\} \textbackslash Function\{\}\{\}\textbackslash EndFunction}\par
+\C{\textbackslash Comment\{\}} $\cdot$ complexity: \C{\$T(m)=\textbackslash Theta(m)\$}
+
+\section{Refs, notes, links, cites}
+\C{\textbackslash label} AFTER \C{\textbackslash caption}; \C{Figure\~{}\textbackslash ref\{\}}\par
+\C{\textbackslash footnote\{\}} attaches to preceding char\par
+\C{\textbackslash footnotemark \ \textbackslash footnotetext\{\}} in tables\par
+\C{\textbackslash href\{url\}\{text\}} $\cdot$ \C{\textbackslash url\{..\}}\par
+\C{\textbackslash hypersetup\{colorlinks=true, urlcolor=blue,}\par
+\C{ citecolor=black, linkcolor=black\}}\par
+\C{\textbackslash cite \textbackslash citep} [1] $\cdot$ \C{\textbackslash citet} Author [1]\par
+\C{\textbackslash citeauthor \textbackslash citeyear \textbackslash nocite\{*\}}\par
+\C{\textbackslash bibliographystyle\{unsrtnat\}} (or ieeetr,\par
+\quad plain, unsrt, abbrv, plainnat, apalike)\par
+\C{\textbackslash bibliography\{refs\}} --- no .bib extension\par
+or \C{\textbackslash begin\{thebibliography\}\{9\} \textbackslash bibitem\{k\}}
+
+\section{Beamer}
+\C{\textbackslash documentclass[aspectratio=169]\{beamer\}}\par
+\C{\textbackslash usetheme\{Madrid\} \textbackslash usecolortheme\{seahorse\}}\par
+\C{\textbackslash begin\{frame\}\{Title\}} / \C{\textbackslash frametitle\{\}}\par
+\C{[fragile]} for code $\cdot$ \C{[shrink=10] [plain]}\par
+\C{\textbackslash pause} $\cdot$ \C{<3-> <-3> <2-4> <1,3,5> <+->}\par
+\C{\textbackslash only} no space $\cdot$ \C{\textbackslash uncover \textbackslash visible} keep space\par
+\C{\textbackslash onslide<2->} switch $\cdot$ \C{\textbackslash alt<2>\{a\}\{b\}}\par
+\C{\textbackslash setbeamercovered\{transparent\}}\par
+\C{\textbackslash alert<2>\{\} \textbackslash structure<2>\{\} \textbackslash textbf<2>\{\}}\par
+\C{block alertblock exampleblock}\par
+\C{theorem corollary proof definition lemma}\par
+\C{\textbackslash begin\{columns\} \textbackslash column\{0.5\textbackslash textwidth\}}\par
+\C{\textbackslash setbeamertemplate\{navigation symbols\}\{\}}
+
+\section{TikZ}
+\C{\textbackslash usetikzlibrary\{positioning,calc,fit,arrows\}}\par
+\C{\textbackslash draw (0,0) -- (2,1);} every path ends with \C{;}\par
+\C{circle (1) \ rectangle (2,1) \ ellipse (2 and 1)}\par
+\C{arc[start angle=0,end angle=30,radius=3mm]}\par
+\C{grid} $\cdot$ \C{-- cycle} $\cdot$ \C{-|} $\cdot$ \C{|-} $\cdot$ \C{.. controls ..}\par
+\C{\textbackslash fill \ \textbackslash filldraw[fill=green!20,draw=black]}\par
+\C{(30:1cm)} polar $\cdot$ \C{++(1,0)} move $\cdot$ \C{+(1,0)} stay\par
+\C{(a |- b)} $\cdot$ \C{(\$(a)!0.5!(b)\$)} midpoint (calc)\par
+\C{-> <- <-> -stealth} $\cdot$ \C{-stealth'} needs \C{arrows}\par
+\C{thin thick very thick ultra thick dashed}\par
+\C{\textbackslash node[block] (a) at (0,0) \{txt\};}\par
+\C{right=of a \ above=1cm of a \ (a.north)}\par
+\C{\textbackslash tikzset\{block/.style=\{draw, fill=blue!10,}\par
+\C{ rounded corners, minimum width=2.6cm,}\par
+\C{ minimum height=1cm, align=center\}\}}\par
+\C{\textbackslash foreach \textbackslash x in \{0,...,4\}\{ .. \}}\par
+\C{at (0,\{2-\textbackslash y\})} --- brace the arithmetic\par
+\C{\textbackslash begin\{scope\}[blue] .. \textbackslash end\{scope\}}\par
+\C{\textbackslash tikz \textbackslash draw ..;} inline
+
+\section{Technical writing}
+Active voice; always ``we''. Short sentences.\par
+One idea per paragraph; best sentence first.\par
+Minimise notation. No $\forall \exists \in$ in prose.\par
+Never start a sentence with a symbol.\par
+Separate adjacent formulas with words (``where'').\par
+Define symbols before use. Keep ``that''.\par
+No contractions. Don't overuse commas.\par
+Capitalise Theorem 1 / Figure 5 / Section 3;\par
+\quad lowercase ``the following lemma''.\par
+Spell small numbers as adjectives (five vertices);\par
+\quad numerals as names (increased by 2; 80 embeddings).\par
+Fact obvious (no proof) $\cdot$ Lemma proves others\par
+Theorem main result $\cdot$ Corollary immediate.\par
+Theorem statements must be self-contained.
+
+\section{Research paper}
+Read: 3 passes. P1 5 C's = Category, Context,\par
+\quad Correctness, Contributions, Clarity.\par
+P2 content, no details. P3 re-create the work.\par
+Survey: high sensitivity / low specificity.\par
+Salami science = one study, many papers.\par
+IMRaD. Intro 5 Qs: what / why interesting /\par
+\quad why hard / why unsolved / key components.\par
+Methods + Results: past tense, no interpretation.\par
+Prior work: present tense. Figures self-contained.\par
+Abstract = mini paper; Methods often longest.\par
+SPJ 7: don't wait write $\cdot$ identify key idea $\cdot$\par
+\quad tell a story $\cdot$ nail contributions $\cdot$ related\par
+\quad work later $\cdot$ readers first (examples) $\cdot$\par
+\quad listen to readers.\par
+Intro = 1 page: problem + contributions only.\par
+No ``rest of this paper is''. Credit is not money.
+
+\end{multicols}}
+\end{document}

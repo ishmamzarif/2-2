@@ -1,0 +1,21 @@
+\renewcommand{\gridpanel}[3]{%
+  \begin{tikzpicture}[cam={-24}{54}{0.30}{0.30}, line cap=round, line join=round]
+    \foreach \c in {0,...,15}{\foreach \r in {0,...,9}{%
+      \ifcsname #1-\c-\r\endcsname \ptile{gclose}{\c}{\r}%
+      \else \ptile{gfree}{\c}{\r}\fi}}
+    \ptile{gstart}{1}{4}\ptile{ggoal}{14}{6}
+    \draw[#3, line width=1.4pt] #2;
+    \gwallsthree
+  \end{tikzpicture}}
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \resizebox{\linewidth}{!}{\gridpanel{dj}{\dijkstraroute}{cbGreen}}
+  \caption{Dijkstra's algorithm: 137 cells expanded, path cost 19.}\label{fig:grid-dijkstra}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \resizebox{\linewidth}{!}{\gridpanel{gr}{\greedyroute}{cbOrange}}
+  \caption{Greedy best-first search: 48 cells expanded, path cost 35.}\label{fig:grid-greedy}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}\centering
+  \resizebox{\linewidth}{!}{\gridpanel{as}{\astarroute}{cbGreen}}
+  \caption{A* search: 81 cells expanded, path cost 19.}\label{fig:grid-astar}
+\end{subfigure}

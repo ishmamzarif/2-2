@@ -1,0 +1,198 @@
+\section{Dijkstra's algorithm and greedy best-first search}
+\label{sec:predecessors}
+
+Dijkstra's algorithm~\cite{dijkstra1959} ranks a vertex by the cost already
+paid to reach it, and greedy best-first search ranks it by the estimated cost
+that remains. Each meets only one of the two requirements of
+Section~\ref{sec:requirements}.
+
+\subsection{Dijkstra's algorithm}\label{sec:dijkstra}
+
+Dijkstra's algorithm always expands the waiting vertex that is cheapest to
+reach. Its key is $g(v)$, the cost of the cheapest path from the source to $v$
+found so far ($0$ at the source and $\infty$ elsewhere at the start). Expanding
+$u$ \emph{relaxes} every edge $(u,v)$ with $v$ not closed: if
+$g(u) + w(u,v) < g(v)$, the path through $u$ is cheaper, so $g(v)$ is lowered
+and $u$ becomes the \emph{predecessor} $\pi(v)$. When the destination is
+extracted, following the predecessors back to the source gives the path.
+Algorithms~\ref{alg:dijkstra} and~\ref{alg:reconstruct} state the procedure in
+the style of Cormen et al.~\cite{cormen2022clrs}.
+
+\begin{algorithm}[htbp]
+  \caption{Dijkstra's algorithm}\label{alg:dijkstra}
+  \begin{algorithmic}[1]
+    \Require graph $G = (V,E,w)$ with nonnegative weights, source $s$, destination $t$
+    \Ensure a shortest path from $s$ to $t$, or failure
+    \Procedure{Dijkstra}{$G, s, t$}
+      \For{each vertex $v$ of $V$}
+        \State $g(v) \gets \infty$; \ $\pi(v) \gets \nil$
+      \EndFor
+      \State $g(s) \gets 0$
+      \State $Q \gets$ a priority queue keyed by $g$ that holds $s$
+      \State $S \gets \emptyset$
+      \While{$Q$ is not empty}
+        \State $u \gets \Call{Extract-Min}{Q}$
+        \If{$u = t$}
+          \State \Return \Call{Reconstruct}{$\pi, t$}
+        \EndIf
+        \State add $u$ to $S$
+        \For{each edge $(u,v)$ such that $v$ is not in $S$}
+          \If{$g(u) + w(u,v) < g(v)$}
+            \State $g(v) \gets g(u) + w(u,v)$; \ $\pi(v) \gets u$
+            \State \Call{Insert-or-Decrease-Key}{$Q, v, g(v)$}
+          \EndIf
+        \EndFor
+      \EndWhile
+      \State \Return failure \Comment{$t$ is not reachable from $s$}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  \caption{Reconstruction of the path from the predecessors}\label{alg:reconstruct}
+  \begin{algorithmic}[1]
+    \Require predecessors $\pi$ recorded by a search from $s$, destination $t$
+    \Ensure the path from $s$ to $t$ recorded in $\pi$
+    \Procedure{Reconstruct}{$\pi, t$}
+      \State $P \gets$ an empty list
+      \State $v \gets t$
+      \While{$v \neq \nil$}
+        \State insert $v$ at the front of $P$
+        \State $v \gets \pi(v)$ \Comment{step back to the predecessor}
+      \EndWhile
+      \State \Return $P$ \Comment{$P$ now starts at $s$ and ends at $t$}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+Table~\ref{tab:trace-dijkstra} traces Algorithm~\ref{alg:dijkstra} on the
+running example; each row lists $Q$ in extraction order (by key, ties first in,
+first out). The algorithm returns the shortest path of cost 8 but expands all
+eight cities (Figure~\ref{fig:story-dijkstra}), including Gazipur, Kishoreganj
+and Cumilla, which lie off the path, only because they are cheaper to reach
+than Sylhet.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Dijkstra's algorithm on the running example. The key of a vertex is
+    $g$.}\label{tab:trace-dijkstra}
+  \small
+  \begin{tabular}{@{}c>{\raggedright}P{4.2cm}ccP{4.4cm}@{}}
+    \toprule
+    Step & $Q$ before extraction (vertex: key) & Extracted & Key & Updates\\
+    \midrule
+    \inputrows{figures/trace_dijkstra.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{remark}[Shortcoming of Dijkstra's algorithm]\label{rem:dijkstra}
+The key $g$ ignores where the destination lies, so Dijkstra's algorithm
+expands every vertex that is cheaper to reach than the destination, in every
+direction (Proposition~\ref{prop:expanded}). It meets the optimality
+requirement but not the efficiency requirement.
+\end{remark}
+
+\subsection{Greedy best-first search}\label{sec:greedy}
+
+Greedy best-first search uses the key $h(v)$ and always expands the vertex that
+looks closest to the destination, whatever it cost to reach. In
+Algorithm~\ref{alg:greedy} the predecessor of a vertex is fixed when the vertex
+is first reached, so a route, once found, is never improved.
+
+\begin{algorithm}[htbp]
+  \caption{Greedy best-first search}\label{alg:greedy}
+  \begin{algorithmic}[1]
+    \Require graph $G = (V,E,w)$, source $s$, destination $t$, heuristic $h$
+    \Ensure a path from $s$ to $t$, or failure
+    \Procedure{Greedy-Best-First}{$G, s, t, h$}
+      \For{each vertex $v$ of $V$}
+        \State $\pi(v) \gets \nil$
+      \EndFor
+      \State $R \gets \{s\}$ \Comment{vertices reached so far}
+      \State $Q \gets$ a priority queue keyed by $h$ that holds $s$
+      \While{$Q$ is not empty}
+        \State $u \gets \Call{Extract-Min}{Q}$
+        \If{$u = t$}
+          \State \Return \Call{Reconstruct}{$\pi, t$}
+        \EndIf
+        \For{each edge $(u,v)$ such that $v$ is not in $R$}
+          \State add $v$ to $R$; \ $\pi(v) \gets u$
+          \State \Call{Insert}{$Q, v, h(v)$}
+        \EndFor
+      \EndWhile
+      \State \Return failure
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+Table~\ref{tab:trace-greedy} traces it on the running example. It expands only
+four cities but returns $(\cty{D}, \cty{B}, \cty{H}, \cty{S})$ of cost 10
+instead of 8 (Figure~\ref{fig:story-greedy}). In step 2 it prefers \cty{B}
+($h = 4$) to \cty{N} ($h = 5$), ignoring that the direct road to \cty{B} costs 5
+while the route through \cty{N} costs 3; since the predecessor of \cty{B} is
+already fixed to \cty{D}, the cheaper route is never found.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Greedy best-first search on the running example. The key of a vertex
+    is $h$.}\label{tab:trace-greedy}
+  \small
+  \begin{tabular}{@{}c>{\raggedright}P{5.4cm}ccP{3.2cm}@{}}
+    \toprule
+    Step & $Q$ before extraction (vertex: key) & Extracted & Key
+      & Vertices reached\\
+    \midrule
+    \inputrows{figures/trace_greedy.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}\centering
+    \resizebox{\linewidth}{!}{\input{figures/story_iso_dijkstra}}
+    \caption{Dijkstra's algorithm expands all eight cities and returns a path of
+      cost 8.}\label{fig:story-dijkstra}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}\centering
+    \resizebox{\linewidth}{!}{\input{figures/story_iso_greedy}}
+    \caption{Greedy best-first search expands four cities and returns a path of
+      cost 10.}\label{fig:story-greedy}
+  \end{subfigure}
+  \caption{The two predecessors of A* on the running example. The thick line is
+    the returned path; gray discs are expanded cities that are not on
+    it.}\label{fig:story-two}
+\end{figure}
+
+\begin{remark}[Shortcoming of greedy best-first search]\label{rem:greedy}
+The key $h$ ignores the cost already paid. Greedy best-first search meets the
+efficiency requirement but not the optimality requirement.
+\end{remark}
+
+\subsection{Comparison}\label{sec:side-by-side}
+
+Table~\ref{tab:shortcomings} compares the two algorithms; each has the
+strength that the other lacks.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Dijkstra's algorithm and greedy best-first search compared on the
+    running example.}\label{tab:shortcomings}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{4.4cm}P{4.6cm}P{4.6cm}@{}}
+    \toprule
+     & \textcolor{algdijkstra}{\textbf{Dijkstra's algorithm}}
+     & \textcolor{alggreedy}{\textbf{Greedy best-first search}}\\
+    \midrule
+    Key of a vertex $v$     & $g(v)$, the cost so far & $h(v)$, the estimated
+                              remaining cost\\
+    Uses the position of the destination & no  & yes\\
+    Replaces a found route by a cheaper one & yes & no\\
+    Cities expanded         & 8 of 8 & 4 of 8\\
+    Cost of the returned path & 8 (optimal) & 10\\
+    Optimality requirement  & \textcolor{algastar}{met} & \textcolor{cbRed}{not met}\\
+    Efficiency requirement  & \textcolor{cbRed}{not met} & \textcolor{algastar}{met}\\
+    \bottomrule
+  \end{tabular}
+\end{table}

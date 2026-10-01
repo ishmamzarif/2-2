@@ -1,0 +1,664 @@
+% !TEX program = xelatex
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\input{preamble2}
+\input{part2-defs}          % part 2 macros (also loaded by ../combined.tex)
+\input{grids/stats.tex}
+
+\begin{document}
+
+% ---------- shared macro: a small labelled grid + a distance readout ---
+\newcommand{\distgrid}[3]{%   #1 = draw commands (tikz), #2 = caption, #3 = formula
+  \begin{minipage}[t]{4.55cm}
+    \centering
+    \begin{tikzpicture}[x=0.34cm,y=0.34cm]
+      \foreach \c in {0,...,8}{\foreach \r in {0,...,5}{\gcell{gfree}{\c}{\r}}}
+      #1
+    \end{tikzpicture}\par
+    \vspace{2pt}
+    {\footnotesize #2}\par
+    {\scriptsize\mut{#3}}
+  \end{minipage}}
+
+ 
+% ---------- 11a. what f, g, h are ----------------------------------------
+\begin{frame}[label=11a]{Defining parameters}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.5\textwidth}
+    \onslide<2->{%
+    \begin{block}{$g(v)$ --- cost so far}
+      \small
+      The exact cost of the \textbf{best known path} from the start $s$ to $v$.
+    \end{block}}
+    \vspace{0.5em}
+    \onslide<3->{%
+    \begin{exampleblock}{$h(v)$ --- cost to go}
+      \small
+      An \textbf{estimate} of the remaining cost from $v$ to the goal $t$.
+    \end{exampleblock}}
+    \onslide<4->{%
+    \begin{alertblock}{$f(v) = g(v) + h(v)$ --- total estimated cost}
+      \small
+      \textbf{Best guess} for the cost of the \emph{full} $s \to t$ path if it routes through $v$.
+    \end{alertblock}}
+
+  \column{0.4\textwidth}
+    \vspace{0.6em}
+
+    \onslide<5->{%
+    \begin{tikzpicture}[x=0.42cm,y=0.42cm]
+      \foreach \c in {0,...,8}{\foreach \r in {0,...,4}{\gcell{gfree}{\c}{\r}}}
+      \gletter{gstart}{0}{2}{S}
+      \gletter{ggoal}{8}{2}{G}
+      \draw[cbGreen, line width=1.6pt, line cap=round]
+        (0.7,2.5) -- (3.3,2.5);
+      \gletter{gclose}{3}{2}{v}
+      \draw[cbOrange, dashed, line width=1.6pt, line cap=round]
+      (3.8,2.5) -- (8.2,2.5);
+      {\node[font=\tiny, text=cbGreen] at (2,2) {$g(v)$};}
+      {\node[font=\tiny, text=cbOrange] at (6,2) {$h(v)$};}
+    \end{tikzpicture}\par
+    \vspace{4pt}
+    {\footnotesize\textcolor{cbGreen}{$g(v)=3$} --- three steps walked}\par
+    {\footnotesize\textcolor{cbOrange}{$h(v)=5$} --- five steps remaining}\par
+    {\footnotesize $f(v) = g(v) + h(v) = 3 + 5 = 8$}
+    }
+  \end{columns}
+\end{frame}
+ 
+ 
+% ---------- 12a. why the heuristic helps --------------------------------
+\begin{frame}{Why the heuristic helps}
+  \begin{columns}[T]
+  \column{0.5\textwidth}
+    \centering
+    \onslide<1->{%
+    {\footnotesize\textbf{No heuristic} --- Dijkstra ($h \equiv 0$)}\\[2pt]
+    \gridpicsmall{0.34cm}{grids/mini-dijkstra}\par
+    {\scriptsize\textcolor{cbRed}{\statdijkstraexp} cells expanded --- \emph{blind} to where the goal is}}
+
+  \column{0.5\textwidth}
+    \centering
+    \onslide<2->{%
+    {\footnotesize\textbf{With a good heuristic} --- A*}\\[2pt]
+    \gridpicsmall{0.34cm}{grids/mini-astar}\par
+    {\scriptsize\textcolor{cbGreen}{\statastarexp} cells expanded ---
+     \emph{biased} toward the goal}}
+  \end{columns}
+
+  \vspace{0.6em}
+  \onslide<3->{\takeaway{$h$ does not change \emph{what} A* is allowed to
+    explore --- it changes the \emph{order}.}}
+\end{frame}
+
+
+% ---------- 3D-a. the heuristic as a landscape -------------------------
+\begin{frame}{The heuristic as a landscape}
+  \begin{columns}[T]
+  \column{0.58\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[land3d, land view={-32}{34}{0.38}]
+        % the flat map, left on the floor
+        \floorA
+        % the same map, every node lifted to height h(v)
+        \addplot3[tilesurf, colormap name=hblue, samples=13, samples y=13,
+                  domain=0:12, y domain=0:12]
+          {\kA*veclen(x-\gAx, y-\gAy)};
+        % height dimension at the near corner
+        \draw[neutralg, line width=0.6pt, {Bar[width=1.6mm]}-{Bar[width=1.6mm]}]
+          (12,0,0) -- \liftA{12}{0}
+          node[tagbox, text=neutralg, midway, left=2pt] {$h(v)$};
+        % the route, rolling downhill
+        \draw[edgpath, line cap=round, line join=round, visible on=<2->]
+          \liftA{2}{10} -- \liftA{3}{9} -- \liftA{4}{8} -- \liftA{5}{7}
+          -- \liftA{6}{6} -- \liftA{7}{5} -- \liftA{7}{4} -- \liftA{7}{3};
+        % one step the wrong way
+        \draw[move3d,cbRed, visible on=<3->] \liftA{2}{10} -- \liftA{1}{11};
+        \node[tagbox, text=cbRed, above=3pt, visible on=<3->]
+          at \liftA{1}{11} {uphill: $\Delta f=+2$};
+        \node[tagbox, text=cbGreen, left=5pt, visible on=<3->]
+          at \liftA{4}{8} {downhill: $\Delta f=0$};
+        \node[sball] at \liftA{2}{10} {};
+        \node[tag, text=gstart, below left=3pt] at \liftA{2}{10} {\textbf{S}};
+        \node[gball] at \liftA{7}{3} {};
+        \node[tag, text=ggoal, below=6pt] at \liftA{7}{3} {\textbf{G} \ $h=0$};
+      \end{axis}
+    \end{tikzpicture}
+
+  \column{0.42\textwidth}
+    \begin{block}{Lift the map by $h$}
+      \small
+      \begin{itemize}\setlength{\itemsep}{5pt}
+        \item<1-> raise every node $v$ to height $h(v)$
+        \item<1-> $h(G)=0$
+        \item<2-> each step costs $+1$ in $g$
+        \item<3-> a \pos{downhill} step is incentivized
+        \item<3-> an \bad{uphill} step is penalized
+      \end{itemize}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+
+% ---------- 12b. heuristic choice, expanded ---------------------------
+\begin{frame}[label=12b]{Choosing a heuristic for A*}
+  \begin{columns}[T]
+  \column{0.52\textwidth}
+    \begin{block}{What $h(v)$ has to be}
+      \small
+      \begin{itemize}\setlength{\itemsep}{7pt}
+        \item<2-> Cheap to compute
+        \item<3-> \textbf{Never an overestimate}
+        \item<4-> Ideally close to the true remaining cost
+      \end{itemize}
+    \end{block}
+
+  \column{0.48\textwidth}
+    \onslide<5->{%
+    \begin{exampleblock}{Common choices}
+      \small
+      \begin{itemize}\setlength{\itemsep}{6pt}
+        \item<5-> Manhattan distance
+        \item<5-> Euclidean distance
+      \end{itemize}
+    \end{exampleblock}}
+  \end{columns}
+\end{frame}
+
+% ---------- 12c. Manhattan vs Euclidean, diagrams ----------------------
+\begin{frame}{Manhattan vs Euclidean distance}
+  \centering
+  \begin{columns}[T]
+  \column{0.5\textwidth}
+    \centering
+    \onslide<1->{%
+    \distgrid{%
+      \gletter{gstart}{1}{1}{A}%
+      \gletter{ggoal}{6}{4}{B}%
+      \onslide<1->{\draw[cbOrange, line width=1.6pt, line cap=round]
+        (1.8,1.5) -- (6.5,1.5);}%
+      \onslide<1->{\draw[cbOrange, line width=1.6pt, line cap=round]
+        (6.5,1.5) -- (6.5,4.2);}%
+      \onslide<1->{\node[font=\tiny, text=cbOrange] at (4.0,1.0) {5};}%
+      \onslide<1->{\node[font=\tiny, text=cbOrange] at (6.9,3.0) {3};}%
+    }{\textbf{Manhattan} \\ $|x_A - x_B| + |y_A - y_B|$}
+     {only horizontal / vertical steps --- $5+3=8$}}
+  \column{0.5\textwidth}
+    \centering
+    \onslide<2->{%
+    \distgrid{%
+      \gletter{gstart}{1}{1}{A}%
+      \gletter{ggoal}{6}{4}{B}%
+      \draw[rblue, line width=1.6pt, line cap=round] (1.7,1.7) -- (6.3,4.3);
+      \node[font=\tiny, text=rblue] at (4.7,2.7) {5.8};
+    }{\textbf{Euclidean} \\ $\sqrt{(x_A-x_B)^2+(y_A-y_B)^2}$}
+     {any-angle movement --- $\sqrt{5^2+3^2}\approx 5.8$}}
+  \end{columns}
+\end{frame}
+
+% ---------- 3D-d. Euclidean vs Manhattan in 3D ---------------------------
+\begin{frame}{Euclidean vs Manhattan --- in three dimensions}
+  \begin{columns}[T]
+  \column{0.55\textwidth}
+    \centering
+    \begin{tikzpicture}[x={(1.22cm,0cm)}, y={(0.66cm,0.48cm)},
+                        z={(0cm,1.22cm)}, line join=round, line cap=round]
+      % faint cell lattice on the floor
+      \foreach \i in {0,...,4}{\draw[gridgray, line width=0.4pt] (\i,0,0) -- (\i,3,0);}
+      \foreach \j in {0,...,3}{\draw[gridgray, line width=0.4pt] (0,\j,0) -- (4,\j,0);}
+      % the hidden edge
+      \draw[gridgray, dashed, line width=0.6pt] (0,3,0) -- (0,3,2);
+      % Pythagoras triangle (floor diagonal, rise, space diagonal)
+      \fill[rbluelt, opacity=0.8, visible on=<2->] (0,0,0) -- (4,3,0) -- (4,3,2) -- cycle;
+      \draw[rbluemd, dashed, line width=1pt, visible on=<2->] (0,0,0) -- (4,3,0)
+        node[pos=0.6, below right=-1pt, tag, text=rbluemd] {$5$};
+      % the box
+      \fill[rbluelt, opacity=0.35] (0,0,2) -- (4,0,2) -- (4,3,2) -- (0,3,2) -- cycle;
+      \draw[rbluedk!70, line width=0.8pt]
+        (0,0,0) -- (4,0,0) -- (4,0,2) -- (0,0,2) -- cycle
+        (4,0,0) -- (4,3,0) -- (4,3,2) -- (4,0,2)
+        (0,0,2) -- (0,3,2) -- (4,3,2);
+      % Manhattan: one axis at a time, along the edges
+      \draw[cbOrange, line width=2.2pt, visible on=<1->]
+        (0,0,0) -- (4,0,0) -- (4,3,0) -- (4,3,2);
+      \node[tag, text=cbOrange, below=3pt, visible on=<1->] at (2,0,0) {$\Delta x = 4$};
+      \node[tag, text=cbOrange, below right=0pt, visible on=<1->] at (4,1.5,0) {$\Delta y = 3$};
+      \node[tagbox, text=cbOrange, left=3pt, visible on=<1->] at (4,3,1) {$\Delta z = 2$};
+      % Euclidean: straight through the box
+      \draw[rblue, line width=2.2pt, visible on=<2->] (0,0,0) -- (4,3,2);
+      \node[tagbox, text=rblue, above left=0pt, visible on=<2->] at (2,1.5,1)
+        {$\sqrt{29}\approx 5.39$};
+      % endpoints
+      \node[sball] at (0,0,0) {};
+      \node[tag, text=gstart, left=6pt] at (0,0,0) {\textbf{A}};
+      \node[gball] at (4,3,2) {};
+      \node[tag, text=ggoal, above=6pt] at (4,3,2) {\textbf{B}};
+    \end{tikzpicture}
+
+  \column{0.45\textwidth}
+    \onslide<1->{%
+    \begin{block}{\textcolor{cbOrange}{Manhattan} --- along the edges}
+      \small
+      $|\Delta x|+|\Delta y|+|\Delta z| = 4+3+2 = \mathbf{9}$\\[2pt]
+      {\footnotesize one axis at a time, like a 6-directional grid}
+    \end{block}}
+    \onslide<2->{%
+    \begin{block}{\textcolor{rblue}{Euclidean} --- straight through}
+      \small
+      $\sqrt{\Delta x^2+\Delta y^2+\Delta z^2} = \sqrt{29} \approx \mathbf{5.39}$\\[2pt]
+      {\footnotesize any-angle movement}
+    \end{block}}
+    \vspace{0.3em}
+    \vspace{0.3em}
+    \onslide<3->{{\footnotesize Manhattan is \textcolor{cbRed}{never smaller}, equal only
+      when $A$ and $B$ differ along a single axis.}}
+  \end{columns}
+\end{frame}
+
+
+% ---------- 12d. pseudocode for A* --------------------------------------
+\begin{frame}[t]{A* --- pseudocode}
+  \begin{columns}[T]
+
+    \column{0.55\textwidth}
+    \begin{clrs}[\footnotesize]
+      \aline[1-]{\proc{A-Star}$(G, s, t, h)$}
+      \aline[1-]{\idt1 \kw{for each} $v \in V$: \
+        $g[v] \gets \infty$,\; $\pi[v] \gets \textsc{nil}$}
+      \aline[1-]{\idt1 $g[s] \gets 0$}
+      \aline[1-]{\idt1 \hlonc{2}{$Q \gets$ priority queue keyed by
+        \textcolor{cbGreen}{$g$}$+$\textcolor{cbOrange}{$h$}, holding
+        $\{s\}$}}
+      \aline[1-]{\idt1 $\mathit{S} \gets \varnothing$}
+      \aline[1-]{\idt1 \kw{while} $Q \neq \varnothing$}
+      \aline[1-]{\idt2 $u \gets \textsc{Extract-Min}(Q)$}
+      \aline[1-]{\idt2 \kw{if} $u = t$:}
+      \aline[1-]{\idt3 \kw{return} \proc{Reconstruct}$(\pi, t)$}
+      \aline[1-]{\idt2 $\mathit{S} \gets \mathit{S} \cup \{u\}$}
+      \aline[1-]{\idt2 \kw{for each} $v$ adjacent to $u$}
+      \aline[1-]{\idt3 \kw{if} $v \in \mathit{S}$: \ \kw{continue}}
+      \aline[1-]{\idt3 \kw{if} $g[u] + w(u,v) < g[v]$}
+      \aline[1-]{\idt4 $g[v] \gets g[u] + w(u,v)$,\; $\pi[v] \gets u$}
+      \aline[1-]{\idt4 \hlonc{2}{\textsc{Insert-or-Decrease-Key}
+        $\big(Q, v, g[v]+h(v)\big)$}}
+    \end{clrs}
+
+    \column{0.45\textwidth}
+    \onslide<2->{%
+    \begin{block}{Only one difference from Dijkstra}
+      \small The priority key changes from $g$ to $(g+h)$. Everywhere
+      else, the algorithm is untouched.
+    \end{block}}
+  \end{columns}
+\end{frame}
+
+% ---------- 12e. time complexity, annotated pseudocode ---------------------
+\begin{frame}[t, label=12e]{Time complexity analysis}
+  \begin{columns}[T]
+
+    \column{0.55\textwidth}
+    \begin{clrs}[\footnotesize]
+      \aline[1-]{\proc{A-Star}$(G, s, t, h)$}
+      \aline[1-]{\idt1 \hlonc{2}{\kw{for each} $v \in V$: \
+        $g[v] \gets \infty$,\; $\pi[v] \gets \textsc{nil}$}}
+      \aline[1-]{\idt1 $g[s] \gets 0$}
+      \aline[1-]{\idt1 $Q \gets$ priority queue keyed by $g+h$, holding
+        $\{s\}$}
+      \aline[1-]{\idt1 $\mathit{S} \gets \varnothing$}
+      \aline[1-]{\idt1 \hlonc{3}{\kw{while} $Q \neq \varnothing$}}
+      \aline[1-]{\idt2 \hlonc{3}{$u \gets \textsc{Extract-Min}(Q)$}}
+      \aline[1-]{\idt2 \kw{if} $u = t$:}
+      \aline[1-]{\idt3 \kw{return} \proc{Reconstruct}$(\pi, t)$}
+      \aline[1-]{\idt2 $\mathit{S} \gets \mathit{S} \cup \{u\}$}
+      \aline[1-]{\idt2 \hlonc{4}{\kw{for each} $v$ adjacent to $u$}}
+      \aline[1-]{\idt3 \kw{if} $v \in \mathit{S}$: \ \kw{continue}}
+      \aline[1-]{\idt3 \kw{if} $g[u] + w(u,v) < g[v]$}
+      \aline[1-]{\idt4 $g[v] \gets g[u] + w(u,v)$,\;
+        $\pi[v] \gets u$}
+      \aline[1-]{\idt4 \hlonc{5}{\textsc{Insert-or-Decrease-Key}
+        $\big(Q, v, g[v]+h(v)\big)$}}
+    \end{clrs}
+
+    \column{0.45\textwidth}
+    \onslide<2->{%
+    \begin{exampleblock}{\textcolor{cbOrange}{Init}}
+      \scriptsize $O(|V|)$ for touching every vertex once
+    \end{exampleblock}
+    \vspace{0.2em}
+    \begin{exampleblock}{\textcolor{cbGreen}{Main loop}}
+      \scriptsize $O(|V|\log|V|)$ on a binary heap
+    \end{exampleblock}
+    \vspace{0.2em}
+    \begin{exampleblock}{\textcolor{rblue}{Edge scan}}
+      \scriptsize $O(|E|)$ for considering every edge
+    \end{exampleblock}
+    \vspace{0.2em}
+    \begin{alertblock}{\textcolor{cbRed}{Heap update}}
+      \scriptsize $O(\log|V|)$ each, up to $O(|E|\log|V|)$ total
+    \end{alertblock}}
+  \end{columns}
+\end{frame}
+
+% ---------- 12e-2. time complexity, the sum -------------------------------
+\begin{frame}[label=12e2]{Time complexity --- putting it together}
+  % \small
+  \begin{itemize}\setlength{\itemsep}{9pt}
+    \item<1-> \textbf{\textcolor{cbOrange}{Initialization}}: $O(|V|)$
+    \item<2-> \textbf{\textcolor{cbGreen}{Extractions}}: $O(|V|\log|V|)$
+    \item<3-> \textbf{\textcolor{rblue}{Edge scans}}: $O(|E|)$
+    \item<4-> \textbf{\textcolor{cbRed}{Heap insert / decrease-key}}: $O(|E|\log|V|)$
+  \end{itemize}
+
+  \vspace{0.6em}
+  \onslide<5->{%
+  \[
+    O(|V|) + O(|V|\log|V|) + O(|E|) + O(|E|\log|V|)
+  \]}
+  \onslide<6->{%
+  \begin{center}
+    \Large\(\Rightarrow\quad
+    \boxed{O\big((|V|+|E|)\log |V|\big)}\)
+  \end{center}}
+\end{frame}
+
+% ---------- 12e-3. space complexity, annotated pseudocode ------------------
+\begin{frame}[t, label=12e3]{Space complexity analysis}
+  \begin{columns}[T]
+
+    \column{0.55\textwidth}
+    \begin{clrs}[\footnotesize]
+      \aline[1-]{\proc{A-Star}$(G, s, t, h)$}
+      \aline[1-]{\idt1 \hlonc{2}{\kw{for each} $v \in V$: \
+        $g[v] \gets \infty$,\; $\pi[v] \gets \textsc{nil}$}}
+      \aline[1-]{\idt1 $g[s] \gets 0$}
+      \aline[1-]{\idt1 \hlonc{3}{$Q \gets$ priority queue keyed by
+        $g+h$, holding $\{s\}$}}
+      \aline[1-]{\idt1 \hlonc{3}{$\mathit{S} \gets \varnothing$}}
+      \aline[1-]{\idt1 \kw{while} $Q \neq \varnothing$}
+      \aline[1-]{\idt2 $u \gets \textsc{Extract-Min}(Q)$}
+      \aline[1-]{\idt2 \kw{if} $u = t$:}
+      \aline[1-]{\idt3 \hlonc{4}{\kw{return} \proc{Reconstruct}$(\pi, t)$}}
+      \aline[1-]{\idt2 \hlonc{3}{$\mathit{S} \gets \mathit{S} \cup \{u\}$}}
+      \aline[1-]{\idt2 \hlonc{3}{\kw{for each} $v$ adjacent to $u$}}
+      \aline[1-]{\idt3 \kw{if} $v \in \mathit{S}$: \ \kw{continue}}
+      \aline[1-]{\idt3 \kw{if} $g[u] + w(u,v) < g[v]$}
+      \aline[1-]{\idt4 \hlonc{3}{$g[v] \gets g[u] + w(u,v)$,\;
+        $\pi[v] \gets u$}}
+      \aline[1-]{\idt4 \hlonc{3}{\textsc{Insert-or-Decrease-Key}
+        $\big(Q, v, g[v]+h(v)\big)$}}
+    \end{clrs}
+
+    \column{0.45\textwidth}
+    \onslide<2->{%
+    \begin{exampleblock}{\textcolor{cbOrange}{$g$ and $\pi$ arrays}}
+      \scriptsize One entry per vertex: $O(|V|)$
+    \end{exampleblock}
+    \vspace{0.4em}
+    \begin{exampleblock}{\textcolor{cbGreen}{Frontier $Q$ and closed set $S$}}
+      \scriptsize Every vertex is generated at most once: together $O(|V|)$.
+    \end{exampleblock}
+    \vspace{0.4em}
+    \begin{alertblock}{\textcolor{rblue}{Reconstructed path}}
+      \scriptsize $O(|V|)$ as typically $O(d) \ll |V|$
+    \end{alertblock}}
+  \end{columns}
+\end{frame}
+
+% ---------- 12e-4. space complexity, the sum --------------------------------
+\begin{frame}[label=12e4]{Space complexity --- putting it together}
+  \small
+  \begin{itemize}\setlength{\itemsep}{9pt}
+    \item<1-> \textbf{\textcolor{cbOrange}{$g[\cdot]$ and
+          $\pi[\cdot]$}}: $O(|V|)$
+    \item<2-> \textbf{\textcolor{cbGreen}{Priority queue $Q$ and
+          closed set $\mathit{S}$}}: $O(|V|)$
+    \item<3-> \textbf{\textcolor{rblue}{Path reconstruction}}: $O(|V|)$ worst case
+  \end{itemize}
+
+  \vspace{0.6em}
+  \onslide<4->{%
+  \[
+    O(|V|) + O(|V|) + O(|V|)
+  \]}
+  \onslide<5->{%
+  \begin{center}
+    \Large\(\Rightarrow\quad \boxed{O(|V|)}\)
+  \end{center}}
+  \onslide<6->{%
+  \begin{center}
+    \mut{No dependence on $|E|$.} }
+  \end{center}
+\end{frame}
+
+% ---------- 12f. complexity comparison table -----------------------------
+\begin{frame}[label=12f]{Complexity, side by side}
+  \centering
+  {\footnotesize
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabular}{@{}l@{\hspace{1.4em}}c@{\hspace{1.4em}}c@{\hspace{1.4em}}c@{}}
+    \toprule
+     & \textcolor{rbluemd}{\shortstack{\textbf{Dijkstra}}} & \textcolor{cbOrange}{\shortstack{\textbf{Greedy}}}
+     & \textcolor{cbGreen}{\shortstack{\textbf{A*}}}\\
+    \midrule
+    {\shortstack[l]{Time (worst case)}}
+      & {$O((|V|{+}|E|)\log|V|)$}
+      & {$O((|V|{+}|E|)\log|V|)$}
+      & {$O((|V|{+}|E|)\log|V|)$}\\[5pt]
+    {Space}
+      & {$O(|V|)$} & {$O(|V|)$} & {$O(|V|)$}\\[3pt]
+    {\shortstack[l]{Nodes expanded}}
+      & {most / all} & {few, unpredictable}
+      & {few, provably safe}\\[5pt]
+    {Optimal?}
+      & {\textcolor{cbGreen}{$\checkmark$}} & {\textcolor{cbRed}{$\times$}}
+      & {\textcolor{cbGreen}{$\checkmark$}}\\
+    \bottomrule
+  \end{tabular}\par}
+
+  \vspace{0.8em}
+  \onslide<2->{\begin{center}\footnotesize\mut{Same asymptotic worst
+    case as Dijkstra --- A* wins in \emph{practice}, not in the
+    textbook bound.}\end{center}}
+\end{frame}
+
+\begin{frame}[label=12g0]{Correctness conditions}
+  \begin{center}
+  \begin{tikzpicture}
+    \node<1->[draw=rblue, fill=rbluelt, rounded corners=3pt, line width=1pt,
+        text width=4.8cm, align=center, inner sep=12pt] at (0,0)
+      {{\small\mut{1}}\\[3pt]{\bfseries\large\HL{Admissibility}}};
+    \node<2->[draw=cbOrange, fill=cbOrangeLt, rounded corners=3pt,
+        line width=1pt, text width=4.8cm, align=center, inner sep=12pt]
+        at (6.2,0)
+      {{\small\mut{2}}\\[3pt]{\bfseries\large\con{Consistency}}};
+  \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+% ---------- 12g. admissibility ------------------------------------------
+\begin{frame}[label=12g]{Correctness --- admissibility}
+  \begin{columns}[T]
+  \column{0.55\textwidth}
+    \begin{block}{Definition}
+      \small A heuristic $h$ is \textbf{admissible} if, for every node
+      $v$,
+      \[ h(v) \;\le\; h^{*}(v) \]
+      where $h^{*}(v)$ is the \emph{true} cheapest cost from $v$ to the
+      goal.
+    \end{block}
+    \vspace{0.6em}
+    \onslide<2->{%
+    \begin{exampleblock}{Why it guarantees optimality}
+      \small When A* pops $t$, every other node in $Q$ has
+      $f = g+h \ge$ that $f$-value. Since $h$ never overestimates,
+      nothing left in the queue can beat $t$'s true cost.
+    \end{exampleblock}}
+
+  \column{0.45\textwidth}
+    \onslide<2->{%
+    \centering
+    \begin{tikzpicture}[x=0.85cm,y=0.85cm]
+      \node[vstart] (v) at (0,0) {$v$};
+      \node[vgoal]  (t) at (3,0.3) {$t$};
+      \draw[edgpath, {Stealth[length=2mm]}-, -{Stealth[length=2mm]}]
+        (v) to[bend left=18] node[wlab, above] {$h^{*}(v)=6$} (t);
+      \draw[edgorange, dashed, -{Stealth[length=2mm]}]
+        (v) to[bend right=18] node[wlab, below] {$h(v)=4$} (t);
+    \end{tikzpicture}\par
+    {\footnotesize\textcolor{cbGreen}{$h(v)=4 \le h^{*}(v)=6$} ---
+     admissible}\par
+    \vspace{4pt}
+    {\footnotesize\textcolor{cbRed}{if instead $h(v)=8$} --- not
+     admissible}}
+  \end{columns}
+\end{frame}
+
+% ---------- 12h. consistency --------------------------------------------
+\begin{frame}[label=12h]{Correctness --- consistency}
+  \begin{columns}[T]
+  \column{0.55\textwidth}
+    \begin{block}{Definition}
+      \small A heuristic $h$ is \textbf{consistent} if, for
+      every edge $(u,v)$ with weight $w(u,v)$,
+      \[ h(u) \;\le\; w(u,v) + h(v) \]
+      with $h(\text{goal})=0$.
+    \end{block}
+    \vspace{0.6em}
+    \onslide<2->{%
+    \begin{exampleblock}{Why it matters}
+      \small The \textbf{triangle inequality} applied to $h$: \\ $f=g+h$ never
+      decreases along a path.
+    \end{exampleblock}}
+
+  \column{0.45\textwidth}
+    \onslide<2->{%
+    \centering
+    \begin{tikzpicture}[x=0.85cm,y=0.85cm]
+      \node[vstart] (u) at (0,1.2)  {$u$};
+      \node[vclosed]  (v) at (3,0)    {$v$};
+      \node[vgoal]  (t) at (1.5,-1.8) {$G$};
+
+      \draw[edgpath, -{Stealth[length=2mm]}]
+        (u) -- node[wlab, above, yshift=8pt] {$w(u,v)$} (v);
+      \draw[edgpath, -{Stealth[length=2mm]}]
+        (v) -- node[wlab, right, xshift=8pt] {$h(v)$} (t);
+      \draw[edgorange, dashed, -{Stealth[length=2mm]}]
+        (u) -- node[wlab, left, xshift=-8pt] {$h(u)$} (t);
+    \end{tikzpicture}\par
+    {\footnotesize \mut{$h(u) \le w(u,v) + h(v)$ --- the triangle inequality in effect.}}}
+
+  \end{columns}
+\end{frame}
+
+% ---------- 12j. a bad heuristic, worked examples (expanded, animated) ---
+\begin{frame}{A bad heuristic (I) --- overestimating}
+  \centering
+  {\footnotesize\textbf{Overestimating $h$} --- looks like Greedy}\\[4pt]
+  \begin{tikzpicture}[x=0.42cm,y=0.42cm]
+    \onslide<1->{%
+    \foreach \c in {0,...,8}{\foreach \r in {0,...,5}{\gcell{gfree}{\c}{\r}}}
+    \foreach \r in {0,1,2,3}{\gcell{gwall}{4}{\r}}
+    \gletter{gstart}{0}{2}{S}
+    \gletter{ggoal}{8}{2}{G}}
+    \onslide<2->{\draw[cbOrange, line width=1.6pt, line cap=round]
+      (0.5,2.8) -- (0.5,4.5);}
+    \onslide<3->{\draw[cbOrange, line width=1.6pt, line cap=round]
+      (0.5,4.5) -- (4.5,4.5);}
+    \onslide<4->{\draw[cbRed, line width=1.6pt, line cap=round]
+      (4.5,4.5) -- (4.5,2.5);
+      \node[font=\tiny, text=cbRed] at (5.6,4.9) {rushes at the wall};}
+    \onslide<5->{\draw[cbRed, line width=1.6pt, line cap=round]
+      (4.5,2.5) -- (8.2,2.5);}
+  \end{tikzpicture}\par
+  \vspace{2pt}
+  \begin{itemize}
+    \item<5-> \footnotesize Inadmissible
+    \item<5-> \footnotesize Behaves like Greedy
+    \item<5-> \footnotesize \textcolor{cbRed}{Can return a longer-than-optimal path}
+  \end{itemize}
+\end{frame}
+
+% ---------- 12j-2. uninformative heuristic --------------------------------
+\begin{frame}{A bad heuristic (II) --- uninformative}
+  \centering
+  {\footnotesize\textbf{Uninformative $h$} --- looks like Dijkstra}\\[4pt]
+  \begin{tikzpicture}[x=0.42cm,y=0.42cm]
+    \onslide<1->{%
+    \foreach \c in {0,...,8}{\foreach \r in {0,...,5}{\gcell{gfree}{\c}{\r}}}
+    \gletter{gstart}{0}{2}{S}
+    \gletter{ggoal}{8}{2}{G}}
+    \onslide<2->{\foreach \c in {0,1,2}{\foreach \r in {0,2,4}{\gcell{gclose}{\c}{\r}}}}
+    \onslide<3->{\foreach \c in {3,4,5}{\foreach \r in {0,2,4}{\gcell{gclose}{\c}{\r}}}}
+    \onslide<4->{\foreach \c in {6,7,8}{\foreach \r in {0,2,4}{\gcell{gclose}{\c}{\r}}}}
+  \end{tikzpicture}\par
+  \vspace{2pt}
+  \begin{itemize}
+    \item<4-> \footnotesize $h(v)=1$ for all non-goal $v$
+    \item<4-> \footnotesize \textbf{Admissible}, but slow --- same as Dijkstra
+  \end{itemize}
+\end{frame}
+
+% ---------- 12j-3. admissible but locally misleading ----------------------
+\begin{frame}{A bad heuristic (III) --- admissible but misleading}
+  \centering
+  {\footnotesize\textbf{Admissible $h$, dead-end pocket} --- correct,
+   yet still wasteful}\\[4pt]
+   \vspace{0.6em}
+  \begin{tikzpicture}[x=0.42cm,y=0.42cm]
+    \onslide<1->{%
+    \foreach \c in {0,...,8}{\foreach \r in {0,...,5}{\gcell{gfree}{\c}{\r}}}
+    \foreach \r in {3,4,5}{\gcell{gwall}{3}{\r}}
+    \foreach \r in {3,4,5}{\gcell{gwall}{5}{\r}}
+    \gcell{gwall}{4}{5}
+    \gletter{gstart}{0}{2}{S}
+    \gletter{ggoal}{8}{5}{G}}
+    \onslide<2->{\draw[cbOrange, line width=1.6pt, line cap=round]
+      (0.8,2.5) -- (4.5,2.5);}
+    \onslide<3->{\draw[cbRed, line width=1.6pt, line cap=round]
+      (4.5,2.5) -- (4.5,4.7);
+      \node[font=\tiny, text=cbRed] at (4.5,6.5) {dead end};}
+    \onslide<4->{\draw[cbRed, line width=1.3pt, line cap=round]
+      (4.5, 4.7) -- (4.7,4.7) -- (4.7,2.5);}
+    \onslide<5->{\draw[cbGreen, line width=1.6pt, line cap=round]
+      (4.7,2.5) -- (8.5,2.5) -- (8.5,5.2);}
+  \end{tikzpicture}\par
+  \vspace{2pt}
+  \begin{itemize}
+    \item<5-> \footnotesize Still \textbf{admissible} --- just blind to the obstacle
+    \item<5-> \footnotesize \bad{Finds the optimal path, but wastes a detour} on a dead end
+  \end{itemize}
+\end{frame}
+
+% ---------- 12j-4. three failure modes, side by side -----------------------
+\begin{frame}[label=12j4]{Three ways a heuristic can go wrong}
+  \centering
+  \begin{tikzpicture}[
+      algbox/.style = {draw, line width=0.8pt, align=center, font=\small,
+                       minimum width=4.7cm, minimum height=1.85cm, inner sep=5pt},
+      flow/.style   = {-{Stealth[length=2.4mm]}, line width=1.0pt, draw=neutralg},
+      flowlab/.style= {font=\footnotesize, text=neutralg, inner sep=2pt}]
+
+    \node<2->[algbox, draw=cbRed, fill=cbRedLt] (large) at (-4.2,2)
+      {\textcolor{cbRed}{\textbf{Too large}}\\[3pt]
+       \footnotesize inadmissible --- overestimates \\ the \footnotesize remaining cost \\[5pt]
+       \textcolor{cbRed}{$\times$}~correctness\qquad
+       \textcolor{cbGreen}{$\checkmark$}~decisive};
+
+    \node<3->[algbox, draw=neutralg, fill=neutralg!12] (flat) at (2.2,2)
+      {\textcolor{neutralg}{\textbf{Too flat}}\\[3pt]
+       \footnotesize uninformative --- admissible \\ \footnotesize but barely varies \\[5pt]
+       \textcolor{cbGreen}{$\checkmark$}~correct\qquad
+       \textcolor{cbRed}{$\times$}~degrades to Dijkstra};
+
+    \node<4->[algbox, draw=cbOrange, fill=cbOrangeLt] (blind) at (-1.2,-1)
+      {\textcolor{cbOrange}{\textbf{Blind to structure}}\\[3pt]
+       \footnotesize (admissible, locally misleading) --- \\
+       \footnotesize ignores walls and dead ends\\[5pt]
+       \textcolor{cbGreen}{$\checkmark$}~correct\qquad
+       \textcolor{cbRed}{$\times$}~wastes expansions};
+
+  \end{tikzpicture}
+\end{frame}
+
+\end{document}

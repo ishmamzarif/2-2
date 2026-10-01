@@ -1,0 +1,198 @@
+% !TEX root = main.tex
+% Persistent OPEN, compact calculations, and active algorithm excerpts.
+\providecommand{\pdfstrcmp}{\strcmp}
+\newcommand{\IfSame}[4]{\ifnum\pdfstrcmp{#1}{#2}=0 #3\else #4\fi}
+\newcommand{\IfMember}[4]{%
+  \def\memberfound{0}\edef\memberlist{#2}%
+  \foreach \entry in \memberlist {\IfSame{#1}{\entry}{\xdef\memberfound{1}}{}}%
+  \ifnum\memberfound=1 #3\else #4\fi}
+\tikzset{
+  graphviewport/.style={shift={(.1,.45)},scale=.85,transform shape},
+  baseroad/.style={draw=gridgray,line width=1pt},
+  activeroad/.style={line width=2.2pt},
+  routeroad/.style={activeroad,-{Stealth[length=2.3mm]},shorten >=6.5mm,shorten <=6.5mm},
+  roadnode/.style={circle,draw=rbluedk,fill=white,line width=.9pt,
+    minimum size=11mm,inner sep=0pt,font=\normalsize\bfseries},
+  roadweight/.style={font=\small,text=rbluedk,fill=white,inner sep=2.2pt},
+  paneltitle/.style={font=\sffamily\normalsize\bfseries,text=rblue,
+    align=left,text width=5cm,anchor=north west,inner sep=0pt},
+}
+
+\newcommand{\SingleLineRoute}[1]{\mbox{$#1$}}
+
+% Canonical CLRS-style listing; active line IDs control live highlights.
+\expandafter\def\csname alg@1\endcsname{\kw{for} $v\in V$: $g[v]\gets\infty$}
+\expandafter\def\csname alg@2\endcsname{$g[s]\gets0$; $Q\gets\{s\}$; $C\gets\emptyset$}
+\expandafter\def\csname alg@3\endcsname{\kw{while} $Q\ne\emptyset$}
+\expandafter\def\csname alg@4\endcsname{$u\gets\proc{Extract-Min}(Q)$}
+\expandafter\def\csname alg@5\endcsname{\kw{if} $u=t$: \kw{return} \proc{Path}$(t)$}
+\expandafter\def\csname alg@6\endcsname{$C\gets C\cup\{u\}$}
+\expandafter\def\csname alg@7\endcsname{\kw{for} $v\in\operatorname{Adj}[u]\setminus C$}
+\expandafter\def\csname alg@8\endcsname{$q\gets g[u]+w(u,v)$}
+\expandafter\def\csname alg@9\endcsname{\kw{if} $q<g[v]$}
+\expandafter\def\csname alg@10\endcsname{$g[v]\gets q$; $\pi[v]\gets u$}
+\expandafter\def\csname alg@11\endcsname{\proc{Update}$(Q,v)$}
+\expandafter\def\csname alg@12\endcsname{\kw{return} \textsc{nil}}
+
+% Complete listing for the reference handout; live excerpts share its definitions.
+\newcommand{\MutedKeyword}[1]{\textbf{#1}}
+\newcommand{\FullAlgorithm}[1]{%
+  \def\algorithmwidth{6.1cm}\IfSame{#1}{live}{\def\algorithmwidth{5.55cm}}{}
+  \begin{minipage}{\algorithmwidth}
+    {\algfont\fontsize{10}{11}\selectfont\proc{A*}$(G,s,t)$}\par\vspace{3pt}
+    \begin{clrs}[\fontsize{9}{11.5}\selectfont]
+      \foreach \ln in {1,...,12}{%
+        \setcounter{alglin}{\ln}\addtocounter{alglin}{-1}%
+        \def\indent{0}\ifnum\ln>3 \ifnum\ln<12 \def\indent{1}\fi\fi
+        \ifnum\ln>7 \ifnum\ln<12 \def\indent{2}\fi\fi
+        \ifnum\ln>9 \ifnum\ln<12 \def\indent{3}\fi\fi
+        \IfSame{#1}{live}{%
+          \IfMember{\ln}{\CodeLines}{%
+            \aline{\idt{\indent}\smash{\hlon{1-}{\csname alg@\ln\endcsname}}}}%
+          {\aline{\idt{\indent}{\color{black!50}\let\kw\MutedKeyword\csname alg@\ln\endcsname}}}%
+        }{\aline{\idt{\indent}\csname alg@\ln\endcsname}}}
+    \end{clrs}
+  \end{minipage}}
+
+
+% Shared information column. Five reserved rows keep arithmetic stationary.
+\newcommand{\InfoX}{8.95}
+\newcommand{\QueuePanel}{%
+  \begin{scope}[xshift=\InfoX cm]
+    \fill[isoPaper,rounded corners=5pt] (-.15,2.57) rectangle (4.85,5.25);
+    \foreach \x/\lab in {.35/Node,1.65/g,2.85/h,4.10/f}{%
+      \node[font=\sffamily\small\bfseries,text=rblue] at (\x,4.98) {\lab};}
+    \draw[rblue!18] (0,4.75)--(4.7,4.75);
+    \IfSame{\QueueValues}{}{\node[font=\small,text=neutralg] at (2.3,4.35) {OPEN is empty};}{}
+    \foreach \n/\gv/\hv/\fv [count=\i] in \QueueValues {%
+      \pgfmathsetmacro{\qy}{4.75-\i*.42}%
+      \IfMember{\n}{\QueueMark}{\fill[hlyellow,rounded corners=2pt] (0,\qy-.19) rectangle (4.7,\qy+.19);}{}%
+      \node[font=\normalsize\bfseries,text=rblue] at (.35,\qy) {\n};
+      \foreach \x/\key/\val/\col in {1.65/g/\gv/cbGreen,2.85/h/\hv/cbOrange,4.10/f/\fv/rbluedk}{%
+        \edef\cellkey{\n/\key}%
+        \IfMember{\cellkey}{\ChangedCells}{\fill[cbGreen!16,rounded corners=2pt] (\x-.31,\qy-.17) rectangle (\x+.31,\qy+.17);}{}%
+        \node[font=\normalsize\bfseries,text=\col] at (\x,\qy) {$\val$};}}
+  \end{scope}}
+
+% Active lines reuse the reference's canonical text and line numbers.
+\newcommand{\AlgorithmExcerpt}{%
+  \IfSame{\CodeLines}{}{}{%
+    \begin{scope}[xshift=\InfoX cm]
+      \draw[fill=rblue!7,draw=rblue!35,line width=.6pt,rounded corners=4pt]
+        (-.15,-.16) rectangle (4.85,1.34);
+      \draw[rblue!80,line width=2pt,line cap=round] (-.10,.02)--(-.10,1.16);
+      \node[anchor=west,font=\sffamily\fontsize{8}{9}\selectfont\bfseries,text=rblue,inner sep=0pt]
+        at (.12,1.08) {Algorithm step};
+      \foreach \ln [count=\i] in \CodeLines {\pgfmathsetmacro{\cy}{1.06-.33*\i}%
+        \node[anchor=west,font=\algfont\fontsize{9}{10}\selectfont,text=rbluedk,inner sep=0pt]
+          at (.12,\cy) {\textcolor{neutralg}{\ln}\quad\csname alg@\ln\endcsname};}
+    \end{scope}}}
+\newcommand{\StateHeading}[1]{%
+  \foreach \sid [count=\beat] in #1 {\only<\beat>{\begingroup\LoadState{\sid}\PanelTitle\endgroup}}}
+\newcommand{\StorySequence}[1]{%
+  \foreach \sid [count=\beat] in #1 {\only<\beat>{\RenderState{\sid}}}}
+\newcommand{\RenderState}[1]{%
+  \begingroup\LoadState{#1}
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \begin{scope}[overlay]
+      \RoadGraph\StoryNodeContents
+      \node[anchor=west,font=\sffamily\normalsize\bfseries,text=rblue,inner sep=0pt]
+        at (\InfoX,5.82) {OPEN\enspace\textcolor{neutralg}{\small smallest $f$ first}};
+      \node[anchor=west,font=\sffamily\small,text=neutralg,inner sep=0pt]
+        at (\InfoX,5.48) {Current: \IfSame{\CurrentNode}{}{---}{\CurrentNode}};
+      \QueuePanel
+      \node[anchor=north west,align=left,font=\normalsize,text=rbluedk,inner sep=0pt]
+        at (\InfoX,2.30) {\StateDetail};
+      \node[anchor=west,font=\small,text=cbGreen,inner sep=0pt] at (\InfoX,1.68) {\ParentDetail};
+      \AlgorithmExcerpt
+    \end{scope}
+  \end{tikzpicture}\endgroup}
+
+% The estimate line of pages 27-28, read as a dial. Reveal 1 redraws that page
+% exactly -- same axis, same labels, same red marker -- so the frame break is
+% invisible; only the previous page's sentences fall away. \EstimateAxis and
+% \EstimateMark are defined in optimality.tex and shared with \AdmissibilityRange,
+% which is what keeps the two slides from ever drifting apart.
+\newcommand{\HeuristicBridgeHeading}{Not just a shortcut for making A* faster}
+% Three fixed positions on one line: nothing moves between reveals.
+\newcommand{\HeuristicBridgeScene}[1]{%
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \EstimateAxis{1}
+    \EstimateMark{\ManhattanN}{cbRed}{$h_M(N)=\ManhattanN$}
+    \ifnum#1>1
+      \EstimateMark{\OriginalN}{cbGreen}{$h(N)=\OriginalN$}
+      \EstimateMark{0}{neutralg}{$h=0$}
+      \foreach \hv/\verdictc/\behaviourc/\verdict/\behaviour in {%
+          0/neutralg/neutralg/{knows nothing}/{searches blindly},
+          \OriginalN/cbGreen/rbluedk/{knows something}/{searches smartly},
+          \ManhattanN/cbRed/cbRed/{claims too much}/{searches wrongly}}{%
+        % Clear of the axis's own 0 and Exact labels, which must not move.
+        \node[font=\sffamily\fontsize{10}{12}\selectfont\bfseries,text=\verdictc,
+          align=center,inner sep=0pt] at ({\EstimateAxisX{\hv}},1.82) {\verdict};
+        \node[font=\sffamily\fontsize{8}{10}\selectfont,text=\behaviourc,
+          align=center,inner sep=0pt] at ({\EstimateAxisX{\hv}},1.32) {\behaviour};}
+    \fi
+    \ifnum#1=3
+      \node[font=\sffamily\fontsize{11}{13}\selectfont\bfseries,text=rblue,
+        align=center,inner sep=0pt] at (7,5.2)
+        {Its quality directly affects
+         \textcolor{cbOrange}{how intelligently} A* searches};
+    \fi
+  \end{tikzpicture}}
+
+% Three fixed-geometry builds using the shared deck palette.
+\newcommand{\ClosingScene}[1]{%
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    % box starts at -0.45, not 0: the full build (START..GOAL) is then
+    % centred on the slide, and the lighter builds keep the same spot
+    \path[use as bounding box] (-0.45,0) rectangle (13.55,6.15);
+    \node[anchor=west,text=rblue,font=\sffamily\large\bfseries] at (1.12,5.23)
+      {It balances what we KNOW with what we EXPECT};
+    \node[anchor=east,text=rblue,font=\sffamily\normalsize\bfseries] at (2.45,4.12) {START};
+    \fill[cbGreen] (2.75,4.12) circle (.08);
+    \draw[cbGreen,line width=2pt] (2.75,4.12)--(5.45,4.12);
+    \fill[rblue] (5.45,4.12) circle (.085);
+    \node[text=rblue,font=\large,above=5pt] at (5.45,4.12) {$n$};
+    \draw[cbGreen,line width=.8pt,{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+      (2.75,3.65)--(5.45,3.65);
+    \node[align=center,text=cbGreen,font=\sffamily\normalsize] at (4.10,3.03)
+      {$g(n)$\\[3pt]COST SO FAR};
+    \ifnum#1>1
+      \draw[cbOrange,line width=1.5pt,dash pattern=on 5pt off 4pt,-{Stealth[length=2mm]}]
+        (5.70,4.12)--(10.20,4.12);
+      \node[star,star points=5,fill=cbOrange,inner sep=0pt,minimum size=3.5mm]
+        at (10.55,4.12) {};
+      \node[anchor=west,text=rblue,font=\sffamily\normalsize\bfseries] at (10.87,4.12) {GOAL};
+      \draw[cbOrange,line width=.8pt,{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+        (5.70,3.65)--(10.55,3.65);
+      \node[align=center,text=cbOrange,font=\sffamily\normalsize] at (8.13,3.03)
+        {$h(n)$\\[3pt]ESTIMATE TO GO};
+    \fi
+    \ifnum#1=3
+      \node[draw=rblue!35,fill=isoPaper,line width=.8pt,inner xsep=16pt,inner ysep=7pt,
+        text=rblue,font=\Large] (closingFormula) at (5.7,1.5)
+        {$f(n)=\textcolor{cbGreen}{g(n)}+\textcolor{cbOrange}{h(n)}$};
+      \draw[rblue,line width=.8pt,-{Stealth[length=1.6mm]}]
+        ($(closingFormula.north)+(0,.55)$)--($(closingFormula.north)+(0,.12)$);
+      \node[text=rblue,font=\sffamily\normalsize] at (5.7,.65)
+        {A* expands the node with the lowest $f(n)$};
+    \fi
+  \end{tikzpicture}}
+
+\newcommand{\ThankYouScene}{%
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \path[use as bounding box] (0,0) rectangle (14,6.15);
+    \fill[isoPaper,rounded corners=12pt] (.8,.7) rectangle (13.2,5.6);
+    \draw[rblue!12,line width=1.5pt] (1.4,1.45)--(3,2.3)--(2,4.7)--(4.2,5.05)
+      (10,5.05)--(12,4.65)--(11.3,2.4)--(12.55,1.45);
+    \foreach \x/\y in {1.4/1.45,3/2.3,2/4.7,4.2/5.05,10/5.05,12/4.65,11.3/2.4,12.55/1.45}
+      {\fill[white] (\x,\y) circle (.13);\draw[rblue!22] (\x,\y) circle (.13);}
+    \node[font=\sffamily\fontsize{34}{38}\selectfont\bfseries,text=rblue] at (7,4.25) {Thank You};
+    \node[font=\sffamily\normalsize,text=neutralg] at (7,3.4) {Every good journey begins with a better next step.};
+    \node[font=\Large,text=rbluedk] at (7,2.4) {$f(n)=\pos{g(n)}+\con{h(n)}$};
+    \draw[cbGreen!65,line width=1.5pt] (4.5,1.35)--(6.2,1.35);
+    \draw[cbOrange!65,line width=1.5pt] (6.2,1.35)--(9.5,1.35);
+    \foreach \x/\c in {4.5/cbGreen,6.2/rblue,9.5/cbOrange}{\fill[white] (\x,1.35) circle (.12);\draw[\c,line width=1pt] (\x,1.35) circle (.12);}
+  \end{tikzpicture}}

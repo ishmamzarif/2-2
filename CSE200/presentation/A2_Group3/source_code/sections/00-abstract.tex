@@ -1,0 +1,16 @@
+\begin{center}
+  {\large\bfseries Abstract}
+\end{center}
+\vspace{4pt}
+
+\noindent
+The A* search algorithm finds the cheapest route from a source to a destination
+in a graph whose edges carry costs. It ranks every place it reaches by the cost
+of the best route found so far plus an estimate of the cost that remains. This
+report derives A* from Dijkstra's algorithm, which always finds a cheapest route
+but searches in every direction, and from greedy best-first search, which heads
+for the destination but may return a longer route. We state the conditions on
+the estimate under which A* is guaranteed to return a cheapest route, prove this
+guarantee, analyze the running time, and explain why A* examines fewer places
+than Dijkstra's algorithm. Experiments on a grid with an obstacle and on a map
+of Bangladesh confirm the analysis.

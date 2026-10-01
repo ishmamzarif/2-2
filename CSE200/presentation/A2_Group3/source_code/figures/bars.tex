@@ -1,0 +1,20 @@
+\newcommand{\resultbars}[6]{%
+  \begin{tikzpicture}
+    \begin{axis}[xbar, bar shift=0pt, width=6.8cm, height=3.3cm, bar width=8pt,
+        xmin=0, xmax=#2, ytick={1,2,3}, y dir=reverse,
+        yticklabels={Dijkstra, Greedy, A*}, ymin=0.4, ymax=3.6,
+        axis x line*=bottom, axis y line*=left, tick label style={font=\footnotesize},
+        title={#1}, title style={font=\small, yshift=-4pt},
+        nodes near coords, nodes near coords style={font=\footnotesize, anchor=west},
+        every axis plot/.append style={fill opacity=1}, enlarge y limits=false,
+        xmajorgrids, grid style={gray!20}]
+      \addplot[draw=none, fill=algdijkstra] coordinates {(#3,1)};
+      \addplot[draw=none, fill=alggreedy]   coordinates {(#4,2)};
+      \addplot[draw=none, fill=algastar]    coordinates {(#5,3)};
+      \ifdim #6pt>0pt
+        \draw[cbRed, dashed, line width=0.7pt] (axis cs:#6,0.4) -- (axis cs:#6,3.6);
+        \node[font=\scriptsize, text=cbRed, anchor=south west, inner sep=1pt]
+          at (axis cs:#6,0.45) {optimum};
+      \fi
+    \end{axis}
+  \end{tikzpicture}}

@@ -1,0 +1,43 @@
+\begin{tikzpicture}[cam={16}{28}{1.02}{1.02}, line cap=round, line join=round]
+  \fill[black!3] (-0.5,-0.5,0) -- (5.5,-0.5,0) -- (5.5,3.5,0) -- (-0.5,3.5,0) -- cycle;
+  \foreach \y in {0,...,3}{\foreach \z in {0,1,2}{\draw[latedge] (0,\y,\z) -- (1,\y,\z);}}
+  \foreach \x in {0,1}{%
+    \foreach \z in {0,1,2}{\draw[latedge] (\x,0,\z) -- (\x,3,\z);}
+    \foreach \y in {0,...,3}{\draw[latedge] (\x,\y,0) -- (\x,\y,2);}}
+  \foreach \x in {0,1}{\foreach \y in {0,...,3}{\foreach \z in {0,1,2}{%
+    \node[latnode] at (\x,\y,\z) {};}}}
+  \fill[gwall!78!white] (1.55,-0.45,0) -- (3.45,-0.45,0) -- (3.45,-0.45,1.45) -- (1.55,-0.45,1.45) -- cycle;
+  \fill[gwall]          (3.45,-0.45,0) -- (3.45,3.45,0)  -- (3.45,3.45,1.45)  -- (3.45,-0.45,1.45) -- cycle;
+  \fill[gwall!45!white] (1.55,-0.45,1.45) -- (3.45,-0.45,1.45) -- (3.45,3.45,1.45) -- (1.55,3.45,1.45) -- cycle;
+  \foreach \wx in {1.8,2.3,2.8}{\foreach \wz in {0.3,0.85}{%
+    \fill[white!55!gwall] (\wx,-0.45,\wz) -- (\wx+0.3,-0.45,\wz)
+      -- (\wx+0.3,-0.45,\wz+0.3) -- (\wx,-0.45,\wz+0.3) -- cycle;}}
+  \foreach \y in {0,...,3}{\draw[latedge] (1,\y,2) -- (4,\y,2);}
+  \foreach \x in {2,3}{\draw[latedge] (\x,0,2) -- (\x,3,2);}
+  \foreach \y in {0,...,3}{\foreach \z in {0,1,2}{\draw[latedge] (4,\y,\z) -- (5,\y,\z);}}
+  \foreach \x in {4,5}{%
+    \foreach \z in {0,1,2}{\draw[latedge] (\x,0,\z) -- (\x,3,\z);}
+    \foreach \y in {0,...,3}{\draw[latedge] (\x,\y,0) -- (\x,\y,2);}}
+  \foreach \x in {2,3}{\foreach \y in {0,...,3}{\node[latnode] at (\x,\y,2) {};}}
+  \foreach \x in {4,5}{\foreach \y in {0,...,3}{\foreach \z in {0,1,2}{%
+    \node[latnode] at (\x,\y,\z) {};}}}
+  \draw[edgpath]
+    (0,0,0) -- (0,1,0) -- (1,1,0) -- (1,1,1) -- (1,1,2) -- (2,1,2)
+    -- (3,1,2) -- (4,1,2) -- (4,1,1) -- (4,1,0) -- (4,2,0) -- (5,2,0)
+    -- (5,3,0);
+  \foreach \p in {(0,1,0),(1,1,0),(1,1,1),(1,1,2),(2,1,2),(3,1,2),
+                  (4,1,2),(4,1,1),(4,1,0),(4,2,0),(5,2,0)}{%
+    \node[latnode, fill=cbGreen, draw=white] at \p {};}
+  \node[sball] at (0,0,0) {};
+  \node[tag, text=gstart, below left=2pt] at (0,0,0) {\textbf{A}};
+  \node[gball] at (5,3,0) {};
+  \node[tag, text=ggoal, right=4pt] at (5,3,0) {\textbf{B}};
+  \begin{scope}[shift={(-0.9,-1.3,0)}]
+    \draw[-{Stealth[length=1.4mm]}, neutralg, line width=0.5pt] (0,0,0) -- (0.6,0,0)
+      node[tag, text=neutralg, right=-1pt] {$x$};
+    \draw[-{Stealth[length=1.4mm]}, neutralg, line width=0.5pt] (0,0,0) -- (0,0.7,0)
+      node[tag, text=neutralg, above right=-2pt] {$y$};
+    \draw[-{Stealth[length=1.4mm]}, neutralg, line width=0.5pt] (0,0,0) -- (0,0,0.6)
+      node[tag, text=neutralg, above=-1pt] {$z$};
+  \end{scope}
+\end{tikzpicture}

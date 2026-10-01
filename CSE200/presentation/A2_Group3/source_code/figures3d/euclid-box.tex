@@ -1,0 +1,24 @@
+\begin{tikzpicture}[x={(1.22cm,0cm)}, y={(0.66cm,0.48cm)},
+                    z={(0cm,1.22cm)}, line join=round, line cap=round]
+  \foreach \i in {0,...,4}{\draw[gridgray, line width=0.4pt] (\i,0,0) -- (\i,3,0);}
+  \foreach \j in {0,...,3}{\draw[gridgray, line width=0.4pt] (0,\j,0) -- (4,\j,0);}
+  \draw[gridgray, dashed, line width=0.6pt] (0,3,0) -- (0,3,2);
+  \fill[rbluelt, opacity=0.8] (0,0,0) -- (4,3,0) -- (4,3,2) -- cycle;
+  \draw[rbluemd, dashed, line width=1pt] (0,0,0) -- (4,3,0)
+    node[pos=0.6, below right=-1pt, tag, text=rbluemd] {$5$};
+  \fill[rbluelt, opacity=0.35] (0,0,2) -- (4,0,2) -- (4,3,2) -- (0,3,2) -- cycle;
+  \draw[rbluedk!70, line width=0.8pt]
+    (0,0,0) -- (4,0,0) -- (4,0,2) -- (0,0,2) -- cycle
+    (4,0,0) -- (4,3,0) -- (4,3,2) -- (4,0,2)
+    (0,0,2) -- (0,3,2) -- (4,3,2);
+  \draw[cbOrange, line width=2.2pt] (0,0,0) -- (4,0,0) -- (4,3,0) -- (4,3,2);
+  \node[tag, text=cbOrange, below=3pt] at (2,0,0) {$\Delta x = 4$};
+  \node[tag, text=cbOrange, below right=0pt] at (4,1.5,0) {$\Delta y = 3$};
+  \node[tagbox, text=cbOrange, left=3pt] at (4,3,1) {$\Delta z = 2$};
+  \draw[rblue, line width=2.2pt] (0,0,0) -- (4,3,2);
+  \node[tagbox, text=rblue, above left=0pt] at (2,1.5,1) {$\sqrt{29}\approx 5.39$};
+  \node[sball] at (0,0,0) {};
+  \node[tag, text=gstart, left=6pt] at (0,0,0) {\textbf{A}};
+  \node[gball] at (4,3,2) {};
+  \node[tag, text=ggoal, above=6pt] at (4,3,2) {\textbf{B}};
+\end{tikzpicture}

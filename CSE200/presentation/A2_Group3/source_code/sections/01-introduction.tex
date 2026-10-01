@@ -1,0 +1,126 @@
+\section{Introduction}\label{sec:intro}
+
+Finding the cheapest way from one place to another is one of the most common
+problems in computing. A navigation system planning a drive from Dhaka to
+Sylhet, a game character walking around a river and a router forwarding a
+packet across a network all solve it, often on maps with millions of places and
+with an answer needed in a fraction of a second. Two classical algorithms
+approach the problem from opposite directions. Dijkstra's algorithm always finds
+a cheapest route but searches evenly in every direction, whereas greedy
+best-first search heads straight for the destination but may settle for a
+longer route.
+
+The A* search algorithm of Hart, Nilsson and Raphael~\cite{hart1968formal}
+combines the strengths of both and is the standard method for this problem when
+an estimate of the remaining cost is available~\cite{russell2020aima}. It ranks
+every place that it reaches by the cost of the best route found so far plus an
+estimate of the cost that remains, such as the straight-line distance to the
+destination. As long as this estimate never exceeds the true cost, A* returns a
+cheapest route, yet it examines far fewer places than Dijkstra's algorithm. In
+this report we derive A* from its two predecessors, prove when it is correct,
+analyze its running time and memory, and explain why it examines fewer places.
+We confirm the analysis on a small example, on a grid with an obstacle and on a
+map of the 64 districts of Bangladesh.
+
+\subsection{Pathfinding}\label{sec:pathfinding}
+
+We model a map as a graph: places are vertices, allowed moves are edges, and
+every edge has a nonnegative cost, such as a length or a travel time. A trip
+begins at a \emph{source} and ends at a \emph{destination}.
+
+\begin{definition}[Pathfinding problem]\label{def:pathfinding}
+Given a graph whose edges have nonnegative costs, a source vertex $s$ and a
+destination vertex $t$, the \emph{pathfinding problem} asks for a path from $s$
+to $t$ whose total cost is minimum.
+\end{definition}
+
+Figure~\ref{fig:pathfinding} shows two instances. In the road map, the cheapest
+route from $A$ to $B$ costs 8 although it visits the most places. In the
+lattice, a building blocks the direct route, and the cheapest route climbs over
+the roof in 12 moves instead of eight.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.40\textwidth}\centering
+    \begin{tikzpicture}[x=1cm, y=1cm]
+      \coordinate (A) at (0,0.9);   \coordinate (p) at (1.6,1.8);
+      \coordinate (q) at (1.6,0);   \coordinate (r) at (3.2,0.9);
+      \coordinate (B) at (4.8,0.9);
+      \draw[algastar!45, line width=5pt, line cap=round, line join=round]
+        (A) -- (p) -- (q) -- (r) -- (B);
+      \foreach \a/\b/\w in {A/p/2, A/q/4, p/q/1, p/r/5, q/r/2, r/B/3}
+        {\draw[storyedge] (\a) -- node[storyweight] {\w} (\b);}
+      \node[storystart] at (A) {$A$};
+      \node[storynode]  at (p) {$p$};
+      \node[storynode]  at (q) {$q$};
+      \node[storynode]  at (r) {$r$};
+      \node[storygoal]  at (B) {$B$};
+    \end{tikzpicture}\par\vspace{6pt}
+    \caption{A road map. The cheapest route, $(A, p, q, r, B)$,
+      costs 8.}\label{fig:pf-graph}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.56\textwidth}\centering
+    \input{figures3d/lattice}
+    \caption{A three-dimensional lattice. A building removes the points inside
+      it, and the cheapest route climbs over the roof.}\label{fig:pf-3d}
+  \end{subfigure}
+  \caption{Two instances of the pathfinding problem.}\label{fig:pathfinding}
+\end{figure}
+
+\subsection{Applications}\label{sec:applications}
+
+Table~\ref{tab:applications} lists typical applications of pathfinding.
+
+\begin{table}[H]
+  \centering
+  \caption{Applications of pathfinding.}\label{tab:applications}
+  \small
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{2.5cm}P{2.6cm}P{3.1cm}P{5.6cm}@{}}
+    \toprule
+    Application & Vertices & Cost of an edge & Example\\
+    \midrule
+    Road navigation & road junctions & length or travel time of a road
+      & planning the fastest drive from Dhaka to Sylhet\\
+    Video games & tiles of the map & difficulty of the terrain entered
+      & a character that walks around a river to a bridge instead of wading
+        through it\\
+    Computer networks & routers & delay or load of a link
+            & the OSPF protocol\tablefootnote{OSPF (Open Shortest Path First) is the
+        routing protocol with which the routers inside one network exchange
+        link costs and compute the shortest path to every destination.}, in
+        which every router runs Dijkstra's algorithm to choose the paths of data
+        packets\\
+    Robotics & positions in free space & distance or energy
+      & warehouse robots that carry shelves to packing stations without
+        colliding\\
+    Molecular biology & shapes of a protein & energy needed to change shape
+      & the Folding@home project, which searches networks of protein shapes for
+        likely folding pathways\\
+    Puzzles & board positions & one per move
+      & the fewest moves that solve the 15-puzzle or Rubik's
+        Cube~\cite{korf1985, korf1997}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{The need for pathfinding algorithms}\label{sec:need}
+
+Listing every route and keeping the cheapest is infeasible, because the number
+of routes grows exponentially with the size of the map. On a $50 \times 50$
+grid there are about $2.5 \times 10^{28}$ routes between opposite corners that
+only move right or up; checking a billion per second would take about 800
+billion years. Pathfinding algorithms instead grow routes outward from the
+source and discard a route as soon as a cheaper route to the same place is
+known.
+
+\subsection{Requirements of a pathfinding algorithm}\label{sec:requirements}
+
+A pathfinding algorithm must serve every pair of source and destination, so we
+judge it by two requirements.
+\begin{description}[font=\normalfont\bfseries, leftmargin=1.5em, labelindent=0pt]
+  \item[Optimality.] Whenever the destination can be reached from the source,
+    the algorithm returns a cheapest route between them.
+  \item[Efficiency.] The algorithm finds this route while examining as little
+    of the map as possible.
+\end{description}

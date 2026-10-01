@@ -1,0 +1,30 @@
+\tikzset{
+  rbox/.style  = {draw=black!65, fill=white, line width=0.7pt, rounded corners=2pt,
+                  minimum width=2.9cm, minimum height=0.55cm, font=\small,
+                  inner sep=2pt, text=black},
+  rend/.style  = {rbox=#1, fill=gray!18, font=\small\bfseries},
+  rarr/.style  = {-{Stealth[length=2mm]}, line width=0.8pt, draw=black!60},
+  rleg/.style  = {font=\scriptsize, text=inkgray, right=3pt, midway},
+}
+\begin{tikzpicture}[x=1cm, y=1cm]
+  \node[font=\small\bfseries, text=algastar] at (0,0.75) {Dijkstra and A*};
+  \foreach \n/\name/\s in {0/Dhaka/rend, 1/Narsingdi/rbox, 2/Brahmanbaria/rbox,
+                           3/Habiganj/rbox, 4/Moulvibazar/rbox, 5/Sylhet/rend}
+    {\node[\s=algastar] (d\n) at (0,-0.95*\n) {\name};}
+  \foreach \a/\b/\km in {0/1/33.8, 1/2/39.9, 2/3/55.4, 3/4/38.4, 4/5/47.6}
+    {\draw[rarr] (d\a) -- node[rleg] {\km\,km} (d\b);}
+  \node[font=\small, text=algastar, below=4pt] at (d5.south) {total \textbf{215.1\,km} (optimal)};
+  \node[font=\small\bfseries, text=alggreedy] at (6.4,0.75) {Greedy best-first search};
+  \foreach \n/\name/\s in {0/Dhaka/rend, 1/Narsingdi/rbox, 2/Kishoreganj/rbox,
+                           3/Habiganj/rbox, 4/Moulvibazar/rbox, 5/Sylhet/rend}
+    {\node[\s=alggreedy] (g\n) at (6.4,-0.95*\n) {\name};}
+  \foreach \a/\b/\km in {0/1/33.8, 1/2/58.1, 2/3/65.3, 3/4/38.4, 4/5/47.6}
+    {\draw[rarr] (g\a) -- node[rleg] {\km\,km} (g\b);}
+  \node[font=\small, text=alggreedy, below=4pt] at (g5.south) {total \textbf{243.2\,km} (+28.1\,km)};
+  \draw[black, line width=1pt, rounded corners=2pt] ($(d2.north west)+(-0.08,0.08)$)
+    rectangle ($(d2.south east)+(0.08,-0.08)$);
+  \draw[black, line width=1pt, rounded corners=2pt] ($(g2.north west)+(-0.08,0.08)$)
+    rectangle ($(g2.south east)+(0.08,-0.08)$);
+  \draw[black!70, line width=0.6pt, dashed] ($(d2.east)+(0.08,0)$) -- node[fill=white,
+    font=\scriptsize, text=cbRed, inner sep=1pt] {the only difference} ($(g2.west)+(-0.08,0)$);
+\end{tikzpicture}

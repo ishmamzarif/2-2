@@ -1,0 +1,153 @@
+\section{Why A* expands fewer vertices}\label{sec:efficiency}
+
+Although the worst-case bounds coincide, A* expands far fewer vertices than
+Dijkstra's algorithm in practice. This section characterizes the vertices it
+expands and measures the effect on a grid with an obstacle.
+
+\subsection{The vertices that A* expands}\label{sec:expanded}
+
+\begin{proposition}\label{prop:expanded}
+Let $G$ be a finite graph with nonnegative edge weights, let $t$ be reachable
+from $s$, and let $h$ be a consistent heuristic. Then Algorithm~\ref{alg:astar}
+has the following two properties.
+\begin{enumerate}[label=(\alph*)]
+  \item Every vertex $u$ that it extracts satisfies
+    $\delta(s,u) + h(u) \le C^{*}$.
+  \item Every vertex $u$ with $\delta(s,u) + h(u) < C^{*}$ is extracted before
+    $t$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(a) By Lemma~\ref{lem:exact}, a vertex $u$ is extracted with key
+$g(u) + h(u) = \delta(s,u) + h(u)$. The destination is extracted last, with key
+$\delta(s,t) + h(t) = C^{*}$, and by Lemma~\ref{lem:monotone} no earlier key is
+larger.
+
+(b) Suppose that such a vertex $u$ is not in $S$ when $t$ is extracted. Let $P$
+be a shortest path from $s$ to $u$, and let $x$ be the first vertex of $P$ that
+is not in $S$. The argument of the proof of Lemma~\ref{lem:exact} shows that $x$
+is in $Q$ with $g(x) = \delta(s,x)$, and Lemma~\ref{lem:pathmono} gives
+$f(x) \le \delta(s,u) + h(u) < C^{*}$. The key of $t$ is $C^{*}$, so $x \neq t$,
+and \textsc{Extract-Min} would have returned a vertex with a key below $C^{*}$
+instead of $t$. This is a contradiction.
+\end{proof}
+
+In words, A* expands only vertices whose best route is estimated to cost at
+most $C^{*}$. For the zero heuristic, part~(b) says that Dijkstra's algorithm
+expands every $v$ with $\delta(s,v) < C^{*}$ (Remark~\ref{rem:dijkstra}).
+
+\begin{corollary}\label{cor:subset}
+Let $h$ be a consistent heuristic. Every vertex $u$ that A* expands but
+Dijkstra's algorithm does not expand satisfies $\delta(s,u) = C^{*}$ and
+$h(u) = 0$.
+\end{corollary}
+
+\begin{proof}
+Let $u$ be such a vertex. By part~(a) of Proposition~\ref{prop:expanded},
+$\delta(s,u) + h(u) \le C^{*}$, and since $h(u) \ge 0$, we have
+$\delta(s,u) \le C^{*}$. By part~(b) applied to the zero heuristic, Dijkstra's
+algorithm expands every vertex $v$ with $\delta(s,v) < C^{*}$, so
+$\delta(s,u) = C^{*}$. Then part~(a) gives $h(u) \le 0$, that is, $h(u) = 0$.
+\end{proof}
+
+Apart from such borderline vertices, A* expands a subset of what Dijkstra's
+algorithm expands. The set $\{u : \delta(s,u) + h(u) \le C^{*}\}$ shrinks as $h$
+grows, which justifies requirement~(iii) of Section~\ref{sec:h-requirements};
+for $h = h^{*}$ it contains only the vertices on shortest paths.
+
+On the running example, $\delta(s,v) + h(v)$ is 7 for \cty{D}, \cty{N},
+\cty{B}, \cty{H}, 8 for \cty{S}, and at least 9 for the others, so A* expands
+exactly the five cities of Table~\ref{tab:trace-h}.
+
+Geometrically, with the zero heuristic this set is a disk around $s$; with the
+Euclidean heuristic it is a thin ellipse around the segment from $s$ to $t$
+(Figure~\ref{fig:funnel}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/funnel}
+  \caption{A schematic comparison on one grid. With the zero heuristic the
+    expanded cells form a disk around $s$; with the Euclidean heuristic they
+    form a thin ellipse from $s$ to $t$.}\label{fig:funnel}
+\end{figure}
+
+\subsection{Experiment: a grid with a U-shaped wall}\label{sec:grid}
+
+An obstacle tests how A* copes with information that its heuristic does not
+contain. The instance is as follows (Figure~\ref{fig:grid3d}).
+
+\begin{description}[font=\normalfont\itshape, leftmargin=1.5em, labelindent=0pt]
+    \item[Graph.] The 139 free cells of a $16 \times 10$ grid; moves go up, down,
+    left or right and cost 1.
+  \item[Wall.] A U of 21 cells opening toward the source: column 12, rows 3--7,
+    and rows 3 and 7, columns 4--12.
+  \item[Query.] From $s = (1,4)$ to $t = (14,6)$, behind the wall, with the
+    Manhattan distance as heuristic.
+\end{description}
+
+Ties are broken first in, first out. Table~\ref{tab:grid-compare},
+Figure~\ref{fig:grid-bars} and Figure~\ref{fig:grid-panels} give the results.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/grid-empty}
+  \caption{The $16 \times 10$ test grid. The raised blocks form the U-shaped
+    wall; the source $s$ is green and the destination $t$ is red.}\label{fig:grid3d}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{The three algorithms on the grid with the U-shaped
+    wall.}\label{tab:grid-compare}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+     & \textcolor{algdijkstra}{\textbf{Dijkstra's algorithm}}
+     & \textcolor{alggreedy}{\textbf{Greedy best-first}}
+     & \textcolor{algastar}{\textbf{A* search}}\\
+    \midrule
+    Cells expanded (of 139 free) & 137 & 48 & 81\\
+    Path cost (moves)            & 19 & 35 & 19\\
+    Extra moves over the optimum & 0 & 16 & 0\\
+    Shortest path                & \textcolor{algastar}{yes}
+                                 & \textcolor{cbRed}{no}
+                                 & \textcolor{algastar}{yes}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \resultbars{Cells expanded}{165}{137}{48}{81}{0}\hfill
+  \resultbars{Path cost (moves)}{42}{19}{35}{19}{19}
+  \caption{The results of Table~\ref{tab:grid-compare} as bar charts. The dashed
+    line marks the optimal cost.}\label{fig:grid-bars}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/grid-panels}
+  \caption{The three algorithms on the grid. Dark tiles were expanded, and the
+    line is the returned path.}\label{fig:grid-panels}
+\end{figure}
+
+Dijkstra's algorithm expands almost the whole grid. Greedy best-first search
+fills the inside of the U and returns a path 16 moves longer than necessary.
+
+A* is also drawn into the U, because the Manhattan distance ignores the wall.
+Every cell inside the U is reached by moves toward the destination, so its key
+equals $h(s) = 15 < 19 = C^{*}$, and Proposition~\ref{prop:expanded} forces A*
+to expand it. A* then goes around the wall and returns a shortest path, after
+81 expansions, all among the 137 of Dijkstra's algorithm
+(Corollary~\ref{cor:subset}).
+
+Figure~\ref{fig:timeview} raises every cell to the step at which it was
+expanded: Dijkstra's algorithm spreads evenly from $s$, whereas A* first fills
+the U and then climbs a narrow staircase around the wall.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/timeview}
+  \caption{Every expanded cell raised to the step at which it was expanded, on
+    the same scale in both panels.}\label{fig:timeview}
+\end{figure}

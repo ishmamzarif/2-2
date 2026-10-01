@@ -1,0 +1,232 @@
+\section{Worked example on a real map: Dhaka to Sylhet}\label{sec:casestudy}
+
+We now follow the three algorithms from Dhaka to Sylhet on a map of
+Bangladesh.
+
+\subsection{The district graph}\label{sec:mapgraph}
+
+The instance is as follows (Figure~\ref{fig:mapgraph}).
+
+\begin{description}[font=\normalfont\itshape, leftmargin=1.5em, labelindent=0pt]
+    \item[Graph.] The 64 districts of Bangladesh, placed at their centres, with
+    133 edges between neighboring districts.
+  \item[Weights.] The great-circle distance $d(u,v)$ between district centres,
+    that is, the shortest distance along the Earth's surface, computed with the
+    haversine formula.\footnote{For two points with latitudes $\varphi_1,
+    \varphi_2$ and longitudes $\lambda_1, \lambda_2$ on a sphere of radius
+    $R$, the haversine formula gives the distance
+    $d = 2R \arcsin \sqrt{\sin^2\bigl((\varphi_2 - \varphi_1)/2\bigr) + \cos \varphi_1
+    \cos \varphi_2 \sin^2\bigl((\lambda_2 - \lambda_1)/2\bigr)}$; we use
+    $R = 6371$\,km.}
+\end{description}
+
+The heuristic is the straight-line distance to Sylhet,
+\begin{equation}\label{eq:hmap}
+  h(v) = d(v, \text{Sylhet}),
+\end{equation}
+which is consistent because the weights are themselves straight-line distances
+(Table~\ref{tab:which-h}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/map_graph}
+  \caption{The district graph: 64 districts of Bangladesh joined by 133 edges
+    between neighbors. The source, Dhaka, is green, and the destination, Sylhet, is
+    red.}\label{fig:mapgraph}
+\end{figure}
+
+\subsection{Dijkstra's algorithm}\label{sec:map-dijkstra}
+
+Dijkstra's algorithm returns the optimal 215.1\,km route but expands 50 of the
+64 districts (Figure~\ref{fig:dijkstra-tree}, Table~\ref{tab:dijkstra-result}).
+Jashore and Naogaon lie away from Sylhet but are expanded first because they are
+closer to Dhaka (Remark~\ref{rem:dijkstra}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/dijkstra-tree}
+  \caption{The search tree of Dijkstra's algorithm from Dhaka, with every
+    expanded district lifted to its cost $g$ in kilometres. The tree grows in
+    every direction; Jashore and Naogaon lie away from Sylhet but are expanded
+    before it.}\label{fig:dijkstra-tree}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Dijkstra's algorithm from Dhaka to Sylhet.}\label{tab:dijkstra-result}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Districts expanded & 50 of 64\\
+    Districts on the route & 6\\
+    Route & Dhaka, Narsingdi, Brahmanbaria, Habiganj, Moulvibazar, Sylhet\\
+    Route cost & 215.1\,km (optimal)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Greedy best-first search}\label{sec:map-greedy}
+
+Greedy best-first search rolls down the funnel of $h$
+(Figure~\ref{fig:greedy-compass}). It expands only six districts, but its route
+is 28.1\,km (13\%) longer than the optimum.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/greedy-compass}
+  \caption{Every district lifted to $h$, its straight-line distance to Sylhet in
+    kilometres. Greedy best-first search (orange) always moves to the lowest
+    district it has seen.}\label{fig:greedy-compass}
+\end{figure}
+
+The wrong turn is at Narsingdi (Figure~\ref{fig:narsingdi}): Kishoreganj looks
+8.4\,km closer to Sylhet, but the road to it is 18.2\,km longer. The key of A*
+prefers Brahmanbaria (203.5\,km against 213.3\,km). The two routes differ in
+this one district (Figure~\ref{fig:route-flow}).
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}[c]{0.54\textwidth}\centering
+    \resizebox{\linewidth}{!}{\input{figures3d/narsingdi}}
+  \end{minipage}\hfill
+  \begin{minipage}[c]{0.43\textwidth}\centering
+    \captionof{table}{The two roads out of Narsingdi, where $g = 33.8$\,km.
+      All values are in kilometres.}\label{tab:narsingdi}
+    \footnotesize\setlength{\tabcolsep}{4pt}
+    \resizebox{\linewidth}{!}{%
+    \begin{tabular}{@{}lcc@{}}
+      \toprule
+      & Kishoreganj & Brahmanbaria\\
+      \midrule
+      road from Narsingdi    & 58.1 & 39.9\\
+      $h$ to Sylhet          & \textbf{121.4} & 129.8\\
+      $g$ through Narsingdi  & 91.9 & 73.7\\
+      $f = g + h$            & 213.3 & \textbf{203.5}\\
+      \midrule
+      chosen by greedy search  & \checkmark & \\
+      smaller key $f$ (A*)     & & \checkmark\\
+      \bottomrule
+    \end{tabular}}
+  \end{minipage}
+  \caption{The choice at Narsingdi. Each column shows $g$ (green) with $h$
+    (orange) on top, so its height is $f$.}\label{fig:narsingdi}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/route-flow}
+  \caption{The routes from Dhaka to Sylhet as flow charts, with the length of
+    every leg.}\label{fig:route-flow}
+\end{figure}
+
+\subsection{A* search}\label{sec:map-astar}
+
+A* returns the optimal route after eight expansions
+(Figure~\ref{fig:astar-columns}, Table~\ref{tab:astar-map}). The run
+illustrates three results of the report:
+\begin{enumerate}[label=(\arabic*)]
+  \item The off-route districts Gazipur and Kishoreganj are expanded because
+    their keys are below $C^{*}$ (Proposition~\ref{prop:expanded}).
+  \item Relaxation repairs the detour: Habiganj is first reached through
+    Kishoreganj at 147.3\,km and then through Brahmanbaria at 129.1\,km.
+  \item The keys never decrease (Lemma~\ref{lem:monotone}).
+\end{enumerate}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/astar-columns}
+  \caption{The eight districts expanded by A*, as columns of $g$ (green) and $h$
+    (orange). No column rises above the optimal cost $C^{*} = 215.1$\,km
+    (dashed).}\label{fig:astar-columns}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{The districts expanded by A* from Dhaka to Sylhet, in order. All
+    values are in kilometres.}\label{tab:astar-map}
+  \begin{tabular}{@{}rlrrr@{}}
+    \toprule
+    Step & District & $g$ & $h$ & $f = g + h$\\
+    \midrule
+    \inputrows{figures/map_astar_rows.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Comparison}\label{sec:map-compare}
+
+Table~\ref{tab:map-compare}, Figure~\ref{fig:map-bars} and
+Figure~\ref{fig:map-panels} compare the three algorithms.
+
+\begin{table}[htbp]
+  \centering
+  \caption{The three algorithms on the district graph, from Dhaka to
+    Sylhet.}\label{tab:map-compare}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+     & \textcolor{algdijkstra}{\textbf{Dijkstra's algorithm}}
+     & \textcolor{alggreedy}{\textbf{Greedy best-first}}
+     & \textcolor{algastar}{\textbf{A* search}}\\
+    \midrule
+    Districts expanded (of 64) & 50 & 6 & 8\\
+    Route cost (km)            & 215.1 & 243.2 & 215.1\\
+    Extra cost over the optimum & 0 & 28.1\,km (13\%) & 0\\
+    Shortest route             & \textcolor{algastar}{yes}
+                               & \textcolor{cbRed}{no}
+                               & \textcolor{algastar}{yes}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \resultbars{Districts expanded}{62}{50}{6}{8}{0}\hfill
+  \resultbars{Route cost (km)}{290}{215.1}{243.2}{215.1}{215.1}
+  \caption{The results of Table~\ref{tab:map-compare} as bar charts. The dashed
+    line marks the optimal cost.}\label{fig:map-bars}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/map_panels}
+  \caption{The districts expanded (filled) and the route returned by each
+    algorithm from Dhaka (green) to Sylhet (red).}\label{fig:map-panels}
+\end{figure}
+
+Figure~\ref{fig:water} explains the gap. Flooding the map to $C^{*}$ submerges
+the 50 districts with $g \le C^{*}$, which Dijkstra's algorithm expands, but only
+the eight with $g + h \le C^{*}$, which A* expands
+(Proposition~\ref{prop:expanded}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures3d/water}
+  \caption{Every district as a pin, flooded to $C^{*} = 215.1$\,km. Left: pin
+    height $g$. Right: pin height $g + h$. Adding $h$ lifts every district that
+    lies away from Sylhet out of the water.}\label{fig:water}
+\end{figure}
+
+\subsection{Summary of the experiments}\label{sec:summary}
+
+Table~\ref{tab:compare-all} collects all results. A* always returned a shortest
+path, with 38\%, 41\% and 84\% fewer expansions than Dijkstra's algorithm on
+the three instances. Greedy best-first search expanded the fewest vertices but
+never returned a shortest path.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Vertices expanded and cost of the returned path on the three
+    instances.}\label{tab:compare-all}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+     & \multicolumn{2}{c}{Running example} & \multicolumn{2}{c}{Grid}
+     & \multicolumn{2}{c}{District graph}\\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(l){6-7}
+     & expanded & cost & expanded & cost & expanded & cost\\
+    \midrule
+    Dijkstra's algorithm     & 8 & 8 & 137 & 19 & 50 & 215.1\,km\\
+    Greedy best-first search & 4 & \textcolor{cbRed}{10} & 48
+      & \textcolor{cbRed}{35} & 6 & \textcolor{cbRed}{243.2\,km}\\
+    A* search                & 5 & 8 & 81 & 19 & 8 & 215.1\,km\\
+    \bottomrule
+  \end{tabular}
+\end{table}

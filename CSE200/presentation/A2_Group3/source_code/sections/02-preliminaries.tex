@@ -1,0 +1,143 @@
+\section{Preliminaries}\label{sec:prelim}
+
+This section fixes the terminology and notation and introduces the running
+example.
+
+\subsection{Graphs and paths}\label{sec:def-graph}
+
+\begin{definition}[Weighted graph]\label{def:graph}
+A \emph{weighted graph} $G = (V, E, w)$ consists of a finite set $V$ of
+vertices, a set $E$ of edges, each of which joins two vertices, and a weight
+function $w$ that assigns a nonnegative cost $w(u,v)$ to every edge $(u,v)$.
+\end{definition}
+
+All graphs in this report are undirected. In Figure~\ref{fig:defs},
+$V = \{A, p, q, r, B\}$ and $w(A,p) = 2$.
+
+\begin{definition}[Path and path cost]\label{def:path}
+A \emph{path} from a vertex $u$ to a vertex $v$ is a sequence of vertices
+$P = (v_0, v_1, \dots, v_k)$ with $v_0 = u$ and $v_k = v$ in which every two
+consecutive vertices are joined by an edge. The \emph{cost} of the path is
+\begin{equation}\label{eq:pathcost}
+  c(P) = \sum_{i=1}^{k} w(v_{i-1}, v_i).
+\end{equation}
+\end{definition}
+
+For example, the path $(A, q, r, B)$ of Figure~\ref{fig:defs-b} costs
+$4 + 2 + 3 = 9$.
+
+\begin{definition}[Distance and shortest path]\label{def:shortest}
+The \emph{distance} $\delta(u,v)$ from a vertex $u$ to a vertex $v$ is the
+minimum cost of a path from $u$ to $v$; if no such path exists, then
+$\delta(u,v) = \infty$. A path from $u$ to $v$ of cost $\delta(u,v)$ is a
+\emph{shortest path} from $u$ to $v$.
+\end{definition}
+
+Table~\ref{tab:defs-paths} lists the paths from $A$ to $B$ that visit no vertex
+twice; the shortest one has the most edges.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/defs-graph}
+  \caption{Paths in the road map of Figure~\ref{fig:pf-graph}.}\label{fig:defs}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{All paths from $A$ to $B$ in Figure~\ref{fig:defs} that visit no
+    vertex twice.}\label{tab:defs-paths}
+  \begin{tabular}{@{}lcl@{}}
+    \toprule
+    Path & Edges & Cost\\
+    \midrule
+    $(A, p, q, r, B)$ & 4 & $2 + 1 + 2 + 3 = \mathbf{8}$ \quad shortest, $\delta(A,B) = 8$\\
+    $(A, q, r, B)$    & 3 & $4 + 2 + 3 = 9$\\
+    $(A, p, r, B)$    & 3 & $2 + 5 + 3 = 10$\\
+    $(A, q, p, r, B)$ & 4 & $4 + 1 + 5 + 3 = 13$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Heuristic functions}\label{sec:def-heuristic}
+
+A search does not know in advance how far each vertex is from the destination
+$t$, but it can use a quick estimate, such as the straight-line distance on a
+map. We write $h^{*}(v) = \delta(v,t)$ for the true remaining cost.
+
+\begin{definition}[Heuristic function]\label{def:heuristic}
+A \emph{heuristic function}, or simply a \emph{heuristic}, is a function $h$
+that assigns to every vertex $v$ a nonnegative number $h(v)$, an estimate of
+the remaining cost $h^{*}(v)$.
+\end{definition}
+
+\subsection{Best-first search}\label{sec:bestfirst}
+
+All three algorithms of this report are \emph{best-first searches}. They keep a
+\emph{priority queue}~\cite{baeldungpq} $Q$ of vertices that have been reached but not explored,
+each with a numerical \emph{key}; a smaller key means a more promising vertex.
+In each round the search removes a vertex $u$ with the smallest key and
+\emph{expands} it: it adds $u$ to the set $S$ of \emph{closed} vertices and
+examines every edge $(u,v)$, which may insert $v$ into $Q$ or lower its key.
+The search stops when it removes the destination. The algorithms differ only in
+the key.
+
+The pseudocode uses three queue operations: \textsc{Extract-Min}$(Q)$ removes
+and returns a vertex with the smallest key, \textsc{Insert}$(Q, v, k)$ adds $v$
+with key $k$, and \textsc{Insert-or-Decrease-Key}$(Q, v, k)$ adds $v$ or, if it
+is already in $Q$, lowers its key to $k$. We measure the work of a search by the
+number of vertices it expands, the destination included.
+Table~\ref{tab:notation} collects the notation.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Notation used in the report.}\label{tab:notation}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Symbol & Meaning\\
+    \midrule
+    $G = (V,E,w)$ & weighted graph with vertex set $V$, edge set $E$ and weights $w$\\
+    $s$, $t$      & source vertex and destination vertex\\
+    $\delta(u,v)$ & distance from $u$ to $v$, the cost of a shortest path\\
+    $C^{*}$       & distance from $s$ to $t$, that is, $\delta(s,t)$\\
+    $g(v)$        & cost of the cheapest path from $s$ to $v$ found so far\\
+    $h(v)$        & heuristic estimate of the remaining cost from $v$ to $t$\\
+    $h^{*}(v)$    & true remaining cost $\delta(v,t)$\\
+    $f(v)$        & key used by A*, $f(v) = g(v) + h(v)$\\
+    $\pi(v)$      & predecessor of $v$ on the cheapest path found so far\\
+    $Q$           & priority queue of vertices reached but not yet expanded\\
+    $S$           & set of closed vertices, that is, of expanded vertices\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{The running example}\label{sec:running}
+
+Figure~\ref{fig:running} shows the graph on which we trace the algorithms:
+eight cities from Dhaka (\cty{D}) to Sylhet (\cty{S}), with Gazipur (\cty{G}),
+Narsingdi (\cty{N}), Kishoreganj (\cty{K}), Brahmanbaria (\cty{B}), Cumilla
+(\cty{C}) and Habiganj (\cty{H}).  The edge weights are small integers
+chosen for the example, and each disc shows a heuristic value $h(v)$, which never
+exceeds the true remaining cost (Table~\ref{tab:story-h}). The shortest path is
+$(\cty{D}, \cty{N}, \cty{B}, \cty{H}, \cty{S})$, of cost $C^{*} = 8$.
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{0.62\textwidth}{!}{\input{figures/story_iso_plain}}
+  \caption{The running example. Each edge shows its weight and each disc the
+    heuristic value $h$; the source \cty{D} has a green rim and the destination
+    \cty{S} a red rim.}\label{fig:running}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{The heuristic $h$ of the running example and the true remaining
+    cost $h^{*}$.}\label{tab:story-h}
+  \begin{tabular}{@{}lcccccccc@{}}
+    \toprule
+    City & \cty{D} & \cty{G} & \cty{N} & \cty{K} & \cty{B} & \cty{C} & \cty{H} & \cty{S}\\
+    \midrule
+    Heuristic $h$        & 7 & 8 & 5 & 4 & 4 & 7 & 2 & 0\\
+    True cost $h^{*}$    & 8 & 9 & 6 & 7 & 5 & 8 & 3 & 0\\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -1,0 +1,104 @@
+% part2-defs.tex -- part 2 macros and styles (Proteek Rosul)
+%   loaded by part2.tex and by ../combined.tex
+
+% ======================================================================
+%  3D SUPPORT
+% ======================================================================
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% overlay-aware visibility for tikz / pgfplots elements:
+%   \addplot3[..., visible on=<2->] ...      \draw[visible on=<3->] ...
+\tikzset{
+  invisible/.style  = {opacity=0, text opacity=0},
+  visible on/.style = {alt={#1{}{invisible}}},
+  alt/.code args    = {<#1>#2#3}{\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}},
+}
+
+% height ramps: deep at the goal, pale on the rim.  Blue = Euclidean,
+% orange = Manhattan -- the same pairing the 2D distance slide uses.
+\pgfplotsset{
+  colormap={hblue}{color=(rbluedk) color=(rbluemd) color=(rbluelt)},
+  colormap={horange}{color=(cbOrange!70!black) color=(cbOrange) color=(cbOrangeLt)},
+  % flat grid tiles, value = 0 free / 1 expanded / 2 start / 3 goal
+  colormap={htiles}{color=(gfree) color=(gclose) color=(gstart) color=(ggoal)},
+  land3d/.style   = {axis lines=none, clip=false},
+  % land view={az}{el}{unit in cm}: pgfplots' own view={az}{el} projection,
+  % but with one fixed length per data unit, so shapes keep their true
+  % proportions (a cone stays round) and the size is predictable
+  land view/.code n args = {3}{%
+    \pgfmathsetmacro\lvxx{#3*cos(#1)}%
+    \pgfmathsetmacro\lvxy{-#3*sin(#1)*sin(#2)}%
+    \pgfmathsetmacro\lvyx{#3*sin(#1)}%
+    \pgfmathsetmacro\lvyy{#3*cos(#1)*sin(#2)}%
+    \pgfmathsetmacro\lvzy{#3*cos(#2)}%
+    \edef\lvkeys{\noexpand\pgfkeysalso{%
+      x={(\lvxx cm,\lvxy cm)}, y={(\lvyx cm,\lvyy cm)}, z={(0cm,\lvzy cm)}}}%
+    \lvkeys},
+  % lifted grid: flat-shaded facets with white gutters, like the 2D tiles
+  tilesurf/.style = {surf, shader=faceted, faceted color=white,
+                     line width=0.45pt, z buffer=sort, point meta=z},
+}
+
+\tikzset{
+  sball/.style  = {circle, fill=gstart, draw=white, line width=0.7pt,
+                   minimum size=3.4mm, inner sep=0pt},
+  gball/.style  = {sball, fill=ggoal},
+  vball/.style  = {sball, fill=hlyellow, draw=cbOrange, line width=1pt},
+  tag/.style    = {font=\scriptsize, inner sep=1.5pt},
+  tagbox/.style = {tag, fill=white, fill opacity=0.85, text opacity=1,
+                   rounded corners=1pt},
+  move3d/.style = {-{Stealth[length=2.2mm]}, line width=1.7pt,
+                   line cap=round, shorten >=0.6pt},
+}
+
+% ---------- per-figure geometry ----------------------------------------
+% 3D-a: 12 x 12 lattice, G at (7,3), height = kA * Euclidean distance
+\def\kA{0.45}\def\gAx{7}\def\gAy{3}
+\newcommand{\liftA}[2]{(#1,#2,{\kA*veclen((#1)-\gAx,(#2)-\gAy)})}
+% the flat map on the floor (a loop body with # cannot sit inside a frame)
+\newcommand{\floorA}{%
+  \pgfplotsinvokeforeach{0,...,12}{%
+    \draw[gridgray, line width=0.35pt] (##1,0,0) -- (##1,12,0);
+    \draw[gridgray, line width=0.35pt] (0,##1,0) -- (12,##1,0);}}
+
+% 3D-b: G at the origin, v at (6,0), height = kB * Euclidean distance
+\def\kB{0.45}
+\newcommand{\liftB}[2]{(#1,#2,{\kB*veclen(#1,#2)})}
+
+% 3D-c: 18 x 12 cells, S and G cell centres, optimal cost C* = 5
+%       Dijkstra expands the disk  |vS| <= C*;
+%       A* the ellipse             |vS| + |vG| <= C* + slack
+\def\kC{0.3}
+\def\cSx{5.5}\def\cSy{6.5}\def\cGx{10.5}\def\cGy{6.5}
+\def\cCost{5}\def\cSlack{0.9}
+\newcommand{\legendC}{%
+  \begin{tikzpicture}[x=0.34cm,y=0.34cm, baseline=0pt]
+    \renewcommand{\gpad}{0.09}%
+    \gcell{gclose}{0}{0}
+      \node[anchor=west, font=\scriptsize] at (1.4,0.5) {expanded};
+    \gcell{gfree}{7}{0}
+      \node[anchor=west, font=\scriptsize] at (8.4,0.5) {never touched};
+    \gcell{cbGreen}{16.5}{0}
+      \node[anchor=west, font=\scriptsize] at (17.9,0.5) {optimal route};
+  \end{tikzpicture}}
+
+% 3D-e: cone / pyramid, rim at distance 4, sample point P = (2,1)
+\def\kE{0.8}\def\pEx{2}\def\pEy{1}
+
+
+% colour-coded highlight, shown from overlay 2 on: #1 = 2 orange, 3 green,
+% 4 blue, 5 red, anything else yellow.  preamble2.tex calls it \hlon; it
+% is renamed so it can sit beside part 1's \hlon{<overlay>}{...} in
+% combined.tex.
+\newcommand{\hlonc}[2]{%
+  \alt<2->{%
+    \setlength{\fboxsep}{1.4pt}%
+    \ifnum#1=2 \colorbox{cbOrange!30}{#2}%
+    \else\ifnum#1=3 \colorbox{cbGreen!30}{#2}%
+    \else\ifnum#1=4 \colorbox{rblue!30}{#2}%
+    \else\ifnum#1=5 \colorbox{cbRed!30}{#2}%
+    \else \colorbox{hlyellow}{#2}%
+    \fi\fi\fi\fi
+  }{#2}%
+}

@@ -1,0 +1,106 @@
+% !TEX program = xelatex
+
+\RequirePackage{fix-cm}
+\documentclass[aspectratio=169,10pt]{beamer}
+
+
+\def\combineddeck{}
+
+\input{preamble}
+\usepackage{docmute}
+\usepackage{import}
+\input{grids/stats}                      
+\input{part1/part1-defs}
+\input{part2/part2-defs}
+% \subimport: part 3's own \input{visuals}, \input{generated/...}
+% resolve relative to its folder
+\subimport{part3/}{part3-defs}
+
+
+\newfontfamily\diagfontsc{lmroman10-}[Extension=.otf,
+  UprightFont=*regular, BoldFont=*bold,
+  ItalicFont=*italic,   BoldItalicFont=*bolditalic,
+  SmallCapsFont=lmromancaps10-regular]
+\newcommand{\partsetup}[1]{%
+  \ifnum#1=3 \let\algfont\diagfontsc \else \let\algfont\diagfont \fi
+  \ifcase#1\or
+    \renewcommand{\footauthor}{Zarif Ishmam}%
+    \tikzset{sball/.style = {circle, fill=gstart, draw=white, line width=0.7pt,
+                             minimum size=3.2mm, inner sep=0pt}}%
+    \pgfplotsset{tilesurf/.style = {surf, shader=faceted, faceted color=white,
+                                    line width=0.4pt, z buffer=sort, point meta=z}}%
+  \or
+    \renewcommand{\footauthor}{Proteek Rosul}%
+    \tikzset{sball/.style = {circle, fill=gstart, draw=white, line width=0.7pt,
+                             minimum size=3.4mm, inner sep=0pt}}%
+    \pgfplotsset{tilesurf/.style = {surf, shader=faceted, faceted color=white,
+                                    line width=0.45pt, z buffer=sort, point meta=z}}%
+  \or
+    \renewcommand{\footauthor}{Tonmoy Biswas}%
+  \fi}
+
+% ---------- the roadmap banner ------------------------------------------
+\newcommand{\parttitle}[1]{\ifcase#1\or Introduction to Pathfinding and A*%
+  \or Complexity Analysis and Heuristics\or Worked Simulation\fi}
+\newcommand{\partwho}[1]{\ifcase#1\or Zarif Ishmam \,$\cdot$\, 2305035%
+  \or Proteek Rosul \,$\cdot$\, 2305042\or Tonmoy Biswas \,$\cdot$\, 2305038\fi}
+% three cards, one per part: card #1 is lit, the others muted.  The rail on
+% the left marks progress -- parts already given pale, the current one solid.
+\newcommand{\partbanner}[1]{%
+  \begin{tikzpicture}[
+      card/.style    = {rounded corners=3pt, minimum width=11cm,
+                        minimum height=1.3cm, inner sep=0pt},
+      cardon/.style  = {card, fill=rblue, draw=rbluedk, line width=0.8pt, blkshadow},
+      cardoff/.style = {card, fill=rbluelt!60, draw=rbluelt, line width=0.6pt},
+      num/.style     = {circle, minimum size=0.78cm, inner sep=0pt,
+                        font=\large\bfseries},
+      rail/.style    = {circle, minimum size=2.6mm, inner sep=0pt}]
+    \draw[rbluelt, line width=1.4pt] (-6.1,0) -- (-6.1,-3.3);
+    \foreach \k in {1,2,3}{%
+      \pgfmathsetmacro\yy{-1.65*(\k-1)}%
+      \ifnum\k=#1
+        \node[cardon] (c) at (0,\yy) {};
+        \node[num, fill=white, text=rblue] at ($(c.west)+(0.75,0)$) {\k};
+        \node[anchor=west, text=white, font=\large\bfseries]
+          at ($(c.west)+(1.45,0.2)$) {\parttitle{\k}};
+        \node[anchor=west, text=rbluelt, font=\small]
+          at ($(c.west)+(1.45,-0.3)$) {\partwho{\k}};
+        \node[rail, fill=rblue, draw=white, line width=0.8pt,
+              minimum size=3.6mm] at (-6.1,\yy) {};
+      \else
+        \node[cardoff] (c) at (0,\yy) {};
+        \node[num, fill=white, draw=rbluelt, text=gray!55]
+          at ($(c.west)+(0.75,0)$) {\k};
+        \node[anchor=west, text=gray!60, font=\large]
+          at ($(c.west)+(1.45,0.2)$) {\parttitle{\k}};
+        \node[anchor=west, text=gray!50, font=\small]
+          at ($(c.west)+(1.45,-0.3)$) {\partwho{\k}};
+        \ifnum\k<#1
+          \node[rail, fill=rbluemd!55] at (-6.1,\yy) {};
+        \else
+          \node[rail, fill=white, draw=rbluelt, line width=0.8pt] at (-6.1,\yy) {};
+        \fi
+      \fi}
+  \end{tikzpicture}}
+
+\begin{document}
+
+% ---- title
+\partsetup{1}
+\input{title}               
+
+% ---------- part 1
+\begin{frame}{Roadmap}\centering\partbanner{1}\end{frame}
+\input{part1/part1}
+
+% ---------- part 2 
+\partsetup{2}
+\begin{frame}{Roadmap}\centering\partbanner{2}\end{frame}
+\input{part2/part2}
+
+% ---------- part 3 
+\partsetup{3}
+\begin{frame}{Roadmap}\centering\partbanner{3}\end{frame}
+\input{part3/main}
+
+\end{document}

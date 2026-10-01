@@ -1,0 +1,36 @@
+\begin{tikzpicture}[cam={20}{40}{3.3}{3.64}, line cap=round, line join=round,
+                    every node/.style={inner sep=0pt}]
+  \def\kz{0.0047}
+  \nefloor
+  \foreach \a/\b in {dhaka/narsingdi, dhaka/gazipur, gazipur/kishoreganj,
+      narsingdi/brahmanbaria, brahmanbaria/habiganj, habiganj/moulvibazar,
+      moulvibazar/sylhet}{\draw[rblue!70, line width=0.9pt] (\a) -- (\b);}
+  \draw[edgpath, line width=1.6pt] (dhaka) -- (narsingdi)
+    -- (brahmanbaria) -- (habiganj) -- (moulvibazar) -- (sylhet);
+  \prism{sylhet}{0}{215.1}{cbGreen}
+  \prism{kishoreganj}{0}{82.0}{cbGreen}
+  \prism{kishoreganj}{82.0}{203.4}{cbOrange}
+  \prism{habiganj}{0}{129.1}{cbGreen}
+  \prism{habiganj}{129.1}{203.5}{cbOrange}
+  \prism{moulvibazar}{0}{167.5}{cbGreen}
+  \prism{moulvibazar}{167.5}{215.1}{cbOrange}
+  \prism{gazipur}{0}{20.0}{cbGreen}
+  \prism{gazipur}{20.0}{198.3}{cbOrange}
+  \prism{narsingdi}{0}{33.8}{cbGreen}
+  \prism{narsingdi}{33.8}{193.3}{cbOrange}
+  \prism{dhaka}{0}{191.2}{cbOrange}
+  \prism{brahmanbaria}{0}{73.7}{cbGreen}
+  \prism{brahmanbaria}{73.7}{203.5}{cbOrange}
+  \begin{scope}[shift={(-87.98,-20.75,{215.1*\kz})}]
+    \draw[cbGreen, line width=0.7pt, dash pattern=on 2.5pt off 1.5pt]
+      (90.3,23.7) -- (92.0,23.7) -- (92.0,25.0) -- (90.3,25.0) -- cycle;
+    \node[tagbox, text=cbGreen, anchor=south, yshift=2pt]
+      at (91.15,25.0) {ceiling $C^{*} = 215.1$\,km};
+  \end{scope}
+  \node[sball, minimum size=2.4mm] at (dhaka) {};
+  \node[gball, minimum size=2.4mm] at (sylhet) {};
+  \node[maplab, anchor=north east, xshift=-2pt, yshift=-1pt] at (dhaka) {Dhaka};
+  \node[maplab, anchor=west, xshift=4pt] at (sylhet) {Sylhet};
+  \node[maplab, anchor=north, yshift=-3pt] at (gazipur) {Gazipur};
+  \node[maplab, anchor=east, xshift=-4pt] at (kishoreganj) {Kishoreganj};
+\end{tikzpicture}

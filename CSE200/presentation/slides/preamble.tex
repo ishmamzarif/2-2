@@ -1,0 +1,433 @@
+% ======================================================================
+%  preamble.tex -- shared by part1.tex, part2.tex, part3.tex
+%  A* Search Algorithm -- CSE200, CSE BUET
+%  ENGINE: XeLaTeX only (fontspec + OpenType)
+% ======================================================================
+
+\usetheme{default}
+\useinnertheme{rounded}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercovered{invisible}
+
+% ----------------------------------------------------------------------
+%  1.  FONTS
+%      text  -> beamer default  (Latin Modern Sans, beamer's own face)
+%      diag  -> Latin Modern Roman  (the LaTeX default face)
+%      alg   -> Latin Modern Roman  (the LaTeX default face)
+%      math  -> beamer default, untouched
+%
+%      >>> IBM PLEX SANS: to bring it back as the text font, uncomment
+%      >>> the two \set...font lines below.  (TeX Live `plex' fonts,
+%      >>> found via kpathsea -- nothing has to live in fonts/.)
+% ----------------------------------------------------------------------
+\usepackage{fontspec}
+% \setmainfont{IBMPlexSans}[Extension=.otf,
+%   UprightFont=*-Regular, BoldFont=*-Bold,
+%   ItalicFont=*-Italic,   BoldItalicFont=*-BoldItalic]
+% \setsansfont{IBMPlexSans}[Extension=.otf,
+%   UprightFont=*-Regular, BoldFont=*-Bold,
+%   ItalicFont=*-Italic,   BoldItalicFont=*-BoldItalic]
+\newfontfamily\diagfont{lmroman10-}[Extension=.otf,
+  UprightFont=*regular, BoldFont=*bold,
+  ItalicFont=*italic,   BoldItalicFont=*bolditalic]
+\let\algfont\diagfont
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{pifont}                % \ding symbols (part 2)
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,decorations.pathreplacing,calc,
+                shapes.geometric,backgrounds,fit,shadows.blur, tikzmark}
+
+% ----------------------------------------------------------------------
+%  2.  PALETTE
+% ----------------------------------------------------------------------
+\definecolor{rblue}{HTML}{2E2E9C}
+\definecolor{rbluedk}{HTML}{1C1C6B}
+\definecolor{rbluemd}{HTML}{5A5AC4}
+\definecolor{rbluelt}{HTML}{E7E7F7}
+\definecolor{cbOrange}{HTML}{D97706}
+\definecolor{cbOrangeLt}{HTML}{FDF0DC}
+\definecolor{cbGreen}{HTML}{0B7A3B}
+\definecolor{cbGreenLt}{HTML}{E4F2E9}
+\definecolor{cbRed}{HTML}{B01B2E}
+\definecolor{cbRedLt}{HTML}{FAE7E9}
+\definecolor{crison}{HTML}{96383c}
+\definecolor{neutralg}{gray}{0.46}
+\definecolor{lnnum}{gray}{0.58}
+\definecolor{hlyellow}{HTML}{FFE9A8}
+\definecolor{gridgray}{gray}{0.82}
+\definecolor{closedc}{gray}{0.80}
+
+% grid tiles -- flat, low-saturation rose ramp: untouched -> frontier ->
+% expanded, plus a charcoal wall.  S and G are solid accent tiles.
+\definecolor{gfree}{HTML}{F4EDEE}
+\definecolor{gopen}{HTML}{DEBBC2}
+\definecolor{gclose}{HTML}{BE7F89}
+\definecolor{gwall}{HTML}{3F3F46}
+\definecolor{gstart}{HTML}{0B7A3B}
+\definecolor{ggoal}{HTML}{B01B2E}
+
+% soft, low-saturation tints used only by the beamer blocks -- kept apart
+% from the tikz palette above so diagram colours stay untouched
+\definecolor{blkInk}{HTML}{20242E}
+\definecolor{blkBlueTt}{HTML}{E4E4F3}
+\definecolor{blkBlueBd}{HTML}{F3F3FA}
+\definecolor{blkBlueFg}{HTML}{2E2E78}
+\definecolor{blkRedTt}{HTML}{F4E4E6}
+\definecolor{blkRedBd}{HTML}{FBF4F4}
+\definecolor{blkRedFg}{HTML}{8C2C3A}
+\definecolor{blkGrnTt}{HTML}{E2EEE7}
+\definecolor{blkGrnBd}{HTML}{F2F8F4}
+\definecolor{blkGrnFg}{HTML}{2E6A4A}
+
+\newcommand{\pos}[1]{\textcolor{cbGreen}{#1}}
+\newcommand{\con}[1]{\textcolor{cbOrange}{#1}}
+\newcommand{\bad}[1]{\textcolor{cbRed}{#1}}
+\newcommand{\HL}[1]{\textcolor{rblue}{#1}}
+\newcommand{\mut}[1]{\textcolor{neutralg}{#1}}
+
+% ----------------------------------------------------------------------
+%  3.  COLOUR ASSIGNMENTS
+% ----------------------------------------------------------------------
+\setbeamercolor{structure}{fg=rblue}
+\setbeamercolor{frametitle}{bg=rblue,fg=white}
+\setbeamercolor{title}{bg=rblue,fg=white}
+\setbeamercolor{block title}{bg=blkBlueTt,fg=blkBlueFg}
+\setbeamercolor{block body}{bg=blkBlueBd,fg=blkInk}
+\setbeamercolor{block title alerted}{bg=blkRedTt,fg=blkRedFg}
+\setbeamercolor{block body alerted}{bg=blkRedBd,fg=blkInk}
+\setbeamercolor{block title example}{bg=blkGrnTt,fg=blkGrnFg}
+\setbeamercolor{block body example}{bg=blkGrnBd,fg=blkInk}
+\setbeamercolor{itemize item}{fg=rblue}
+\setbeamercolor{itemize subitem}{fg=rbluemd}
+\setbeamercolor{alerted text}{fg=cbRed}
+
+\setbeamertemplate{blocks}[default]
+
+% Square corners WITH a shadow.  Beamer offers shadow= only on the
+% [rounded] variant, so the shadow is added by hand here: each block is
+% captured into \blkbox, then dropped into a tikz node that carries the
+% shadow.  Geometry stays beamer's [default] block, i.e. square.
+%
+%      >>> NO SHADOW: comment out the six \setbeamertemplate lines at the
+%      >>> end of this block; [default] above then takes over again.
+\usetikzlibrary{shadows}
+\newsavebox{\blkbox}
+\tikzset{blkshadow/.style={drop shadow={shadow xshift=1.3pt,
+                                        shadow yshift=-1.3pt,
+                                        opacity=0.20, fill=black!70}}}
+
+\newcommand{\blkopen}[2]{%   #1 = title beamercolor, #2 = body beamercolor
+  \par\vskip\medskipamount%
+  \begin{lrbox}{\blkbox}%
+  \begin{minipage}{\textwidth}%
+    \begin{beamercolorbox}[colsep*=.75ex]{#1}%
+      \usebeamerfont*{block title}\insertblocktitle%
+    \end{beamercolorbox}%
+    {\parskip0pt\par}%
+    \nointerlineskip%
+    \usebeamerfont{block body}%
+    \begin{beamercolorbox}[colsep*=.75ex,vmode]{#2}%
+      \vskip-.75ex\vbox{}%
+}
+\newcommand{\blkclose}{%
+    \end{beamercolorbox}%
+  \end{minipage}%
+  \end{lrbox}%
+  % The picture is 1.5ex wider than \textwidth (see inner xsep below), so
+  % it is parked in a \textwidth hbox with \hss to absorb the overhang --
+  % otherwise every block reports an Overfull \hbox.  The -.75ex shift
+  % puts the bleed on both sides, exactly where stock beamer puts it.
+  \noindent\hbox to\textwidth{\hspace*{-.75ex}%
+  \begin{tikzpicture}
+    % inner xsep matches the .75ex that colsep* bleeds outside the box,
+    % so the node path (and therefore the shadow) covers the painted block
+    \node[inner xsep=.75ex, inner ysep=0pt, outer sep=0pt, blkshadow]
+          {\usebox{\blkbox}};
+  \end{tikzpicture}\hss}%
+  \vskip\smallskipamount%
+}
+
+\setbeamertemplate{block begin}{\blkopen{block title}{block body}}
+\setbeamertemplate{block end}{\blkclose}
+\setbeamertemplate{block alerted begin}{\blkopen{block title alerted}{block body alerted}}
+\setbeamertemplate{block alerted end}{\blkclose}
+\setbeamertemplate{block example begin}{\blkopen{block title example}{block body example}}
+\setbeamertemplate{block example end}{\blkclose}
+
+% for triangle and square
+% \setbeamertemplate{itemize item}{\raisebox{0.1ex}{\scriptsize$\blacktriangleright$}}
+% \setbeamertemplate{itemize subitem}{\raisebox{0.1ex}{\tiny$\blacksquare$}}
+% for circle and square
+\setbeamertemplate{itemize item}{\raisebox{0.1ex}{\scriptsize$\bullet$}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.1ex}{\tiny$\blacksquare$}}
+
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+\setbeamerfont{footnote}{size=\tiny}
+% beamer's default footnote template indents by \parindent 1em and puts the
+% marker in a 1.8em box; both are dropped here so the note sits flush left
+\setbeamertemplate{footnote}{%
+  \parindent0em\noindent\raggedright
+  \usebeamerfont{footnote}%
+  \hbox to 0.9em{\insertfootnotemark\hfil}\insertfootnotetext\par}
+
+% ----------------------------------------------------------------------
+%  4.  FRAME TITLE
+% ----------------------------------------------------------------------
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.4ex,dp=1.5ex,%
+                         leftskip=1.6ex,rightskip=1.6ex]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}%
+}
+
+% ----------------------------------------------------------------------
+%  4b. CORNER MOTIF  (faint search lattice, right end of the title bar)
+%      A 4x3 grid graph with the staircase route traced from a filled
+%      start node to a double-ringed goal -- the picture A* is about.
+%      Tints are mixed against rblue so it reads as a watermark on the
+%      bar.  It lives INSIDE the title bar because the longest frame
+%      title stops at 12.6cm of 16cm, so that strip is always free --
+%      anywhere in the body area it would clash with wide text lines.
+%
+%      >>> TO TURN IT OFF: comment out the \addtobeamertemplate line at
+%      >>> the bottom of this block (put a % in front of it). Leave
+%      >>> \cornermotif defined; nothing else refers to it.
+% ----------------------------------------------------------------------
+\newcommand{\motifstep}{0.30cm}      % lattice pitch
+\newcommand{\cornermotif}{%
+  \begin{tikzpicture}[remember picture, overlay,
+      mn/.style    = {circle, draw=white!38!rblue, line width=0.4pt,
+                      fill=white!20!rblue, minimum size=1.5mm, inner sep=0pt},
+      mon/.style   = {mn, draw=white!62!rblue, fill=white!44!rblue},
+      me/.style    = {draw=white!30!rblue, line width=0.4pt},
+      mpath/.style = {draw=white!68!rblue, line width=0.8pt,
+                      line cap=round, line join=round}]
+    \begin{scope}[shift={($(current page.north east)+(-1.45cm,-0.88cm)$)},
+                  x=\motifstep, y=\motifstep]
+      \foreach \c in {0,1,2,3}{\draw[me] (\c,0) -- (\c,2);}
+      \foreach \r in {0,1,2}  {\draw[me] (0,\r) -- (3,\r);}
+      \draw[mpath] (0,0) -- (1,0) -- (1,1) -- (2,1) -- (2,2) -- (3,2);
+      \foreach \c in {0,1,2,3}{\foreach \r in {0,1,2}{\node[mn] at (\c,\r) {};}}
+      \foreach \q in {(1,0),(1,1),(2,1),(2,2)}{\node[mon] at \q {};}
+      \node[mn, fill=white!88!rblue, draw=white!88!rblue] at (0,0) {};
+      \node[mn, draw=white!88!rblue, double, double distance=0.35pt] at (3,2) {};
+    \end{scope}
+  \end{tikzpicture}%
+}
+\addtobeamertemplate{frametitle}{}{\cornermotif}
+
+% ----------------------------------------------------------------------
+%  GLOBAL VERTICAL NUDGE
+%  One knob for the whole deck: space added just under the title bar, so
+%  every titled frame's content sits lower.  The frame body is centred, so
+%  the visible shift is HALF of this value.  The [plain] title slide has no
+%  frametitle and is untouched.  Set to 0pt to disable.
+% ----------------------------------------------------------------------
+\newlength{\framenudge}
+\setlength{\framenudge}{4pt}
+\addtobeamertemplate{frametitle}{}{\vskip\framenudge}
+
+
+% ----------------------------------------------------------------------
+%  5.  FOOTER
+%        ----------------------------------------------------------
+%        CSE200 - A* Search Algorithm   Zarif Ishmam      n / N
+%      ============                                    <- progress
+% ----------------------------------------------------------------------
+\newcommand{\footcourse}{CSE200 - A* Search Algorithm}
+\newcommand{\footauthor}{Zarif Ishmam}
+\newcommand{\pbheight}{1.5pt}
+
+\newcommand{\progressbarline}{%
+  \ifnum\inserttotalframenumber>0\relax
+    % capped at 1: on a first pass the total is not known yet, and in a
+    % long deck n/total would make the bar wider than TeX can measure
+    \pgfmathsetmacro{\pbfrac}{min(1,\insertframenumber/\inserttotalframenumber)}%
+  \else
+    \def\pbfrac{0}%
+  \fi
+  \noindent
+  \textcolor{rblue}{\rule{\pbfrac\paperwidth}{\pbheight}}%
+  \textcolor{rblue!14}{\rule{\dimexpr\paperwidth-\pbfrac\paperwidth\relax}{\pbheight}}%
+}
+
+\setbeamercolor{footbar}{bg=white,fg=rbluedk}
+\newcommand{\footmargin}{1.8ex}
+\setbeamertemplate{footline}{%
+  \noindent\hspace*{\footmargin}%
+  \textcolor{gray!45}{%
+    \rule{\dimexpr\paperwidth-\footmargin-\footmargin\relax}{0.4pt}}%
+  \hspace*{\footmargin}%
+  \vskip1.5pt
+  \hbox{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.1ex,dp=0.8ex,%
+                           leftskip=\footmargin,rightskip=\footmargin]{footbar}%
+      \usebeamerfont{footline}\diagfont
+      % zero-width boxes: the two \hfill split the strip evenly, so the
+      % author sits on the exact centre line regardless of the side widths
+      \makebox[0pt][l]{\textsc{\footcourse}}%
+      \hfill
+      \makebox[0pt][c]{\textsc{\footauthor}}%
+      \hfill
+      \makebox[0pt][r]{\textsc{\insertframenumber\,/\,\inserttotalframenumber}}%
+    \end{beamercolorbox}%
+  }%
+  \vskip1pt%
+  \progressbarline
+  \vskip0pt%
+}
+
+% ----------------------------------------------------------------------
+%  6.  CLRS-STYLE ALGORITHM  (default LaTeX face, line numbered, overlay aware)
+% ----------------------------------------------------------------------
+\newcounter{alglin}
+\newcommand{\kw}[1]{\textcolor{rblue}{\textbf{#1}}}
+\newcommand{\proc}[1]{\textsc{#1}}
+\newcommand{\com}[1]{\textcolor{neutralg}{\itshape\,\(\triangleright\) #1}}
+\newcommand{\idt}[1]{\hspace*{#1\dimexpr1.25em\relax}}
+\newcommand{\hlon}[2]{\alt<#1>{\setlength{\fboxsep}{1.4pt}\colorbox{hlyellow}{#2}}{#2}}
+
+% Stacked hboxes, not a tabular: LaTeX puts \@arstrut in every tabular row,
+% so a hidden line still claimed a full line of height and the block never
+% shrank.  As plain hboxes a hidden \aline contributes nothing at all, which
+% lets the frame centre on the lines actually showing.
+\newenvironment{clrs}[1][\small]
+  {\begingroup\algfont#1\setcounter{alglin}{0}%
+   \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}%
+   \begin{minipage}[t]{\linewidth}}
+  {\end{minipage}\endgroup}
+
+\newcommand{\aline}[2][1-]{%
+  \stepcounter{alglin}%
+  \only<#1>{\hbox{\hbox to 1.15em{\hfil\textcolor{lnnum}{\scriptsize\thealglin}}%
+                  \hspace{1.3ex}\strut#2}}}
+
+% ----------------------------------------------------------------------
+%  7.  TIKZ STYLES
+% ----------------------------------------------------------------------
+\tikzset{
+  every picture/.append style={font=\diagfont},
+  vtx/.style      = {circle, draw=rbluedk, line width=0.7pt, fill=white,
+                     minimum size=6.5mm, inner sep=0pt, font=\small},
+  vstart/.style   = {vtx, fill=cbGreenLt, draw=cbGreen, line width=1.1pt,
+                     font=\small\bfseries},
+  vgoal/.style    = {vtx, fill=cbRedLt, draw=cbRed, line width=1.1pt,
+                     font=\small\bfseries, double, double distance=0.6pt},
+  vopen/.style    = {vtx, fill=rbluelt, draw=rblue, line width=1.1pt},
+  vclosed/.style  = {vtx, fill=closedc, draw=neutralg, line width=0.9pt},
+  vcur/.style     = {vtx, fill=hlyellow, draw=cbOrange, line width=1.3pt},
+  edg/.style      = {draw=neutralg, line width=0.8pt},
+  edgon/.style    = {draw=rblue, line width=1.6pt},
+  edgpath/.style  = {draw=cbGreen, line width=2.2pt},
+  edggrey/.style  = {draw=gridgray, line width=1.6pt},
+  edgdead/.style  = {draw=gridgray, line width=0.6pt},
+  edgorange/.style= {draw=cbOrange, line width=2.2pt},
+  arr/.style      = {-{Stealth[length=2.4mm]}, line width=1.0pt},
+  wlab/.style     = {font=\scriptsize, fill=white, inner sep=1pt, text=rbluedk},
+  hlab/.style     = {font=\scriptsize, text=cbOrange, inner sep=1pt},
+  box/.style      = {draw=rbluedk, rounded corners=2pt, fill=rbluelt,
+                     minimum width=2.3cm, minimum height=0.8cm,
+                     font=\small, align=center},
+  boxg/.style     = {box, fill=cbGreenLt, draw=cbGreen},
+  boxr/.style     = {box, fill=cbRedLt,   draw=cbRed},
+  boxo/.style     = {box, fill=cbOrangeLt, draw=cbOrange},
+}
+
+% ----------------------------------------------------------------------
+%  8.  THE SHARED 16 x 10 GRID
+%      cell (c,r) spans [c,c+1] x [r,r+1];  centre (c+.5, r+.5)
+%      S = (1,4)   G = (14,6)
+%      Walls form a U that opens WEST, straight at the start, so a greedy
+%      search walks into it.  Verified numbers on this map:
+%        Dijkstra 137 cells / cost 19   Greedy 48 / cost 35   A* 81 / cost 19
+% ----------------------------------------------------------------------
+\newcommand{\gridnodefont}{\tiny\bfseries}
+\newcommand{\gridnodeS}{S}
+\newcommand{\gridnodeG}{G}
+
+% --- flat-tile look: every cell is its own square, separated by a gutter.
+%     No grid rules, no outer frame -- the gutters do all the separating.
+\newcommand{\gpad}{0.075}               % gutter half-width, in cell units
+\newcommand{\gcell}[3]{%                % #1 = colour, #2 = col, #3 = row
+  \fill[#1] ({#2+\gpad},{#3+\gpad}) rectangle ({#2+1-\gpad},{#3+1-\gpad});}
+\newcommand{\gletter}[4]{%              % #1 = colour, #2 = col, #3 = row, #4 = glyph
+  \gcell{#1}{#2}{#3}%
+  \node[text=white, font=\gridnodefont, inner sep=0pt]
+        at ({#2+0.5},{#3+0.5}) {#4};}
+
+% the wall set: a U opening WEST
+\newcommand{\gwalls}{%
+  \foreach \c in {4,...,12} {\gcell{gwall}{\c}{3}\gcell{gwall}{\c}{7}}%
+  \foreach \r in {4,5,6} {\gcell{gwall}{12}{\r}}}
+
+% laid down FIRST, under everything the search paints
+\newcommand{\gridback}{%
+  \foreach \c in {0,...,15} {\foreach \r in {0,...,9} {\gcell{gfree}{\c}{\r}}}}
+
+% laid down LAST, over everything the search paints
+\newcommand{\drawgridbase}{%
+  \gwalls
+  \gletter{gstart}{1}{4}{\gridnodeS}%
+  \gletter{ggoal}{14}{6}{\gridnodeG}%
+}
+
+% full-size grid picture; #1 = cell size, #2 = generated body file
+\newcommand{\gridpic}[2]{%
+  \begin{tikzpicture}[x=#1, y=#1]
+    \gridback
+    \input{#2}
+  \end{tikzpicture}}
+
+% reduced grid picture for side-by-side panels
+\newcommand{\gridpicsmall}[2]{%
+  \begingroup
+    \renewcommand{\gridnodefont}{\fontsize{3.6}{4}\selectfont\bfseries}%
+    \begin{tikzpicture}[x=#1, y=#1]
+      \gridback
+      \input{#2}
+    \end{tikzpicture}%
+  \endgroup}
+
+% tiny panels: tiles only, no letters
+\newcommand{\gridpictiny}[2]{%
+  \begingroup
+    \renewcommand{\gpad}{0.10}%
+    \renewcommand{\gridnodeS}{}\renewcommand{\gridnodeG}{}%
+    \begin{tikzpicture}[x=#1, y=#1]
+      \gridback
+      \input{#2}
+    \end{tikzpicture}%
+  \endgroup}
+
+% legend strip used under the grid frames
+\newcommand{\gridlegend}{%
+  \begin{tikzpicture}[x=0.34cm,y=0.34cm, baseline=0pt]
+    \renewcommand{\gpad}{0.09}%
+    \gcell{gclose}{0}{0}
+      \node[anchor=west, font=\tiny] at (1.4,0.5) {closed};
+    \gcell{gopen}{5.4}{0}
+      \node[anchor=west, font=\tiny] at (6.8,0.5) {open (frontier)};
+    \gcell{cbGreen}{15.0}{0}
+      \node[anchor=west, font=\tiny] at (16.4,0.5) {final path};
+    \gcell{gwall}{21.4}{0}
+      \node[anchor=west, font=\tiny] at (22.8,0.5) {wall};
+  \end{tikzpicture}}
+
+% grey until overlay #1, bold blue on it, dark from then on
+\newcommand{\lit}[2]{%
+  \temporal<#1>{\textcolor{gray!50}{#2}}%
+               {\textcolor{rblue}{\textbf{#2}}}%
+               {\textcolor{rbluedk}{#2}}}
+
+\newcommand{\takeaway}[1]{%
+  \vfill
+  \begin{beamercolorbox}[wd=\textwidth,sep=4pt,rounded=true]{block body}
+    \footnotesize\textbf{Takeaway.} #1
+  \end{beamercolorbox}}

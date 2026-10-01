@@ -1,0 +1,29 @@
+\begin{tikzpicture}[cam={20}{30}{0.96}{1.05}, line cap=round, line join=round,
+                    every node/.style={inner sep=0pt}]
+  \def\kz{0.0068}
+  \def\sx{3.89}\def\sy{4.15}
+  \begin{scope}[bdedge/.style={draw=none},
+                bdcity/.style={circle, fill=gridgray, minimum size=0.7mm,
+                               inner sep=0pt}]\bdfloor\end{scope}
+  \foreach \a in {165,200,235,270}{%
+    \draw[cbOrange!30, line width=0.4pt] (\sx,\sy,0)
+      -- ({\sx+390/101.7*cos(\a)},{\sy+390/111.2*sin(\a)},{390*\kz});}
+  \foreach \r in {100,200,300}{%
+    \draw[cbOrange!55, line width=0.5pt] plot[domain=150:290, samples=48]
+      ({\sx+\r/101.7*cos(\x)},{\sy+\r/111.2*sin(\x)},{\r*\kz});
+    \node[tag, text=cbOrange!85!black, anchor=south east, xshift=-1pt]
+      at ({\sx+\r/101.7*cos(150)},{\sy+\r/111.2*sin(150)},{\r*\kz}) {$h=\r$};}
+  \foreach \n/\vg/\vh in \bddata {%
+    \draw[cbOrange!22, line width=0.3pt] (\n) -- \bdlift{\n}{\vh};
+    \node[circle, fill=cbOrange!55, minimum size=1.1mm] at \bdlift{\n}{\vh} {};}
+  \foreach \a/\b in {dhaka/narsingdi, narsingdi/kishoreganj,
+      kishoreganj/habiganj, habiganj/moulvibazar, moulvibazar/sylhet}{%
+    \draw[edgorange, line width=1.8pt] \bdlift{\a}{\bdH{\a}} -- \bdlift{\b}{\bdH{\b}};
+    \node[circle, fill=cbOrange, draw=white, line width=0.4pt, minimum size=2mm]
+      at \bdlift{\b}{\bdH{\b}} {};}
+  \node[sball, minimum size=2.4mm] at \bdlift{dhaka}{\bdH{dhaka}} {};
+  \node[tagbox, text=gstart, anchor=east, xshift=-4pt]
+    at \bdlift{dhaka}{\bdH{dhaka}} {Dhaka, $h=191$};
+  \node[gball, minimum size=2.4mm] at (sylhet) {};
+  \node[tagbox, text=ggoal, anchor=north, yshift=-4pt] at (sylhet) {Sylhet, $h=0$};
+\end{tikzpicture}

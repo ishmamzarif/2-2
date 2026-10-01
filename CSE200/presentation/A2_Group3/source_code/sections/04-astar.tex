@@ -1,0 +1,156 @@
+\section{The A* algorithm}\label{sec:astar}
+
+A*~\cite{hart1968formal} keeps the cost so far of Dijkstra's algorithm and adds
+the estimate of greedy best-first search (Figure~\ref{fig:combine}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/combine-flow}
+  \caption{A* takes the cost so far $g$ from Dijkstra's algorithm and the
+    estimate $h$ from greedy best-first search. The numbers are those of the
+    running example.}\label{fig:combine}
+\end{figure}
+
+\subsection{Combining the two keys}\label{sec:fgh}
+
+A* ranks every vertex $v$ of $Q$ by
+\begin{equation}\label{eq:f}
+  f(v) = g(v) + h(v),
+\end{equation}
+the estimated cost of the cheapest complete route through $v$
+(Figure~\ref{fig:fgh}). A* thus prefers the vertex on the most promising
+complete route, rather than the vertex nearest the source or the one that looks
+nearest the destination (Table~\ref{tab:three-keys}).
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[x=1cm, y=1cm]
+    \node[storystart] (S) at (0,0) {$s$};
+    \node[storynode]  (V) at (4,0) {$v$};
+    \node[storygoal]  (T) at (10,0) {$t$};
+    \draw[algastar, line width=1.4pt] (S) -- (V);
+    \draw[alggreedy, line width=1.4pt, dash pattern=on 5pt off 3pt] (V) -- (T);
+    \draw[algastar, {Stealth[length=2mm]}-{Stealth[length=2mm]}]
+      (0,-0.6) -- node[below=2pt, font=\small, align=center] {$g(v)$\\cost of
+      the best known path} (3.95,-0.6);
+    \draw[alggreedy, {Stealth[length=2mm]}-{Stealth[length=2mm]}]
+      (4.05,-0.6) -- node[below=2pt, font=\small, align=center] {$h(v)$\\
+      estimate of the remaining cost} (10,-0.6);
+    \draw[rbluedk, {Stealth[length=2mm]}-{Stealth[length=2mm]}]
+      (0,0.6) -- node[above=2pt, font=\small] {$f(v) = g(v) + h(v)$:
+      estimated cost of the whole path through $v$} (10,0.6);
+  \end{tikzpicture}
+  \caption{The key of A*. The first part is known exactly; the second part is
+    an estimate.}\label{fig:fgh}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{The key of each algorithm.}\label{tab:three-keys}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Algorithm & Key of $v$ & What the key measures\\
+    \midrule
+    Dijkstra's algorithm     & $g(v)$        & the cost already paid\\
+    Greedy best-first search & $h(v)$        & the estimated cost still to pay\\
+    A* search                & $g(v) + h(v)$ & the estimated cost of the whole path\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{A geometric view of the key}\label{sec:geometry}
+
+On an open plane, let $g$ be the distance from $s$ and $h$ the distance to $t$.
+Then $g$ and $h$ are cones around $s$ and $t$, and their sum $f$ is a trough
+whose floor is the segment from $s$ to $t$ (Figure~\ref{fig:surfaces}). A*
+therefore expands the points near this segment first.
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{\linewidth}{!}{\input{figures3d/surfaces}}
+  \caption{The keys as surfaces over a plane: a cone around $s$, a cone around
+    $t$, and their sum, a trough whose floor is the segment from $s$ to
+    $t$.}\label{fig:surfaces}
+\end{figure}
+
+\subsection{Pseudocode}\label{sec:astar-alg}
+
+Algorithm~\ref{alg:astar} is Algorithm~\ref{alg:dijkstra} with the key $g$
+replaced by $g + h$ in the two lines marked ``changed''. With the \emph{zero
+heuristic}, $h(v) = 0$ for every $v$, it is exactly Dijkstra's algorithm.
+Figure~\ref{fig:astar-flow} shows the loop shared by the three algorithms.
+
+\begin{algorithm}[htbp]
+  \caption{A* search}\label{alg:astar}
+  \begin{algorithmic}[1]
+    \Require graph $G = (V,E,w)$ with nonnegative weights, source $s$, destination $t$,
+      heuristic $h$
+    \Ensure a path from $s$ to $t$, or failure
+    \Procedure{A-Star}{$G, s, t, h$}
+      \For{each vertex $v$ of $V$}
+        \State $g(v) \gets \infty$; \ $\pi(v) \gets \nil$
+      \EndFor
+      \State $g(s) \gets 0$
+      \State $Q \gets$ a priority queue keyed by $g + h$ that holds $s$
+        \Comment{changed}
+      \State $S \gets \emptyset$
+      \While{$Q$ is not empty}
+        \State $u \gets \Call{Extract-Min}{Q}$
+        \If{$u = t$}
+          \State \Return \Call{Reconstruct}{$\pi, t$}
+        \EndIf
+        \State add $u$ to $S$
+        \For{each edge $(u,v)$ such that $v$ is not in $S$}
+          \If{$g(u) + w(u,v) < g(v)$}
+            \State $g(v) \gets g(u) + w(u,v)$; \ $\pi(v) \gets u$
+            \State \Call{Insert-or-Decrease-Key}{$Q, v, g(v) + h(v)$}
+              \Comment{changed}
+          \EndIf
+        \EndFor
+      \EndWhile
+      \State \Return failure
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/astar-flow}
+  \caption{Flow chart of the search loop. The three algorithms differ only in
+    the key of a vertex (red box).}\label{fig:astar-flow}
+\end{figure}
+
+\subsection{A* on the running example}\label{sec:worked}
+
+Table~\ref{tab:trace-h} and Figure~\ref{fig:story} show A* on the running
+example. In step 2, A* expands \cty{N} (key $2 + 5 = 7$) rather than \cty{G}
+(key $1 + 8 = 9$), which Dijkstra's algorithm would take first. The same step
+lowers $g(\cty{B})$ from 5 to 3 through \cty{N}, repairing the error of greedy
+best-first search. In step 5 the destination is extracted with $g = 8$, and
+\cty{G}, \cty{K} and \cty{C}, whose keys exceed 8, are never expanded. A* thus
+finds the shortest path with five expansions instead of eight.
+Sections~\ref{sec:heuristics} and~\ref{sec:correctness} show when this result is
+guaranteed, and Section~\ref{sec:efficiency} explains the saving.
+
+\begin{table}[htbp]
+  \centering
+  \caption{A* on the running example. The key of a vertex is
+    $f = g + h$.}\label{tab:trace-h}
+  \small
+  \begin{tabular}{@{}c>{\raggedright}P{4.4cm}cc>{\raggedright\arraybackslash}P{3.8cm}@{}}
+    \toprule
+    Step & $Q$ before extraction (vertex: key) & Extracted & $g + h = f$
+      & Updates\\
+    \midrule
+    \inputrows{figures/trace_original.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{0.62\textwidth}{!}{\input{figures/story_iso_original}}
+  \caption{A* on the running example. The green path is the path that A*
+    returns, and its cities are exactly the cities that A*
+    expands.}\label{fig:story}
+\end{figure}

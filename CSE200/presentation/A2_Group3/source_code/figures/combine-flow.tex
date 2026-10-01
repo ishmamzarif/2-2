@@ -1,0 +1,25 @@
+\tikzset{
+  card/.style  = {draw=#1, fill=#1!9, line width=0.9pt, rounded corners=3pt,
+                  text width=4.8cm, align=center, font=\small, inner sep=6pt},
+  cflow/.style = {-{Stealth[length=2.4mm]}, line width=1pt, draw=inkgray},
+  cflab/.style = {font=\small, text=inkgray, fill=white, inner sep=2pt},
+}
+\begin{tikzpicture}[x=1cm, y=1cm]
+  \node[card=algdijkstra] (dj) at (-3.4,1.7)
+    {\textcolor{algdijkstra}{\textbf{Dijkstra's algorithm}}\\[2pt]
+     ranks by $g$, the cost so far\\[3pt]
+     \textcolor{algastar}{$\checkmark$} shortest path\\
+     \textcolor{cbRed}{$\times$} expands all eight cities};
+  \node[card=alggreedy] (gr) at (3.4,1.7)
+    {\textcolor{alggreedy}{\textbf{Greedy best-first search}}\\[2pt]
+     ranks by $h$, the estimate of what is left\\[3pt]
+     \textcolor{algastar}{$\checkmark$} expands four cities\\
+     \textcolor{cbRed}{$\times$} path cost 10, optimum 8};
+  \node[card=algastar, line width=1.3pt, text width=5cm] (as) at (0,-1.6)
+    {\textcolor{algastar}{\textbf{A* search}}\\[2pt]
+     ranks by $f = g + h$\\[3pt]
+     \textcolor{algastar}{$\checkmark$} shortest path (cost 8)\\
+     \textcolor{algastar}{$\checkmark$} expands five cities};
+  \draw[cflow] (dj.south) -- node[cflab] {keep $g$} ($(as.north)+(-1.2,0)$);
+  \draw[cflow] (gr.south) -- node[cflab] {add $h$} ($(as.north)+(1.2,0)$);
+\end{tikzpicture}

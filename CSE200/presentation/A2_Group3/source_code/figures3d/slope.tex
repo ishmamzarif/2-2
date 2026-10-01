@@ -1,0 +1,18 @@
+\begin{tikzpicture}
+  \begin{axis}[land3d, land view={-24}{30}{0.62}]
+    \addplot3[tilesurf, colormap name=hblue, samples=10, samples y=7,
+              domain=0:9, y domain=-3:3] {\kB*veclen(x, y)};
+    \node[gball] at \liftB{0}{0} {};
+    \node[tag, text=ggoal, left=6pt] at \liftB{0}{0} {$t$};
+    \draw[cbGreen, dashed, line width=1pt] \liftB{5}{0} -- \liftB{0.5}{0};
+    \draw[move3d,cbGreen]  \liftB{6}{0} -- \liftB{5}{0};
+    \draw[move3d,cbRed]    \liftB{6}{0} -- \liftB{7}{0};
+    \draw[move3d,neutralg] \liftB{6}{0} -- \liftB{6}{1};
+    \draw[move3d,neutralg] \liftB{6}{0} -- \liftB{6}{-1};
+    \node[vball] at \liftB{6}{0} {};
+    \node[tag, above left=4pt] at \liftB{6}{0} {$v$};
+    \node[tagbox, text=cbGreen, anchor=north] at \liftB{4.7}{-0.35} {$\Delta f = 0$};
+    \node[tagbox, text=cbRed, anchor=west] at \liftB{7.15}{0} {$\Delta f = +2$};
+    \node[tagbox, text=neutralg, anchor=west] at \liftB{6.2}{-1.25} {$\Delta f \approx +1$};
+  \end{axis}
+\end{tikzpicture}

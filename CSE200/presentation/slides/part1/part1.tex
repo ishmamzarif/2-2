@@ -1,0 +1,1048 @@
+% !TEX program = xelatex
+% ======================================================================
+%  part1_v2.tex -- A* Search Algorithm, Part 1 (v2)
+%      latexmk -xelatex part1_v2.tex
+%
+%  Assembled from: part1's title frame and applications frame
+%  (sec-a-intro.tex), every frame of bd_map.tex, and part1's frame 20
+%  (sec-d-limits.tex) re-used as the summary.  Those pieces are copied
+%  VERBATIM -- edits to the originals do not flow here, and vice versa.
+% ======================================================================
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\input{preamble}
+\input{grids/stats}
+\input{part1-defs}          % part 1 macros (also loaded by combined.tex)
+\begin{document}
+
+% static artwork, drawn once for the whole deck (see the SPEED notes)
+\bdmakebox
+\sbox{\gpdj}{\gridpanel{dj}{\dijkstraroute}{cbGreen}}
+\sbox{\gpgr}{\gridpanel{gr}{\greedyroute}{cbOrange}}
+\sbox{\gpas}{\gridpanel{as}{\astarroute}{cbGreen}}
+
+% the title frame lives in title.tex: combined.tex shows it before the
+% roadmap banner, so a combined build skips it here
+\ifdefined\combineddeck\else\input{title}\fi
+
+% ---------- PATHFINDING -----------------------------------------------
+\begin{frame}{Pathfinding}
+  \vspace{-2em}
+  \begin{block}{Pathfinding}
+    The problem of simply finding a \textbf{valid path} from any point
+    \textcolor{cbGreen}{\textbf{A}} to any point \textcolor{cbRed}{\textbf{B}}
+    in a graph.
+  \end{block}
+
+  \vspace{3em}
+  \begin{columns}[c]
+    \column{0.44\textwidth} 
+
+      \centering
+      \begin{tikzpicture}[scale=0.9, transform shape]
+        \node[vstart] (A) at (0,0.9)   {A};
+        \node[vtx]    (p) at (1.6,1.8) {$p$};
+        \node[vtx]    (q) at (1.6,0)   {$q$};
+        \node[vtx]    (r) at (3.2,0.9) {$r$};
+        \node[vgoal]  (B) at (4.8,0.9) {B};
+        \draw[edg] (A)--(p) (A)--(q) (p)--(q) (p)--(r) (q)--(r) (r)--(B);
+        \only<2->{\draw[edgpath] (A)--(q)--(r)--(B);}
+      \end{tikzpicture}\par\vspace{4pt}
+
+    \column{0.52\textwidth}
+      \centering
+      \begingroup
+        \renewcommand{\gridnodeS}{A}\renewcommand{\gridnodeG}{B}%
+        \begin{tikzpicture}[x=0.30cm, y=0.30cm]
+          \gridback
+          \drawgridbase
+          \only<2->{\draw[cbGreen, line width=1.4pt, line cap=round,
+                          line join=round]
+            (1.5,5) -- (1.5,8.5) -- (13.5,8.5) -- (13.5,6.5) -- (14,6.5);}
+        \end{tikzpicture}\par\vspace{4pt}
+      \endgroup
+  \end{columns}
+\end{frame}
+
+% ---------- 9. APPLICATIONS -------------------------------------------
+% \urldef grabs these at top level: inside \footnote{...} the # and _ in the
+% wikipedia link would be tokenised before \url could make them harmless.
+\urldef{\urlpathfinding}\url{https://www.nature.com/articles/s41467-026-75254-8}
+\urldef{\urlproteinfold}\url{https://en.wikipedia.org/wiki/Protein_folding#/media/File:ACBP_MSM_from_Folding@home.tiff}
+
+\begin{frame}{Where pathfinding is used}
+  \begin{columns}[T]
+    \column{0.46\textwidth}
+      \begin{center}
+        \only<1-2>{%
+          \includegraphics[width=5.6cm,height=4.1cm,keepaspectratio]%
+            {images/app-pathfinding.png}%
+          \footnote[frame]{Image source: \urlpathfinding}}
+        \only<3>{%
+          % photo, replaced by the 3D game map below -- to bring it back,
+          % uncomment these two lines and comment out \gamemap ... \gamelegend
+          % \includegraphics[width=5.6cm,height=4.1cm,keepaspectratio]%
+          %   {images/app-game.png}%
+          \gamemap\par\vspace{3pt}
+          \gamelegend
+          }
+        \only<4>{%
+          \includegraphics[width=5.6cm,height=4.1cm,keepaspectratio]%
+            {images/app-networking.png}%
+        }
+        \only<5>{%
+          \includegraphics[width=5.6cm,height=4.1cm,keepaspectratio]%
+            {images/app-proteinfolding.png}%
+          \footnote[frame]{Image source: \urlproteinfold}}
+        \only<6>{%
+          \includegraphics[width=5.6cm,height=4.1cm,keepaspectratio]%
+            {images/app-more.png}%
+        }
+      \end{center}
+
+    \column{0.50\textwidth}
+      \begin{itemize}\setlength{\itemsep}{11pt}
+        \item \lit{2}{Road navigation}\\
+        \item \lit{3}{Game AI and NPC movement}\\
+        \item \lit{4}{Networks and packet routing}\\
+        \item \lit{5}{Protein folding}\\
+        \item \lit{6}{\ldots{}and many more}\\
+              {\scriptsize\mut{Puzzles, Robotics, Dependency resolution}}
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ---------- TWO REQUIREMENTS ------------------------------------------
+\begin{frame}{Two requirements}
+  \begin{center}
+  \begin{tikzpicture}
+    \node<1->[draw=rblue, fill=rbluelt, rounded corners=3pt, line width=1pt,
+        text width=4.8cm, align=center, inner sep=12pt] at (0,0)
+      {{\small\mut{1}}\\[3pt]{\bfseries\large\HL{Shortest path}}};
+    \node<1->[draw=cbOrange, fill=cbOrangeLt, rounded corners=3pt,
+        line width=1pt, text width=4.8cm, align=center, inner sep=12pt]
+        at (6.2,0)
+      {{\small\mut{2}}\\[3pt]{\bfseries\large\con{Efficient algorithm}}};
+  \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+% ---------- A REAL GRAPH: BANGLADESH ----------------------------------
+\begin{frame}{A real graph --- the 64 districts of Bangladesh}
+  \centering
+  \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                      shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+    \bdbase \bdends \bdlabels
+  \end{tikzpicture}
+  \par\vspace{0.4em}
+  {\small Let's look at an example of a path from
+   \textcolor{cbGreen}{\textbf{Dhaka}} to \textcolor{cbGreen}{\textbf{Sylhet}}.}
+\end{frame}
+
+% ================= from bd_map.tex (all frames, verbatim) ============
+% ======================================================================
+%  1.  THE ALGORITHM, THEN WHAT IT MEANS
+%      ov1  whole pseudocode, unhighlighted, nothing on the right
+%      ov2  the block frame appears
+%      ov3-5  one bullet at a time, each spotlighting its own lines
+% ======================================================================
+\begin{frame}[t]{Shortest Path --- Dijkstra's Algorithm}
+  \begin{columns}[T]
+
+    \column{0.5\textwidth}
+    \begin{clrs}[\footnotesize]
+      \aline[1-]{\proc{Dijkstra}$(G, s, t)$}
+      \aline[1-]{\idt1 \kw{for each} $v \in V$: \
+        $g[v] \gets \infty$,\; $\pi[v] \gets \textsc{nil}$}
+      \aline[1-]{\idt1 $g[s] \gets 0$}
+      \aline[1-]{\idt1 \hlon{3}{$Q \gets$
+        priority queue keyed by $g$, holding $\{s\}$}}
+      \aline[1-]{\idt1 $\mathit{S} \gets \varnothing$}
+      \aline[1-]{\idt1 \hlon{4}{\kw{while} $Q \neq \varnothing$}}
+      \aline[1-]{\idt2 \hlon{4}{$u \gets
+        \textsc{Extract-Min}(Q)$}}
+      \aline[1-]{\idt2 \kw{if} $u = t$:}
+      \aline[1-]{\idt3 \kw{return} \proc{Reconstruct}$(\pi, t)$}
+      \aline[1-]{\idt2 \hlon{4}{$\mathit{S} \gets \mathit{S} \cup \{u\}$}}
+      \aline[1-]{\idt2 \hlon{5}{\kw{for each} $v$
+        adjacent to $u$}}
+      \aline[1-]{\idt3 \hlon{5}{\kw{if} $v \in \mathit{S}$: \ \kw{continue}}}
+      \aline[1-]{\idt3 \hlon{5}{\kw{if} $g[u] + w(u,v) < g[v]$}}
+      \aline[1-]{\idt4 \hlon{5}{$g[v] \gets g[u] + w(u,v)$,\;
+        $\pi[v] \gets u$}}
+      \aline[1-]{\idt4 \hlon{5}{\textsc{Insert-or-Decrease-Key}
+        $(Q, v, g[v])$}}
+    \end{clrs}
+
+    \column{0.5\textwidth}
+    \onslide<2->{%
+    \begin{block}{How Dijkstra picks}
+      \small
+      \begin{itemize}\setlength{\itemsep}{6pt}
+        \item<3-> Start from the source 
+        \item<4-> In each iteration, Picks the \textbf{locally best} node so far
+        \item<5-> Explores paths for that node
+      \end{itemize}
+    \end{block}}
+
+  \end{columns}
+\end{frame}
+
+% one line of a step list (the three map frames): grey, except on its
+% own overlay #1, where it turns bold in colour #2 behind a marker
+\newcommand{\stepline}[3]{% #1 overlay, #2 colour, #3 text
+  \noindent\alt<#1>{\textcolor{#2}{\makebox[1.1em][l]{\tiny$\blacktriangleright$}\textbf{#3}}}%
+                   {\textcolor{gray!50}{\makebox[1.1em][l]{}#3}}\par}
+
+% ======================================================================
+%  2.  THE SAME THREE RULES, RUN ON THE MAP
+%      ov1    map + the block carried over from frame 1
+%      ov2-6  iterations 1..5, the settled set growing outward
+%      ov7    right column cleared; the answer as a flow chart
+% ======================================================================
+\begin{frame}{Dhaka to Sylhet (using Dijkstra's algorithm)}
+  \begin{columns}[T]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase
+    \bdtreeedges{2}{dhaka/gazipur, dhaka/narayanganj, dhaka/munshiganj, dhaka/narsingdi,
+                     dhaka/manikganj, munshiganj/chandpur, narsingdi/brahmanbaria, munshiganj/shariatpur,
+                     manikganj/faridpur, gazipur/tangail}
+    \bdtreeedges{3}{manikganj/rajbari, gazipur/kishoreganj, shariatpur/madaripur, munshiganj/cumilla,
+                     gazipur/mymensingh, chandpur/lakshmipur, tangail/sirajganj, rajbari/magura,
+                     rajbari/pabna, brahmanbaria/habiganj}
+    \bdtreeedges{4}{shariatpur/barishal, kishoreganj/netrokona, madaripur/gopalganj, lakshmipur/noakhali,
+                     rajbari/kushtia, lakshmipur/bhola, magura/jhenaidah, barishal/jhalokati,
+                     cumilla/feni, tangail/jamalpur}
+    \bdtreeedges{5}{mymensingh/sherpur, magura/narail, sirajganj/bogura, habiganj/moulvibazar,
+                     barishal/patuakhali, gopalganj/bagerhat, barishal/pirojpur, kushtia/chuadanga,
+                     sirajganj/natore, narail/jashore}
+    \bdtreeedges{6}{kushtia/meherpur, narail/khulna, patuakhali/barguna, netrokona/sunamganj,
+                     bogura/joypurhat, bogura/naogaon, feni/khagrachhari, jamalpur/gaibandha,
+                     moulvibazar/sylhet}
+
+    \bdring{2}{gazipur, narayanganj, munshiganj, narsingdi, manikganj,
+               chandpur, brahmanbaria, shariatpur, faridpur, tangail}
+    \bdring{3}{rajbari, kishoreganj, madaripur, cumilla, mymensingh,
+               lakshmipur, sirajganj, magura, pabna, habiganj}
+    \bdring{4}{barishal, netrokona, gopalganj, noakhali, kushtia,
+               bhola, jhenaidah, jhalokati, feni, jamalpur}
+    \bdring{5}{sherpur, narail, bogura, moulvibazar, patuakhali,
+               bagerhat, pirojpur, chuadanga, natore, jashore}
+    \bdring{6}{meherpur, khulna, barguna, sunamganj, joypurhat,
+               naogaon, khagrachhari, gaibandha, sylhet}
+      \only<7->{\bdroute}
+      \bdends
+      \bdlabels
+      \only<7->{\bdroutelabels}
+    \end{tikzpicture}
+
+  \column{0.5\textwidth}
+    \only<1-6>{%
+      \begin{block}{How Dijkstra picks}
+        \small
+        \begin{itemize}\setlength{\itemsep}{6pt}
+          \item In each step, looks in every direction
+          \item Picks the \textbf{locally best} node
+          \item Explores paths for that node
+        \end{itemize}
+      \end{block}
+      \vspace{0.9em}
+      {\scriptsize\setlength{\parskip}{2pt}%
+       \stepline{2}{rblue}{Iteration 1}%
+       \stepline{3}{rblue}{Iteration 2}%
+       \stepline{4}{rblue}{Iteration 3}%
+       \stepline{5}{rblue}{Iteration 4}%
+       \stepline{6}{rblue}{Iteration 5}}}%
+    \only<7>{%
+      \centering
+      {\footnotesize\textcolor{cbGreen}{\textbf{Path found}}}\par
+      \vspace{0.5em}
+      \pathflow}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+%  3.  WHAT THE SEARCH COST, AND WHAT MAKES DIJKSTRA BAD
+%      ov1  map, route and the results table
+%      ov2  red arrows to three districts it did not need + bullet 1
+%      ov3  bullet 2 -- the greedy heuristic
+%      ("What makes Dijkstra bad?" is folded in here; the old frame is
+%       kept switched off just below)
+% ======================================================================
+\begin{frame}{Dhaka to Sylhet --- what the search cost}
+  \begin{columns}[c]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase \bdsettled \bdroute \bdends \bdlabels \bdroutelabels
+      \begin{scope}[crimson, line width=0.7pt, opacity=0.9,
+                    -{Stealth[length=1.5mm]}]
+        \only<2->{\draw (dhaka) to[bend right=14] (jashore);}
+        \only<2->{\draw (dhaka) to[bend left=16]  (naogaon);}
+        \only<2->{\draw (dhaka) to[bend left=14]  (chattogram);}
+      \end{scope}
+      \only<2->{\node[bdlab, text=crimson, anchor=south east, xshift=-0.8mm, yshift=0.4mm] at (jashore) {Jashore};}
+      \only<2->{\node[bdlab, text=crimson, anchor=east,  xshift=-1.2mm] at (naogaon)    {Naogaon};}
+      \only<2->{\node[bdlab, text=crimson, anchor=west,  xshift= 1.2mm] at (chattogram) {Chattogram};}
+    \end{tikzpicture}
+
+  \column{0.50\textwidth}
+    {\footnotesize
+    \begin{tabular}{@{}l@{\hspace{2.2em}}l@{}}
+      \toprule
+      \textbf{Result} & \\
+      \midrule
+      Districts on the route & \textbf{6} of 64\\[2pt]
+      Districts explored     & \textbf{50} of 64\\[2pt]
+      Optimal path?          & \textcolor{cbGreen}{\textbf{Yes}}\\
+      \bottomrule
+    \end{tabular}\par}
+    \vspace{1.4em}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{12pt}
+      \item<2-> Dijkstra explores \textcolor{crimson}{in every direction}.
+      \item<3-> We can solve this using a \textcolor{rblue}{\textbf{greedy
+            heuristic}}.
+    \end{itemize}\par}
+  \end{columns}
+\end{frame}
+
+% ---------- WHAT MAKES DIJKSTRA BAD? -- switched off ------------------
+%      Folded into the frame above.  To bring it back, delete the
+%      \iffalse / \fi pair around it.
+\iffalse
+% ======================================================================
+%  4.  THE PROBLEM, IN TWO LINES
+% ======================================================================
+\begin{frame}{What makes Dijkstra bad?}
+  \begin{columns}[c]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase \bdsettled \bdroute \bdends \bdlabels
+      \begin{scope}[crimson, line width=0.7pt, opacity=0.9,
+                    -{Stealth[length=1.5mm]}]
+        \only<2->{\draw (dhaka) to[bend right=14] (jashore);}
+        \only<2->{\draw (dhaka) to[bend left=16]  (naogaon);}
+        \only<2->{\draw (dhaka) to[bend left=14]  (chattogram);}
+      \end{scope}
+      \only<2->{\node[bdlab, text=crimson, anchor=south east, xshift=-0.8mm, yshift=0.4mm] at (jashore) {Jashore};}
+      \only<2->{\node[bdlab, text=crimson, anchor=east,  xshift=-1.2mm] at (naogaon)    {Naogaon};}
+      \only<2->{\node[bdlab, text=crimson, anchor=west,  xshift= 1.2mm] at (chattogram) {Chattogram};}
+    \end{tikzpicture}
+
+  \column{0.50\textwidth}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{14pt}
+      \item<2-> Dijkstra explores a lot of \textcolor{crimson}{unnecessary
+            points in every direction}.
+      \item<3-> {For example, to go to Sylhet, exploring Jashore is counter-intuitive.}
+      \item<4-> We can solve this using a \textcolor{rblue}{\textbf{greedy
+            heuristic}}.
+    \end{itemize}\par}
+  \end{columns}
+\end{frame}
+\fi
+
+% ======================================================================
+%  5.  GREEDY BEST-FIRST -- THE ALGORITHM
+%      Same shape as Dijkstra; the queue is keyed by h instead of g.
+%      ov1 whole pseudocode, ov2 block, ov3-5 one bullet at a time
+% ======================================================================
+\begin{frame}[t]{Path in Shortest Time --- Greedy Best-First Search}
+  \begin{columns}[T]
+
+    \column{0.5\textwidth}
+    \begin{clrs}[\footnotesize]
+      \aline[1-]{\proc{Greedy-Best-First}$(G, s, t)$}
+      \aline[1-]{\idt1 \kw{for each} $v \in V$: \ $\pi[v] \gets \textsc{nil}$}
+      \aline[1-]{\idt1 $\mathit{S} \gets \{s\}$}
+      \aline[1-]{\idt1 \hlon{3}{$Q \gets$ priority queue keyed by
+        \textcolor{cbOrange}{$h$}, holding $\{s\}$}}
+      \aline[1-]{\idt1 \hlon{3}{\kw{while} $Q \neq \varnothing$}}
+      \aline[1-]{\idt2 \hlon{4}{$u \gets \textsc{Extract-Min}(Q)$}}
+      \aline[1-]{\idt2 \kw{if} $u = t$:}
+      \aline[1-]{\idt3 \kw{return} \proc{Reconstruct}$(\pi, t)$}
+      \aline[1-]{\idt2 \hlon{5}{\kw{for each} $v$ adjacent to $u$}}
+      \aline[1-]{\idt3 \hlon{5}{\kw{if} $v \in \mathit{S}$: \ \kw{continue}}}
+      \aline[1-]{\idt3 \hlon{5}{$\mathit{S} \gets \mathit{S} \cup \{v\}$,\;
+        $\pi[v] \gets u$}}
+      \aline[1-]{\idt3 \hlon{5}{\textsc{Insert}$(Q, v,
+        \textcolor{cbOrange}{h(v)})$}}
+    \end{clrs}
+
+    \vspace{1.0em}
+    {\footnotesize\only<4->{\textcolor{cbOrange}{$h(v)$} is the
+      \textbf{straight-line distance} from $v$ to Sylhet --- a guess,
+      never a measured road.}}
+
+    \column{0.5\textwidth}
+    \onslide<2->{%
+    \begin{block}{How Greedy picks}
+      \small
+      \begin{itemize}\setlength{\itemsep}{6pt}
+        \item<3-> In each step, looks in every direction
+        \item<4-> Picks the node with the smallest
+              \textcolor{cbOrange}{\textbf{$h$}} --- the one that
+              \emph{looks} closest to Sylhet
+        \item<5-> Explores paths for that node
+      \end{itemize}
+    \end{block}}
+
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+%  6.  GREEDY BEST-FIRST ON THE MAP
+%      ov1    map + the block carried over
+%      ov2-7  the six districts it expands, in order
+% ======================================================================
+\begin{frame}{Dhaka to Sylhet (using Greedy Best-First)}
+  \begin{columns}[T]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase
+      \bdgsteps{2}
+      \bdends
+      \bdlabels
+      \only<7->{\bdgroutelabels}
+    \end{tikzpicture}
+
+  \column{0.5\textwidth}
+      \begin{block}{How Greedy picks}
+        \small
+        \begin{itemize}\setlength{\itemsep}{6pt}
+          \item In each step, looks in every direction
+          \item Picks the node with the smallest
+                \textcolor{cbOrange}{\textbf{$h$}}
+          \item Explores paths for that node
+        \end{itemize}
+      \end{block}
+    \vspace{0.9em}
+    {\scriptsize\setlength{\parskip}{2pt}%
+     \stepline{2}{rblue}{Iteration 1}%
+     \stepline{3}{rblue}{Iteration 2}%
+     \stepline{4}{rblue}{Iteration 3}%
+     \stepline{5}{rblue}{Iteration 4}%
+     \stepline{6}{rblue}{Iteration 5}%
+     \stepline{7}{rblue}{Iteration 6}%
+     \vspace{4pt}%
+     % fixed-height slot, so the note never moves the frame
+     % (\strut: an empty slot would change the line spacing above it)
+     \parbox[t][2.4em][t]{\linewidth}{\strut
+       \only<7>{\textbf{Six} districts came off the queue.}}}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+%  7.  THE PATH IT FOUND, WHAT IT COST, AND THE VERDICT
+%      ov1  the path as a flow chart
+%      ov2  the results table
+%      ov3  bullet 1 -- it's fast
+%      ov4  bullet 2 -- not always optimal; the cheaper road, dashed
+%      ("fast, but not always right" is folded in here; the old frame
+%       is kept switched off just below)
+% ======================================================================
+\begin{frame}{Greedy Best-First --- the path and the price}
+  \begin{columns}[c]
+  \column{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase \bdgroute \bdends \bdlabels \bdgroutelabels
+      \only<4->{%
+        \draw[bdpath, dash pattern=on 2.2pt off 1.6pt]
+          (narsingdi) -- (brahmanbaria) -- (habiganj);
+        \node[bdlab, text=cbGreen, anchor=north, yshift=-1.2mm]
+          at (brahmanbaria) {Brahmanbaria};}
+    \end{tikzpicture}
+    % \onslide, not \only: the key keeps its space on every overlay, so
+    % the map does not move when it appears
+    \onslide<4->{\vspace{0.4em}\par
+      {\fontsize{6}{7}\selectfont
+       \textcolor{cbOrange}{\rule[0.6ex]{8pt}{1.1pt}}~greedy, 243\,km
+       \qquad
+       \textcolor{cbGreen}{\rule[0.6ex]{8pt}{1.1pt}}~cheapest, 215\,km}}
+
+  \column{0.5\textwidth}
+    \only<1>{%
+      \centering
+      {\footnotesize\textcolor{cbOrange}{\textbf{Path found}}}\par
+      \vspace{0.5em}
+      \gpathflow}
+    \only<2->{%
+    {\footnotesize
+    \begin{tabular}{@{}l@{\hspace{1.6em}}c@{\hspace{1.6em}}c@{}}
+      \toprule
+      \textbf{Result} & \textcolor{cbOrange}{\textbf{Greedy}}
+                      & \textcolor{rblue}{\textbf{Dijkstra}}\\
+      \midrule
+      Districts explored & \textbf{6} of 64 & 50 of 64\\[2pt]
+      Route length       & \textbf{243}\,km & 215\,km\\[2pt]
+      Optimal path?      & \textcolor{crimson}{\textbf{No}}
+                         & \textcolor{cbGreen}{Yes}\\
+      \bottomrule
+    \end{tabular}\par}
+    \vspace{1.2em}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{10pt}
+      \item<3-> \textcolor{cbGreen}{\textbf{It's fast.}} 
+      \item<4-> \textcolor{crimson}{\textbf{But it is not always optimal.}}
+    \end{itemize}\par}}
+  \end{columns}
+\end{frame}
+
+% ---------- FAST, BUT NOT ALWAYS RIGHT -- switched off ------------------
+%      Folded into the frame above.  To bring it back, delete the
+%      \iffalse / \fi pair around it.
+\iffalse
+% ======================================================================
+%  8.  THE VERDICT
+% ======================================================================
+\begin{frame}{Greedy Best-First --- fast, but not always right}
+  \begin{columns}[c]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase \bdgroute \bdends \bdlabels
+      \only<3->{%
+        \draw[bdpath, dash pattern=on 2.2pt off 1.6pt]
+          (narsingdi) -- (brahmanbaria) -- (habiganj);
+        \node[bdlab, text=cbGreen, anchor=north, yshift=-1.2mm]
+          at (brahmanbaria) {Brahmanbaria};}
+      \node[bdlab, text=cbOrange, anchor=south, yshift=1.4mm]
+        at (kishoreganj) {Kishoreganj};
+    \end{tikzpicture}
+    \only<3->{\vspace{0.4em}\par
+      {\fontsize{6}{7}\selectfont
+       \textcolor{cbOrange}{\rule[0.6ex]{8pt}{1.1pt}}~greedy, 243\,km
+       \qquad
+       \textcolor{cbGreen}{\rule[0.6ex]{8pt}{1.1pt}}~cheapest, 215\,km}}
+
+  \column{0.50\textwidth}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{16pt}
+      \item<2-> \textcolor{cbGreen}{\textbf{It's fast.}} Six districts off
+            the queue instead of Dijkstra's fifty.
+      \item<3-> \textcolor{crimson}{\textbf{But it is not always optimal.}}
+            It never checks what the trip has cost so far, so it walks
+            into a 243\,km route when a 215\,km one exists.
+    \end{itemize}\par}
+  \end{columns}
+\end{frame}
+\fi
+
+% ======================================================================
+%  9.  COMBINING THE TWO  --  Dijkstra + Greedy = A*
+%      Each box stands on its surface from part1_3d.tex (3D-4): g a cone
+%      at S, h a cone at G, and their sum f a trough from S to G.
+%      ov1 Dijkstra, ov2 + Greedy, ov3 = A*
+% ======================================================================
+\tikzset{algcard/.style = {draw, line width=0.8pt, align=center,
+                           font=\footnotesize, text width=3.5cm,
+                           minimum height=1.6cm, inner sep=4pt}}
+% a box centred on the maths axis, so the + and = between boxes line up
+\newcommand{\algcard}[2]{% #1 box style, #2 text
+  $\vcenter{\hbox{\tikz\node[algcard, #1]{#2};}}$}
+\newcommand{\algop}[1]{$\vcenter{\hbox{\LARGE\textcolor{neutralg}{$#1$}}}$}
+
+\begin{frame}{Combining the two --- A*}
+  \centering
+  \begin{tabular}{@{}c@{\hspace{0.2cm}}c@{\hspace{0.2cm}}c@{\hspace{0.2cm}}c@{\hspace{0.2cm}}c@{}}
+    \algcard{draw=rblue, fill=rbluelt}
+      {{\small\textcolor{rblue}{\textbf{Dijkstra}}}\\[2pt]
+       ranks by $g$\\ the cost so far\\[4pt]
+       \textcolor{cbGreen}{$\checkmark$}~optimal\quad
+       \textcolor{crimson}{$\times$}~not fast}
+    & \onslide<2->{\algop{+}}
+    & \onslide<2->{\algcard{draw=cbOrange, fill=cbOrangeLt}
+      {{\small\textcolor{cbOrange}{\textbf{Greedy Best-First}}}\\[2pt]
+       ranks by $h$\\ a guess of what is left\\[4pt]
+       \textcolor{cbGreen}{$\checkmark$}~fast\quad
+       \textcolor{crimson}{$\times$}~not optimal}}
+    & \onslide<3->{\algop{=}}
+    & \onslide<3->{\algcard{draw=cbGreen, fill=cbGreenLt, line width=1.1pt}
+      {{\small\textcolor{cbGreen}{\textbf{A*}}}\\[2pt]
+       ranks by $f = g + h$\\ the cost so far + the guess\\[4pt]
+       \textcolor{cbGreen}{$\checkmark$}~optimal\quad
+       \textcolor{cbGreen}{$\checkmark$}~fast}}\\
+    % gap under the boxes (a \\[..] would be swallowed: the centred boxes
+    % hang deeper below the baseline than any small \\[..] adds)
+    \noalign{\vskip 6pt}
+    \surfpanel{hblue}{\kD*veclen(x+\sgx,y)}{0}{\kD*2*\sgx}
+    & & \onslide<2->{\surfpanel{horange}{\kD*veclen(x-\sgx,y)}{\kD*2*\sgx}{0}}
+    & & \onslide<3->{\raisebox{-5pt}{\fsurfpanel}}\\  % trough sits a touch lower
+  \end{tabular}
+
+\end{frame}
+
+% ---------- COMBINING THE TWO, flow chart with arrows -- switched off ---
+%      The earlier version of the frame above.  To bring it back, delete
+%      the \iffalse / \fi pair around it (and remove the frame above).
+\iffalse
+\begin{frame}{Combining the two --- A*}
+  \centering
+  \begin{tikzpicture}[
+      algbox/.style = {draw, line width=0.8pt, align=center, font=\small,
+                       minimum width=4.7cm, minimum height=1.85cm, inner sep=5pt},
+      flow/.style   = {-{Stealth[length=2.4mm]}, line width=1.0pt, draw=neutralg},
+      flowlab/.style= {font=\footnotesize, text=neutralg, inner sep=2pt}]
+
+    \node<1->[algbox, draw=rblue, fill=rbluelt] (dj) at (-3.5,1.15)
+      {\textcolor{rblue}{\textbf{Dijkstra}}\\[3pt]
+       ranks by $g$ --- the cost so far\\[5pt]
+       \textcolor{cbGreen}{$\checkmark$}~optimal\qquad
+       \textcolor{crimson}{$\times$}~not fast};
+
+    \node<2->[algbox, draw=cbOrange, fill=cbOrangeLt] (gr) at (3.5,1.15)
+      {\textcolor{cbOrange}{\textbf{Greedy Best-First}}\\[3pt]
+       ranks by $h$ --- a guess of what is left\\[5pt]
+       \textcolor{cbGreen}{$\checkmark$}~fast\qquad
+       \textcolor{crimson}{$\times$}~not optimal};
+
+    \node<3->[algbox, draw=cbGreen, fill=cbGreenLt, line width=1.1pt] (as) at (0,-1.75)
+      {\textcolor{cbGreen}{\textbf{A*}}\\[3pt]
+       ranks by $f = g + h$\\[5pt]
+       \textcolor{cbGreen}{$\checkmark$}~optimal\qquad
+       \textcolor{cbGreen}{$\checkmark$}~fast};
+
+    \only<3->{%
+      \draw[flow] (dj.south) to[out=-90, in=160] node[flowlab, pos=0.45, left=2pt]
+        {keep its $g$} (as.north west);
+      \draw[flow] (gr.south) to[out=-90, in=20]  node[flowlab, pos=0.45, right=2pt]
+        {add its $h$} (as.north east);}
+  \end{tikzpicture}
+
+  \vspace{0.9em}
+  {\footnotesize\only<3->{Dijkstra's honesty about the road behind,
+    plus Greedy's sense of direction for the road ahead.}}
+\end{frame}
+\fi
+
+% one A* step caption; defined out here because a frame body cannot hold #
+\newcommand{\astep}[5]{\textbf{Step #1} --- expand #2\par\vspace{2pt}
+  $\textcolor{cbGreen}{g}=#3 \;+\; \textcolor{cbOrange}{h}=#4
+   \;=\; f=\mathbf{#5}$}
+
+% ======================================================================
+%  10.  A* ON THE MAP
+%      ov1    map + the block
+%      ov2-9  the eight districts A* expands, in order, as a step list
+% ======================================================================
+\begin{frame}{Dhaka to Sylhet (using A*)}
+  \begin{columns}[T]
+  \column{0.50\textwidth}
+    \centering
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase
+      \bdtreeedges{3}{dhaka/narsingdi}
+      \bdtreeedges{4}{dhaka/gazipur}
+      \bdtreeedges{5}{gazipur/kishoreganj}
+      \bdtreeedges{6}{narsingdi/brahmanbaria}
+      \bdtreeedges{7}{brahmanbaria/habiganj}
+      \bdtreeedges{8}{habiganj/moulvibazar}
+      \bdtreeedges{9}{moulvibazar/sylhet}
+      \bdring{2}{dhaka}
+      \bdring{3}{narsingdi}
+      \bdring{4}{gazipur}
+      \bdring{5}{kishoreganj}
+      \bdring{6}{brahmanbaria}
+      \bdring{7}{habiganj}
+      \bdring{8}{moulvibazar}
+      \bdring{9}{sylhet}
+      \only<9->{\bdroute}
+      \bdends
+      \bdlabels
+      \only<4->{\node[bdlab, anchor=south east, xshift=-0.6mm, yshift=0.4mm] at (gazipur) {Gazipur};}
+      \only<5->{\node[bdlab, anchor=south, yshift= 1.4mm] at (kishoreganj) {Kishoreganj};}
+      \only<9->{\bdroutelabels}
+    \end{tikzpicture}
+
+  \column{0.5\textwidth}
+      \begin{block}{How A* picks}
+        \small
+        \begin{itemize}\setlength{\itemsep}{6pt}
+          \item In each step, looks in every direction
+          \item Picks the node with the smallest
+                $f = \textcolor{cbGreen}{g} + \textcolor{cbOrange}{h}$
+          \item Explores paths for that node
+        \end{itemize}
+      \end{block}
+    \vspace{0.4em}
+    % eight lines: spacing a touch tighter than the Dijkstra and Greedy
+    % frames, or the column outgrows the frame
+    {\scriptsize\setlength{\parskip}{1.5pt}%
+     \stepline{2}{rblue}{Iteration 1}%
+     \stepline{3}{rblue}{Iteration 2}%
+     \stepline{4}{rblue}{Iteration 3}%
+     \stepline{5}{rblue}{Iteration 4}%
+     \stepline{6}{rblue}{Iteration 5}%
+     \stepline{7}{rblue}{Iteration 6}%
+     \stepline{8}{rblue}{Iteration 7}%
+     \stepline{9}{rblue}{Iteration 8}%
+     \vspace{3pt}%
+     % fixed-height slot, so the notes never move the frame
+     % (\strut: an empty slot would change the line spacing above it)
+     \parbox[t][1.3em][t]{\linewidth}{\strut
+       \only<5>{\textcolor{neutralg}{Greedy's detour --- A* looks, but $g$
+                keeps it honest.}}%
+       \only<9>{Reached Sylhet. \textbf{Eight} districts came off the
+                queue.}}}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+%  A* COLUMNS: g HANDS OFF TO h   (from part1_3d.tex, 3D-5)
+%      The eight districts A* expands, each a column: green = g,
+%      orange = h stacked on top.  One slide, final state only.
+%      3D support copied from part1_3d.tex's "3D SUPPORT" block -- only
+%      what this frame needs.  The floor redraws the map from its raw
+%      pieces: \bdbase is a cached flat box, which the camera cannot tilt.
+% ======================================================================
+% cam={az}{el}{cm per x unit}{cm per y unit}: orthographic camera
+\tikzset{
+  cam/.code n args = {4}{%
+    \pgfmathsetmacro\camxx{(#3)*cos(#1)}%
+    \pgfmathsetmacro\camxy{-(#3)*sin(#1)*sin(#2)}%
+    \pgfmathsetmacro\camyx{(#4)*sin(#1)}%
+    \pgfmathsetmacro\camyy{(#4)*cos(#1)*sin(#2)}%
+    \pgfmathsetmacro\camzy{(#4)*cos(#2)}%
+    \edef\camkeys{\noexpand\pgfkeysalso{%
+      x={(\camxx cm,\camxy cm)}, y={(\camyx cm,\camyy cm)},
+      z={(0cm,\camzy cm)}}}%
+    \camkeys},
+  necam/.style  = {cam={20}{40}{2.45}{2.7}},
+  maplab/.style = {font=\fontsize{5.6}{6.4}\selectfont, text=neutralg,
+                   inner sep=1pt},
+}
+% heights: \kz = z units per km, set per picture with \def\kz{...}
+\newcommand{\kz}{0.01}
+% the north-east corner of the map, on the floor
+\newcommand{\nefloor}{%
+  \begin{scope}[shift={(-87.98,-20.75)}]
+    \fill[black!2] (90.2,23.5) -- (92.2,23.5) -- (92.2,25.25)
+                   -- (90.2,25.25) -- cycle;
+    \begin{scope}
+      \clip (90.2,23.5) -- (92.2,23.5) -- (92.2,25.25) -- (90.2,25.25) -- cycle;
+      \bdcoastdraw \bdcoords \bdnet
+    \end{scope}
+    \draw[gridgray, line width=0.4pt] (90.2,23.5) -- (92.2,23.5)
+      -- (92.2,25.25) -- (90.2,25.25) -- cycle;
+  \end{scope}}
+% a square column standing on map point #1, from #2 km up to #3 km.
+% Faces drawn are the ones a south-east camera sees: south, east, top.
+\newcommand{\colw}{0.032}          % half-width, degrees
+\newcommand{\prism}[4]{% #1 point, #2 bottom km, #3 top km, #4 colour
+  \fill[#4, draw=white, line width=0.2pt]
+    ($(#1)+(-\colw,-\colw,{(#2)*\kz})$) -- ($(#1)+(\colw,-\colw,{(#2)*\kz})$)
+    -- ($(#1)+(\colw,-\colw,{(#3)*\kz})$) -- ($(#1)+(-\colw,-\colw,{(#3)*\kz})$)
+    -- cycle;
+  \fill[#4!70!black, draw=white, line width=0.2pt]
+    ($(#1)+(\colw,-\colw,{(#2)*\kz})$) -- ($(#1)+(\colw,\colw,{(#2)*\kz})$)
+    -- ($(#1)+(\colw,\colw,{(#3)*\kz})$) -- ($(#1)+(\colw,-\colw,{(#3)*\kz})$)
+    -- cycle;
+  \fill[#4!45!white, draw=white, line width=0.2pt]
+    ($(#1)+(-\colw,-\colw,{(#3)*\kz})$) -- ($(#1)+(\colw,-\colw,{(#3)*\kz})$)
+    -- ($(#1)+(\colw,\colw,{(#3)*\kz})$) -- ($(#1)+(-\colw,\colw,{(#3)*\kz})$)
+    -- cycle;}
+
+\begin{frame}{A* on the map --- $g$ hands off to $h$}
+  \centering
+  \begin{tikzpicture}[necam, line cap=round, line join=round,
+                      every node/.style={inner sep=0pt}]
+    \def\kz{0.0047}
+    \nefloor
+    % tree edges on the floor, then the route
+    \foreach \a/\b in {dhaka/narsingdi, dhaka/gazipur, gazipur/kishoreganj,
+        narsingdi/brahmanbaria, brahmanbaria/habiganj,
+        habiganj/moulvibazar, moulvibazar/sylhet}
+      {\draw[rblue!70, line width=0.9pt] (\a) -- (\b);}
+    \draw[edgpath, line width=1.6pt] (dhaka) -- (narsingdi)
+      -- (brahmanbaria) -- (habiganj) -- (moulvibazar) -- (sylhet);
+    % columns, far to near; ov1 green (g), ov2 orange (h) on top
+    \prism{sylhet}{0}{215.1}{cbGreen}
+    \prism{kishoreganj}{0}{82.0}{cbGreen}
+    \only<2->{\prism{kishoreganj}{82.0}{203.4}{cbOrange}}
+    \prism{habiganj}{0}{129.1}{cbGreen}
+    \only<2->{\prism{habiganj}{129.1}{203.5}{cbOrange}}
+    \prism{moulvibazar}{0}{167.5}{cbGreen}
+    \only<2->{\prism{moulvibazar}{167.5}{215.1}{cbOrange}}
+    \prism{gazipur}{0}{20.0}{cbGreen}
+    \only<2->{\prism{gazipur}{20.0}{198.3}{cbOrange}}
+    \prism{narsingdi}{0}{33.8}{cbGreen}
+    \only<2->{\prism{narsingdi}{33.8}{193.3}{cbOrange}}
+    \only<2->{\prism{dhaka}{0}{191.2}{cbOrange}}
+    \prism{brahmanbaria}{0}{73.7}{cbGreen}
+    \only<2->{\prism{brahmanbaria}{73.7}{203.5}{cbOrange}}
+    \node[sball, minimum size=2.4mm] at (dhaka) {};
+    \node[gball, minimum size=2.4mm] at (sylhet) {};
+    \node[maplab, anchor=north east, xshift=-2pt, yshift=-1pt] at (dhaka) {Dhaka};
+    \node[maplab, anchor=west, xshift=4pt] at (sylhet) {Sylhet};
+  \end{tikzpicture}\par
+  \vspace{0.6em}
+  {\small\pos{\textbf{green}}: cost so far \qquad
+         \onslide<2->{\con{\textbf{yellow}}: heuristic cost}}
+\end{frame}
+
+% ======================================================================
+%  11.  SIDE BY SIDE -- two versions of the same frame: 11a (scatter)
+%       and 11b (bar).  Keep one, delete the other.
+%       Plot colours validated (dataviz six checks, all pairs, white
+%       surface): Dijkstra rbluemd #5A5AC4, Greedy cbOrange, A* cbGreen.
+%       rblue itself is too dark for a mark (OKLCH L 0.38 < 0.43).
+% ======================================================================
+\newcommand{\cmpkey}[1]{\textcolor{#1}{\rule[0.1ex]{5pt}{5pt}}}
+\newcommand{\cmptable}{%
+  {\footnotesize
+  \begin{tabular}{@{}l@{\hspace{1.1em}}c@{\hspace{1.1em}}c@{\hspace{1.1em}}c@{}}
+    \toprule
+    & \cmpkey{rbluemd}~\textbf{Dijkstra} & \cmpkey{cbOrange}~\textbf{Greedy}
+    & \cmpkey{cbGreen}~\textbf{A*}\\
+    \midrule
+    \onslide<1->{Districts explored} & \onslide<1->{50 of 64} & \onslide<1->{6 of 64}
+                                     & \onslide<1->{\textbf{8} of 64}\\[2pt]
+    \onslide<1->{Route length}       & \onslide<1->{215\,km}  & \onslide<1->{243\,km}
+                                     & \onslide<1->{\textbf{215}\,km}\\[2pt]
+    \onslide<1->{Optimal path?}      & \onslide<1->{$\checkmark$ Yes} & \onslide<1->{$\times$ No}
+                                     & \onslide<1->{$\checkmark$ \textbf{Yes}}\\
+    \bottomrule
+  \end{tabular}}}
+
+% scatter: x = districts explored (0-55), y = route length, 205-250 km
+\newcommand{\cmpscatter}{%
+  \begin{tikzpicture}[x=0.082cm, y=0.08cm]
+    \foreach \v in {210,220,...,250}{%
+      \draw[black!8, line width=0.3pt] (0,\v-205) -- (55,\v-205);
+      \node[font=\tiny, text=neutralg, anchor=east] at (-1.2,\v-205) {\v};}
+    \foreach \v in {0,10,...,50}{%
+      \node[font=\tiny, text=neutralg, anchor=north] at (\v,-1.4) {\v};}
+    \draw[black!25, line width=0.3pt] (0,0) -- (55,0);
+    \draw[black!25, line width=0.3pt] (0,0) -- (0,45);
+    \node[font=\scriptsize, text=neutralg, anchor=north] at (27.5,-6)
+      {districts explored};
+    \node[font=\scriptsize, text=neutralg, rotate=90, anchor=south] at (-9.5,22.5)
+      {route length (km)};
+    \node[font=\tiny, text=neutralg] at (19,21) {$\swarrow$ better};
+    % marks: series colour, 2px white ring; labels in ink beside them
+    \fill[rbluemd,  draw=white, line width=0.8pt] (50,10.1) circle (2.4pt);
+    \fill[cbOrange, draw=white, line width=0.8pt] (6,38.2)  circle (2.4pt);
+    \fill[cbGreen,  draw=white, line width=0.8pt] (8,10.1)  circle (2.4pt);
+    \node[font=\scriptsize, text=blkInk, anchor=south, yshift=3pt] at (50,10.1) {Dijkstra};
+    \node[font=\scriptsize, text=blkInk, anchor=west,  xshift=4pt] at (6,38.2)  {Greedy};
+    \node[font=\scriptsize, text=blkInk, anchor=west,  xshift=4pt] at (8,10.1)  {A*};
+  \end{tikzpicture}}
+
+% bars: districts explored, 0-50; <=24px thick, rounded data-end,
+% square at the baseline, value at the tip in ink
+\newcommand{\cmpbars}{%
+  \begin{tikzpicture}[x=0.085cm, y=1cm]
+    \node[font=\scriptsize, text=neutralg, anchor=south west] at (0,0.22)
+      {Districts explored (of 64)};
+    \foreach \y/\c/\nm/\v in {0/rbluemd/Dijkstra/50, -0.5/cbOrange/Greedy/6,
+                              -1.0/cbGreen/A*/8}{%
+      \fill[\c, rounded corners=1.6pt] (0,\y-0.1) rectangle (\v,\y+0.1);
+      \fill[\c] (0,\y-0.1) rectangle (1.2,\y+0.1);
+      \node[font=\scriptsize, text=blkInk, anchor=east] at (-1.2,\y) {\nm};
+      \node[font=\scriptsize, text=blkInk, anchor=west] at (\v+0.8,\y) {\v};}
+    \draw[black!25, line width=0.3pt] (0,0.16) -- (0,-1.16);
+  \end{tikzpicture}}
+
+% bars: route length, 0-250 km, a touch shorter than \cmpbars so the
+% "243 (+28)" label stays inside the slide; baseline at zero, so the
+% gap to optimal is shown honestly.  Dashed rule = shortest route, 215 km.
+\newcommand{\cmproute}{%
+  \begin{tikzpicture}[x=0.0155cm, y=1cm]
+    \node[font=\scriptsize, text=neutralg, anchor=south west] at (0,0.22)
+      {Route length (km)};
+    \foreach \y/\c/\nm/\v/\x in {0/rbluemd/Dijkstra/215/,
+                                 -0.5/cbOrange/Greedy/243/\,\textcolor{cbOrange}{(+28)},
+                                 -1.0/cbGreen/A*/215/}{%
+      \fill[\c, rounded corners=1.6pt] (0,\y-0.1) rectangle (\v,\y+0.1);
+      \fill[\c] (0,\y-0.1) rectangle (6,\y+0.1);
+      \node[font=\scriptsize, text=blkInk, anchor=east] at (-6,\y) {\nm};
+      \node[font=\scriptsize, text=blkInk, anchor=west] at (\v+4,\y) {\v\x};}
+    \draw[black!25, line width=0.3pt] (0,0.16) -- (0,-1.16);
+    \draw[blkInk!70, dashed, line width=0.5pt] (215,0.16) -- (215,-1.22);
+    \node[font=\tiny, text=neutralg, anchor=north] at (215,-1.22)
+      {shortest};
+  \end{tikzpicture}}
+
+% ---------- 11c. three result maps (small multiples) ------------------
+%      The same map three times: what each search explored, and the route
+%      it returned.  Dots in the plot colours validated above; the static
+%      map is already cached by \bdbase, so each panel only adds its dots.
+%      ov1 Dijkstra, ov2 Greedy, ov3 A*, ov4 closing line.
+\newcommand{\cmpmap}[1]{% #1 = the layer drawn on the base map
+  \scalebox{0.8}{%
+    \begin{tikzpicture}[x=\bdscalex, y=\bdscaley,
+                        shift={(-87.98,-20.75)}, every node/.style={inner sep=0pt}]
+      \bdbase #1
+    \end{tikzpicture}}}
+% Dijkstra: the 49 settled districts + Dhaka = 50, tree edges hidden
+\newcommand{\cmpdjlayer}{%
+  \begin{scope}[bdtree/.style={draw=none},
+                bdclosed/.style={bdcity, fill=rbluemd, minimum size=1.5mm}]
+    \bdsettled
+  \end{scope}
+  \bdroute \bdends}
+% Greedy: the 6 districts it expanded are exactly its route
+\newcommand{\cmpgrlayer}{\bdgroute \bdends}
+% A*: its route (6) + the two it looked at and dropped = 8
+\newcommand{\cmpaslayer}{%
+  \foreach \n in {gazipur, kishoreganj}
+    {\node[bdcity, fill=cbGreen!45, minimum size=1.5mm] at (\n) {};}
+  \bdroute \bdends}
+% caption under a panel: #1 colour, #2 name, #3 explored, #4 km, #5 verdict
+\newcommand{\cmpcap}[5]{%
+  {\footnotesize\textcolor{#1}{\textbf{#2}}\par}
+  \vspace{1pt}
+  {\scriptsize explored \textbf{#3} of 64\\ route #4\,km\quad #5\par}}
+
+% ---------- 11c. three result maps -- switched off --------------------
+%      Replaced by the table + bars frame below.  To bring it back, delete
+%      the \iffalse / \fi pair around it (and switch the one below off).
+\iffalse
+\begin{frame}{Dijkstra vs Greedy vs A*}
+  \begin{columns}[T]
+    \column{0.33\textwidth}
+      \centering
+      \cmpmap{\cmpdjlayer}\par
+      \vspace{0.2em}
+      \cmpcap{rbluemd}{Dijkstra}{50}{215}{\pos{$\checkmark$ optimal}}
+
+    \column{0.33\textwidth}
+      \centering
+      \onslide<2->{%
+      \cmpmap{\cmpgrlayer}\par
+      \vspace{0.2em}
+      \cmpcap{cbOrange}{Greedy}{6}{243}{\bad{$\times$ not optimal}}}
+
+    \column{0.33\textwidth}
+      \centering
+      \onslide<3->{%
+      \cmpmap{\cmpaslayer}\par
+      \vspace{0.2em}
+      \cmpcap{cbGreen}{A*}{8}{215}{\pos{$\checkmark$ optimal}}}
+  \end{columns}
+
+  \vspace{0.6em}
+  \onslide<4->{%
+  \begin{center}\small
+    A* explores almost as little as Greedy, and still returns
+    Dijkstra's route.
+  \end{center}}
+\end{frame}
+\fi
+
+% ---------- 11b. table + bars -----------------------------------------
+%      Top bars: how much each search looked at.  Bottom bars: how good
+%      the route it returned is.
+\begin{frame}{Dijkstra vs Greedy vs A*}
+  \begin{columns}[c]
+  \column{0.5\textwidth}
+    \cmptable\par
+  \column{0.4\textwidth}
+    \centering
+    \onslide<2->{\cmpbars}\par
+    \vspace{1.4em}
+    \onslide<3->{\cmproute}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Summary --- Dijkstra vs Greedy vs A*}
+  \vspace{6pt}
+  \begin{columns}[T]
+    \column{0.33\textwidth}
+      \centering
+      \usebox{\gpdj}\par
+      \vspace{0.4em}
+      {\footnotesize\textbf{Dijkstra}\\[2pt]
+       \onslide<1->{cells: \bad{\statdijkstraexp}\\
+                    cost: \pos{\statdijkstrapath}}}
+
+    \column{0.33\textwidth}
+      \centering
+      \onslide<1->{\usebox{\gpgr}}\par
+      \vspace{0.4em}
+      {\footnotesize\onslide<1->{\textbf{Greedy}}\\[2pt]
+       \onslide<1->{cells: \pos{\statgreedyexp}\\
+                    cost: \bad{\statgreedypath}}}
+
+    \column{0.33\textwidth}
+      \centering
+      \onslide<1->{\usebox{\gpas}}\par
+      \vspace{0.4em}
+      {\footnotesize\onslide<1->{\textbf{A*}}\\[2pt]
+       \onslide<1->{cells: \pos{\statastarexp}\\
+                    cost: \pos{\statastarpath}}}
+  \end{columns}
+
+  \vspace{0.8em}
+  \onslide<2->{%
+  \begin{center}\small
+    Far fewer expansions than Dijkstra, \emph{and} a provably cheapest
+    route --- \HL{that is A*.}
+  \end{center}}
+\end{frame}
+
+% ---------- SUMMARY, flat 2D (part1 frame 20) -- switched off ----------
+%      Replaced by the 3D frame above.  To bring it back, delete the
+%      \iffalse / \fi pair around it (and remove the 3D frame).
+\iffalse
+\begin{frame}{Summary --- Dijkstra vs Greedy vs A*}
+  \vspace{9.3pt}
+  \begin{columns}[c]
+    \column{0.33\textwidth}
+      \begin{center}
+        \only<1->{\gridpictiny{0.235cm}{grids/mini-dijkstra}}
+      \end{center}
+      \vspace{0.2em}
+      \begin{center}\footnotesize
+        \only<1->{\textbf{Dijkstra}\\[2pt]}
+        \only<2->{cells: \bad{\statdijkstraexp}\\
+                     cost: \pos{\statdijkstrapath}}
+      \end{center}
+
+    \column{0.33\textwidth}
+      \begin{center}
+        \only<3->{\gridpictiny{0.235cm}{grids/mini-greedy}}
+      \end{center}
+      \vspace{0.2em}
+      \begin{center}\footnotesize
+        \only<3->{\textbf{Greedy}\\[2pt]}
+        \only<4->{cells: \pos{\statgreedyexp}\\
+                     cost: \bad{\statgreedypath}}
+      \end{center}
+
+    \column{0.33\textwidth}
+      \begin{center}
+        \only<5->{\gridpictiny{0.235cm}{grids/mini-astar}}
+      \end{center}
+      \vspace{0.2em}
+      \begin{center}\footnotesize
+        \only<5->{\textbf{A*}\\[2pt]}
+        \only<6->{cells: \pos{\statastarexp}\\
+                     cost: \pos{\statastarpath}}
+      \end{center}
+  \end{columns}
+
+  \vspace{0.8em}
+  \only<7->{
+  \begin{center}\small
+    Far fewer expansions than Dijkstra, \emph{and} a provably cheapest
+    route --- \HL{that is A*.}
+  \end{center}}
+\end{frame}
+\fi
+
+\end{document}

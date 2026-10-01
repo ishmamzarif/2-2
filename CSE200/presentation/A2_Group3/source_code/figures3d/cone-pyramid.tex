@@ -1,0 +1,31 @@
+\begin{tabular}{@{}c@{\hspace{1.5em}}c@{}}
+  {\footnotesize\textcolor{rblue}{\textbf{Euclidean}} $h=\sqrt{x^2+y^2}$: a cone} &
+  {\footnotesize\textcolor{cbOrange}{\textbf{Manhattan}} $h=|x|+|y|$: a pyramid}\\[2pt]
+  \begin{tikzpicture}
+    \begin{axis}[land3d, land view={-30}{42}{0.60},
+                 colormap name=hblue, point meta min=0, point meta max=3.2]
+      \addplot3[tilesurf, domain=0:4, y domain=0:360, samples=9, samples y=41]
+        ({x*cos(y)}, {x*sin(y)}, {\kE*x});
+      \node[gball] at (0,0,0) {};
+      \node[tag, text=ggoal, below=6pt] at (0,0,0) {$t$};
+      \node[vball] at (\pEx,\pEy,{\kE*veclen(\pEx,\pEy)}) {};
+      \node[tagbox, text=rblue, anchor=west, right=3pt]
+        at (\pEx,\pEy,{\kE*veclen(\pEx,\pEy)}) {$v$: $h=\sqrt5\approx2.24$};
+    \end{axis}
+  \end{tikzpicture}
+  &
+  \begin{tikzpicture}
+    \begin{axis}[land3d, land view={-30}{42}{0.60},
+                 colormap name=horange, point meta min=0, point meta max=3.2]
+      \addplot3[tilesurf, domain=0:4, y domain=0:360, samples=9, samples y=41]
+        ({x*cos(y)/(abs(cos(y))+abs(sin(y)))},
+         {x*sin(y)/(abs(cos(y))+abs(sin(y)))}, {\kE*x});
+      \node[gball] at (0,0,0) {};
+      \node[tag, text=ggoal, below=6pt] at (0,0,0) {$t$};
+      \node[vball] at (\pEx,\pEy,{\kE*(abs(\pEx)+abs(\pEy))}) {};
+      \node[tagbox, text=cbOrange, anchor=west, right=3pt]
+        at (\pEx,\pEy,{\kE*(abs(\pEx)+abs(\pEy))}) {$v$: $h=3$};
+    \end{axis}
+  \end{tikzpicture}\\
+  {\scriptsize level sets are circles} & {\scriptsize level sets are diamonds}
+\end{tabular}

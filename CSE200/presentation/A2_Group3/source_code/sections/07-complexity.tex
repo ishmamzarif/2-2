@@ -1,0 +1,100 @@
+\section{Time and space complexity}\label{sec:complexity}
+
+We analyze Algorithm~\ref{alg:astar} with a consistent heuristic, where $|V|$
+and $|E|$ are the numbers of vertices and edges. We assume that $Q$ is a binary
+heap, in which each queue operation takes $O(\log |V|)$ time, and that $h(v)$ is
+computed in constant time, as for the distance heuristics.
+
+\subsection{Time}\label{sec:time}
+
+By Theorem~\ref{thm:consistent}, every vertex is extracted at most once, so
+every edge is examined at most twice (Table~\ref{tab:time}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Running time of Algorithm~\ref{alg:astar} with a binary
+    heap.}\label{tab:time}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{4.4cm}P{4.6cm}P{2.2cm}P{2.6cm}@{}}
+    \toprule
+    Operation & Number of executions & Cost of each & Total\\
+    \midrule
+    initialization of $g$ and $\pi$ & once per vertex & $O(1)$ & $O(|V|)$\\
+    \textsc{Extract-Min} & at most once per vertex & $O(\log|V|)$
+      & $O(|V|\log|V|)$\\
+    examination of an edge & at most twice per edge & $O(1)$ & $O(|E|)$\\
+    \textsc{Insert-or-Decrease-Key} & at most once per examination of an edge
+      & $O(\log|V|)$ & $O(|E|\log|V|)$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Summing the totals gives the running time
+\begin{equation}\label{eq:time}
+  O(|V|) + O(|V| \log |V|) + O(|E|) + O(|E| \log |V|)
+  = O\big((|V| + |E|) \log |V|\big).
+\end{equation}
+
+This is also the bound for Dijkstra's algorithm, and a Fibonacci heap reduces
+both to $O(|E| + |V| \log |V|)$~\cite{cormen2022clrs}. In the worst case A* is
+no faster than Dijkstra's algorithm, since the zero heuristic is consistent; its
+advantage lies in the number of vertices expanded
+(Section~\ref{sec:efficiency}).
+
+With an inconsistent heuristic, A* with reopening can expand a vertex many
+times; Martelli~\cite{martelli1977} gave graphs on which the number of
+expansions grows exponentially.
+
+\subsection{Space}\label{sec:space}
+
+Each item of Table~\ref{tab:space} holds at most one entry per vertex, so the
+memory is $O(|V|)$.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Memory used by Algorithm~\ref{alg:astar}.}\label{tab:space}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{5cm}P{6cm}P{2.4cm}@{}}
+    \toprule
+    Data & Size & Total\\
+    \midrule
+    values $g$ and predecessors $\pi$ & one entry per vertex & $O(|V|)$\\
+    closed set $S$ & at most every vertex & $O(|V|)$\\
+    priority queue $Q$ & at most one entry per vertex, with
+      \textsc{Decrease-Key} & $O(|V|)$\\
+    reconstructed path & at most $|V|$ vertices & $O(|V|)$\\
+    \midrule
+    \textbf{Total} & & $O(|V|)$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Implementations that insert a second queue entry instead of decreasing a key
+need $O(|V| + |E|)$ space. On large graphs memory, not time, is usually the
+limit, because A* stores every vertex it reaches~\cite{russell2020aima}.
+
+\subsection{Comparison of the three algorithms}\label{sec:complexity-compare}
+
+In greedy best-first search every vertex enters $Q$ once and no key decreases,
+which gives the smallest bound in Table~\ref{tab:complexity}. The worst-case
+bounds do not separate A* from Dijkstra's algorithm.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Worst-case complexity of the three algorithms with a binary heap and
+    a consistent heuristic.}\label{tab:complexity}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{2.6cm}P{3.6cm}P{3.6cm}P{3.6cm}@{}}
+    \toprule
+     & \textcolor{algdijkstra}{\textbf{Dijkstra's algorithm}}
+     & \textcolor{alggreedy}{\textbf{Greedy best-first search}}
+     & \textcolor{algastar}{\textbf{A* search}}\\
+    \midrule
+    Time  & $O((|V|{+}|E|)\log|V|)$ & $O(|E| + |V|\log|V|)$
+      & $O((|V|{+}|E|)\log|V|)$\\[2pt]
+    Space & $O(|V|)$ & $O(|V|)$ & $O(|V|)$\\[2pt]
+    Shortest path & \textcolor{algastar}{guaranteed}
+      & \textcolor{cbRed}{not guaranteed} & \textcolor{algastar}{guaranteed}\\
+    \bottomrule
+  \end{tabular}
+\end{table}

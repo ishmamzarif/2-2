@@ -1,0 +1,290 @@
+\section{Correctness}\label{sec:correctness}
+
+When is the path returned by A* a cheapest one? Table~\ref{tab:guarantees}
+summarizes the answer, which depends on the heuristic. Throughout this section,
+$G = (V,E,w)$ is finite with nonnegative weights, $t$ is reachable from $s$, and
+$C^{*} = \delta(s,t)$; the key of a vertex $u$ in $Q$ is $f(u) = g(u) + h(u)$.
+
+\begin{table}[htbp]
+  \centering
+  \caption{What A* guarantees for each kind of heuristic.}\label{tab:guarantees}
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{3.2cm}P{4.1cm}P{3.4cm}P{2.8cm}@{}}
+    \toprule
+    Heuristic & Algorithm~\ref{alg:astar} (closed set) & A* with reopening
+      & Result\\
+    \midrule
+    consistent & \textcolor{algastar}{shortest path}, each vertex expanded
+      at most once & \textcolor{algastar}{shortest path}
+      & Theorem~\ref{thm:consistent}\\
+    admissible, not consistent & \textcolor{cbRed}{may fail}
+      (Example~\ref{ex:inconsistent}) & \textcolor{algastar}{shortest path}
+      & Theorem~\ref{thm:admissible}\\
+    not admissible & \textcolor{cbRed}{may fail}
+      (Section~\ref{sec:overestimate}) & \textcolor{cbRed}{may fail} & none\\
+    $h(v) = 0$ for all $v$ (Dijkstra's algorithm)
+      & \textcolor{algastar}{shortest path} & \textcolor{algastar}{shortest path}
+      & Corollary~\ref{cor:dijkstra}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Two facts about the cost so far}\label{sec:invariant}
+
+The values $g(v)$ only go down and never drop below the true distance from the
+source. The same proof applies to A* with reopening
+(Section~\ref{sec:admissible-proof}). A \emph{walk} is like a path but may
+visit a vertex more than once.
+
+\begin{lemma}\label{lem:invariant}
+During the execution of Algorithm~\ref{alg:astar}, the value $g(v)$ of a vertex
+$v$ never increases. Whenever $g(v)$ is finite, it is the cost of some walk from
+$s$ to $v$, and consequently $g(v) \ge \delta(s,v)$.
+\end{lemma}
+
+\begin{proof}
+The algorithm changes $g(v)$ only by the assignment $g(v) \gets g(u) + w(u,v)$,
+and only when the new value is smaller, so $g(v)$ never increases. We prove the
+second claim by induction on the number of assignments. Initially only $g(s)$ is
+finite, and $g(s) = 0$ is the cost of the walk $(s)$. An assignment sets
+$g(v) = g(u) + w(u,v)$, where, by the induction hypothesis, $g(u)$ is the cost
+of a walk from $s$ to $u$. Appending $v$ to this walk gives a walk from $s$ to
+$v$ of cost $g(v)$. Finally, removing the repeated parts of a walk yields a path
+between the same vertices, and the path costs no more than the walk because
+every weight is nonnegative. Hence $g(v) \ge \delta(s,v)$.
+\end{proof}
+
+\subsection{Consistent heuristics}\label{sec:consistent-proof}
+
+With a consistent heuristic, the estimated total cost never decreases along a
+path.
+
+\begin{lemma}\label{lem:pathmono}
+Let $h$ be a consistent heuristic and let $P = (v_0, v_1, \dots, v_k)$ be a
+path. For $0 \le i \le k$, let $f_P(v_i) = c(v_0, \dots, v_i) + h(v_i)$, where
+$c(v_0, \dots, v_i)$ is the cost of the first $i$ edges of $P$. Then
+$f_P(v_0) \le f_P(v_1) \le \dots \le f_P(v_k)$.
+\end{lemma}
+
+\begin{proof}
+For $1 \le i \le k$, Inequality~\eqref{eq:consistent} applied to the edge
+$(v_{i-1}, v_i)$ gives
+\begin{equation}\label{eq:fstep}
+  f_P(v_i) = f_P(v_{i-1}) + w(v_{i-1}, v_i) + h(v_i) - h(v_{i-1})
+           \ge f_P(v_{i-1}). \qedhere
+\end{equation}
+\end{proof}
+
+Consequently, the extracted keys never decrease.
+
+\begin{lemma}\label{lem:monotone}
+Let $h$ be a consistent heuristic. Then Algorithm~\ref{alg:astar} extracts
+vertices from $Q$ in nondecreasing order of their keys.
+\end{lemma}
+
+\begin{proof}
+Suppose that the algorithm extracts a vertex $u$ with key $f(u)$. At that moment
+every key in $Q$ is at least $f(u)$, because \textsc{Extract-Min} returns a
+smallest key. While $u$ is expanded, a key is inserted or decreased only to a
+value $g(u) + w(u,v) + h(v)$ for a neighbor $v$ of $u$, and by
+Inequality~\eqref{eq:consistent} this value is at least $g(u) + h(u) = f(u)$.
+Hence every key in $Q$ is still at least $f(u)$ at the next extraction, and the
+next extracted key is at least $f(u)$.
+\end{proof}
+
+The main lemma states that a vertex leaves $Q$ only when its value $g$ is exact
+(Figure~\ref{fig:proof-idea}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/proof-idea}
+  \caption{The idea behind Lemma~\ref{lem:exact}. On a shortest path $P$ from
+    $s$ to $u$, the first vertex $x$ that is not closed is in $Q$ with an exact
+    value $g(x)$, and its key is smaller than the key of $u$.}\label{fig:proof-idea}
+\end{figure}
+
+\begin{lemma}\label{lem:exact}
+Let $h$ be a consistent heuristic. Whenever Algorithm~\ref{alg:astar} extracts a
+vertex $u$ from $Q$, we have $g(u) = \delta(s,u)$.
+\end{lemma}
+
+\begin{proof}
+Suppose the contrary, and let $u$ be the first extracted vertex with
+$g(u) \ne \delta(s,u)$; by Lemma~\ref{lem:invariant}, $g(u) > \delta(s,u)$. The
+first iteration extracts $s$ with $g(s) = 0 = \delta(s,s)$, so $u \neq s$. The
+value $g(u)$ is finite, so $u$ is reachable from $s$; let $P$ be a shortest path
+from $s$ to $u$. Just before $u$ is extracted, $s$ is in $S$ and $u$ is not. Let
+$x$ be the first vertex of $P$ that is not in $S$, and let $y$ be the vertex
+that precedes $x$ on $P$; then $y$ is in $S$.
+
+The vertex $y$ was extracted before $u$, so $g(y) = \delta(s,y)$ by the choice
+of $u$. When $y$ was expanded, the vertex $x$ was not in $S$, because $S$ only
+grows, and the relaxation of the edge $(y,x)$ ensured that
+$g(x) \le \delta(s,y) + w(y,x) = \delta(s,x)$; the equality holds because the
+part of $P$ from $s$ to $x$ is a shortest path. By Lemma~\ref{lem:invariant},
+$g(x)$ has not increased since and is at least $\delta(s,x)$, so
+$g(x) = \delta(s,x)$. A vertex with a finite value $g$ that is not in $S$ is in
+$Q$, so $x$ is in $Q$. Moreover $x \neq u$, because $g(u) > \delta(s,u)$.
+
+Lemma~\ref{lem:pathmono}, applied to $P$, compares the keys of $x$ and $u$. The
+costs of the parts of $P$ that end at $x$ and at $u$ are $\delta(s,x)$ and
+$\delta(s,u)$, so
+\begin{equation}\label{eq:xbeforeu}
+  f(x) = \delta(s,x) + h(x) \le \delta(s,u) + h(u) < g(u) + h(u) = f(u).
+\end{equation}
+The vertex $x$ is in $Q$ with a smaller key than $u$, which contradicts the
+choice of $u$ by \textsc{Extract-Min}.
+\end{proof}
+
+We can now prove the main result.
+
+\begin{theorem}[Optimality of A* with a consistent heuristic]\label{thm:consistent}
+Let $G$ be a finite graph with nonnegative edge weights, let $s$ and $t$ be
+vertices of $G$ such that $t$ is reachable from $s$, and let $h$ be a
+consistent heuristic. Then Algorithm~\ref{alg:astar} expands every vertex at
+most once and returns a path from $s$ to $t$ of cost $\delta(s,t)$.
+\end{theorem}
+
+\begin{proof}
+A vertex enters $S$ when it is extracted and never leaves $S$, and the loop over
+the edges never inserts a vertex of $S$ into $Q$. Hence every vertex is extracted
+at most once, and the algorithm stops after at most $|V|$ iterations.
+
+The algorithm does not return failure. Suppose, to the contrary, that $Q$
+becomes empty before $t$ is extracted. Consider a path from $s$ to $t$; its
+first vertex $s$ is in $S$ and its last vertex $t$ is not. Let $x$ be the first
+vertex of the path that is not in $S$. The vertex that precedes $x$ on the path
+is in $S$, and its expansion gave $x$ a finite value $g(x)$ and inserted $x$
+into $Q$. The vertex $x$ can leave $Q$ only by being extracted, after which it
+would be in $S$ or the algorithm would have returned. Both cases contradict the
+assumptions, so the algorithm extracts $t$, and $g(t) = \delta(s,t)$ at that
+moment by Lemma~\ref{lem:exact}.
+
+It remains to show that the returned path has cost $g(t)$. Let $v \neq s$ be a
+vertex on the path and let $p = \pi(v)$. The last change of $g(v)$ and $\pi(v)$
+happened during the expansion of $p$ and set $g(v) = g(p) + w(p,v)$. The value
+$g(p)$ did not change afterwards, because $p$ was in $S$. The vertex $p$ was
+extracted before $v$, so following the predecessors from $t$ visits vertices in
+strictly decreasing order of extraction and therefore reaches $s$. Adding the
+equalities $g(v) - g(\pi(v)) = w(\pi(v), v)$ along the path shows that its cost
+is $g(t) - g(s) = \delta(s,t)$.
+\end{proof}
+
+Dijkstra's algorithm is the special case of the zero heuristic.
+
+\begin{corollary}\label{cor:dijkstra}
+Let $G$ be a finite graph with nonnegative edge weights, and let $s$ and $t$ be
+vertices of $G$ such that $t$ is reachable from $s$. Then
+Algorithm~\ref{alg:dijkstra} returns a shortest path from $s$ to $t$.
+\end{corollary}
+
+\begin{proof}
+The zero heuristic, $h(v) = 0$ for every vertex $v$, is consistent, because
+$0 \le w(u,v) + 0$ for every edge $(u,v)$. With this heuristic the key $g + h$
+equals $g$, so Algorithm~\ref{alg:astar} is Algorithm~\ref{alg:dijkstra}. The
+claim follows from Theorem~\ref{thm:consistent}.
+\end{proof}
+
+\subsection{Admissible heuristics}\label{sec:admissible-proof}
+
+Admissibility alone does not make Algorithm~\ref{alg:astar} correct.
+
+\begin{example}\label{ex:inconsistent}
+Consider the graph of Figure~\ref{fig:counterexample} with source $s$ and destination
+$t$. The shortest path is $(s, a, c, t)$, of cost 5. The true remaining costs
+are $h^{*}(s) = 5$, $h^{*}(a) = 4$, $h^{*}(b) = 5$ and $h^{*}(c) = 3$, so the
+heuristic shown in the figure is admissible. It is not consistent, because
+$h(a) = 4 > w(a,c) + h(c) = 2$. Table~\ref{tab:counterexample} traces
+Algorithm~\ref{alg:astar} on this graph. In step 4 the edge $(a,c)$ offers $c$
+the smaller value $1 + 1 = 2$, but $c$ is already closed, so the algorithm skips
+the edge and returns $(s, b, c, t)$, of cost 6.
+\end{example}
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/counterexample}
+  \caption{An admissible heuristic that is not consistent. Edge weights are on
+    the edges, and heuristic values are beside the vertices.}\label{fig:counterexample}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Algorithm~\ref{alg:astar} on the graph of
+    Figure~\ref{fig:counterexample}.}\label{tab:counterexample}
+  \begin{tabular}{@{}clll@{}}
+    \toprule
+    Step & Extracted (key) & Updates & State of $c$\\
+    \midrule
+    1 & $s$ (0) & $g(a) = 1$, key 5; \ $g(b) = 1$, key 2 & not reached\\
+    2 & $b$ (2) & $g(c) = 3$, key 4 & in $Q$, $g(c) = 3$\\
+    3 & $c$ (4) & $g(t) = 6$, key 6 & closed, $g(c) = 3$\\
+    4 & $a$ (5) & \textcolor{cbRed}{edge $(a,c)$ skipped, $c$ is closed}
+      & closed, $g(c) = 3$\\
+    5 & $t$ (6) & returns $(s,b,c,t)$, cost \textcolor{cbRed}{6} & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Here $c$ was closed before $g(c)$ was exact, and the closed set blocked the
+correction. \emph{A* with reopening} removes the condition ``$v$ is not in $S$''
+from Algorithm~\ref{alg:astar} and moves every vertex whose $g$ decreases back
+from $S$ into $Q$. On Example~\ref{ex:inconsistent} it reopens $c$ with key 3 and
+returns $(s,a,c,t)$ of cost 5.
+
+\begin{theorem}[Optimality of A* with an admissible heuristic]\label{thm:admissible}
+Let $G$ be a finite graph in which every edge weight is positive, let $s$ and $t$
+be vertices of $G$ such that $t$ is reachable from $s$, and let $h$ be an
+admissible heuristic. Then A* with reopening terminates and returns a path from
+$s$ to $t$ of cost $\delta(s,t)$.
+\end{theorem}
+
+\begin{proof}
+We first prove termination. Let $w_{\min} > 0$ be the smallest edge weight, let
+$v$ be a vertex, and let $g_{0}$ be the first finite value of $g(v)$. By
+Lemma~\ref{lem:invariant}, every later value of $g(v)$ is the cost of a walk
+from $s$ to $v$ of cost at most $g_{0}$. Such a walk has at most
+$g_{0} / w_{\min}$ edges, so there are finitely many such walks, and $g(v)$
+takes finitely many values. After an extraction, the vertex $v$ returns to $Q$
+only if $g(v)$ decreases, so $v$ is extracted at most once for each value of
+$g(v)$. Hence the number of iterations is finite.
+
+Let $P^{*} = (s = v_0, v_1, \dots, v_k = t)$ be a shortest path from $s$ to
+$t$. We show that before every extraction that precedes the extraction of $t$,
+some vertex $v_j$ of $P^{*}$ is in $Q$ with $g(v_j) = \delta(s,v_j)$. In
+particular $Q$ is not empty, so the algorithm does not return failure. Let $j$
+be the largest index with $g(v_j) = \delta(s,v_j)$; it exists because
+$g(s) = 0$. Suppose that $v_j$ is not in $Q$. Since $g(v_j)$ is finite, $v_j$
+has been reached, so it is in $S$; in particular $v_j \neq t$, because the
+extraction of $t$ ends the search. The value $g(v_j)$ did not decrease after the
+last expansion of $v_j$, because a decrease would have reopened $v_j$. Hence
+$g(v_j) = \delta(s,v_j)$ during that expansion, which relaxed the edge
+$(v_j, v_{j+1})$ and set
+$g(v_{j+1}) \le \delta(s,v_j) + w(v_j,v_{j+1}) = \delta(s,v_{j+1})$. By
+Lemma~\ref{lem:invariant}, $g(v_{j+1}) = \delta(s,v_{j+1})$ from then on, which
+contradicts the choice of $j$. So $v_j$ is in $Q$.
+
+When $t$ is extracted, its key is $g(t) + h(t) = g(t)$, because admissibility
+gives $0 \le h(t) \le h^{*}(t) = 0$. Just before this extraction, the vertex
+$v_j$ found above is in $Q$ with key
+\begin{equation}\label{eq:admbound}
+  \delta(s,v_j) + h(v_j) \le \delta(s,v_j) + h^{*}(v_j) = C^{*},
+\end{equation}
+where the equality holds because $v_j$ lies on a shortest path from $s$ to $t$.
+\textsc{Extract-Min} chose $t$, so $g(t) \le C^{*}$. Together with
+$g(t) \ge C^{*}$ from Lemma~\ref{lem:invariant}, this gives $g(t) = C^{*}$.
+
+Finally, consider the returned path. For every vertex $v \neq s$ on it, the last
+change of $g(v)$ and $\pi(v)$ set $g(v) = g(\pi(v)) + w(\pi(v), v)$, and
+$g(\pi(v))$ can only have decreased since. Hence
+$g(\pi(v)) + w(\pi(v), v) \le g(v)$. Every weight is positive, so $g$ strictly
+decreases along the predecessors; the path therefore visits no vertex twice and
+ends at $s$. Adding the inequalities along the path shows that its cost is at
+most $g(t) - g(s) = C^{*}$. No path costs less than $C^{*}$, so the cost of the
+returned path is exactly $C^{*}$.
+\end{proof}
+
+Theorem~\ref{thm:admissible} is the original result of Hart, Nilsson and
+Raphael~\cite{hart1968formal}; Theorem~\ref{thm:consistent} covers the usual
+implementation~\cite{russell2020aima}, in which each vertex is expanded at most
+once. With an inconsistent heuristic a vertex may be expanded many times
+(Section~\ref{sec:complexity}).

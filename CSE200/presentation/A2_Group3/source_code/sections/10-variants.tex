@@ -1,0 +1,34 @@
+\section{Variants of A*}\label{sec:variants}
+
+Table~\ref{tab:variants} lists four variants of A* that address its
+limitations: the dependence on the heuristic, the memory needed, and the cost of
+searching from scratch after every change of the map.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Four variants of A* and the limitation that each one
+    addresses.}\label{tab:variants}
+  \small
+  \renewcommand{\arraystretch}{1.25}%
+  \begin{tabular}{@{}P{2.9cm}P{5.4cm}P{5.4cm}@{}}
+    \toprule
+    Variant & Idea & Limitation addressed\\
+    \midrule
+    Weighted A*~\cite{pohl1970}
+      & rank by $g(v) + \varepsilon\, h(v)$ with $\varepsilon > 1$
+      & too many expansions; with an admissible $h$, the returned path costs
+        at most $\varepsilon C^{*}$\\
+    IDA*~\cite{korf1985}
+      & a series of searches that each follow one path at a time as far as
+        possible (depth-first search), with a growing limit on $f$
+      & memory: only the current path is stored, at the price of repeated
+        expansions\\
+    Jump point search~\cite{harabor2011}
+      & skip the many paths of equal cost on uniform grids with diagonal moves
+      & many equivalent expansions on grids; the path remains optimal\\
+    D* Lite~\cite{koenig2002}
+      & repair the previous search when the cost of an edge changes
+      & maps that change while a robot or a game character moves\\
+    \bottomrule
+  \end{tabular}
+\end{table}

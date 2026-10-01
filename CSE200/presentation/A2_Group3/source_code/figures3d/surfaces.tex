@@ -1,0 +1,43 @@
+\def\kD{0.45}\def\sgx{1.6}
+\newcommand{\surfone}[4]{%
+  \begin{tikzpicture}
+    \begin{axis}[land3d, land view={-28}{30}{0.52}, colormap name=#1,
+                 point meta min=0, point meta max=3.6,
+                 xmin=-3.2, xmax=3.2, ymin=-2, ymax=2, zmin=0, zmax=3.6]
+      \draw[gridgray, line width=0.4pt] (-3.2,-2,0) -- (3.2,-2,0)
+        -- (3.2,2,0) -- (-3.2,2,0) -- cycle;
+      \addplot3[tilesurf, domain=-3.2:3.2, y domain=-2:2,
+                samples=17, samples y=11] {#2};
+      \path (-3.2,-2,3.6) (3.2,-2,3.6) (3.2,2,3.6) (-3.2,2,3.6);
+      \node[sball, minimum size=2.6mm] at (-\sgx,0,#3) {};
+      \node[gball, minimum size=2.6mm] at (\sgx,0,#4) {};
+    \end{axis}
+  \end{tikzpicture}}
+\begin{tabular}{@{}c@{\hspace{2pt}}c@{\hspace{2pt}}c@{\hspace{2pt}}c@{\hspace{2pt}}c@{}}
+  \surfone{hblue}{\kD*veclen(x+\sgx,y)}{0}{\kD*2*\sgx}
+  & \raisebox{1.2cm}{\Large $+$}
+  & \surfone{horange}{\kD*veclen(x-\sgx,y)}{\kD*2*\sgx}{0}
+  & \raisebox{1.2cm}{\Large $=$}
+  & \begin{tikzpicture}
+      \begin{axis}[land3d, land view={-28}{30}{0.52}, colormap name=hgreen,
+                   point meta min=0, point meta max=3.6,
+                   xmin=-3.2, xmax=3.2, ymin=-2, ymax=2, zmin=0, zmax=3.6]
+        \draw[gridgray, line width=0.4pt] (-3.2,-2,0) -- (3.2,-2,0)
+          -- (3.2,2,0) -- (-3.2,2,0) -- cycle;
+        \addplot3[tilesurf, domain=-3.2:3.2, y domain=-2:2,
+                  samples=17, samples y=11]
+          {\kD*(veclen(x+\sgx,y)+veclen(x-\sgx,y))};
+        \path (-3.2,-2,3.6) (3.2,-2,3.6) (3.2,2,3.6) (-3.2,2,3.6);
+        \draw[cbGreen!60!black, line width=1.8pt]
+          (-\sgx,0,{\kD*2*\sgx}) -- (\sgx,0,{\kD*2*\sgx});
+        \node[sball, minimum size=2.6mm] at (-\sgx,0,{\kD*2*\sgx}) {};
+        \node[gball, minimum size=2.6mm] at (\sgx,0,{\kD*2*\sgx}) {};
+      \end{axis}
+    \end{tikzpicture}\\
+  {\footnotesize\textcolor{rblue}{$g$}: cost so far} &
+  & {\footnotesize\textcolor{cbOrange}{$h$}: estimate of what is left} &
+  & {\footnotesize\textcolor{cbGreen}{$f = g + h$}}\\
+  {\scriptsize\textcolor{neutralg}{Dijkstra: a cone at $s$}} &
+  & {\scriptsize\textcolor{neutralg}{greedy: a cone at $t$}} &
+  & {\scriptsize\textcolor{neutralg}{A*: a trough from $s$ to $t$}}
+\end{tabular}
