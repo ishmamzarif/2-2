@@ -31,7 +31,7 @@ plt.subplot(2, 3, 1)
 plt.imshow(image, cmap='gray')
 plt.title("Original Image")
 plt.axis('off')
-
+# Original Image
 # Shifted Image
 plt.subplot(2, 3, 2)
 plt.imshow(shifted_image, cmap='gray')
