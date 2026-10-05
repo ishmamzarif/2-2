@@ -1,0 +1,1548 @@
+<title>Laplace Transform in 3D</title>
+<meta name="description" content="Nine interactive 3D views of the Laplace transform: Euler's helix, e^st, convergence, the |X(s)| landscape, poles, the ROC and the inverse transform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>/*__KATEX_CSS__*/</style>
+<style>
+/* Layout: one full-height 3D stage, a control column on the right, the nine stops across the top in the order of the talk.
+   Single dark theme on purpose: it matches the Manim videos and reads best on a projector. */
+:root {
+  color-scheme: dark;
+  --bg: #0c0c0f;          /* the videos' background */
+  --surface: #121319;
+  --surface-2: #191b23;
+  --line: #282b36;
+  --fg: #e8e9ef;
+  --muted: #a3a6b5;
+  --faint: #6f7383;
+  --accent: #f7d96f;      /* highlight yellow, as in the videos */
+  --sig: #58c4dd;
+  --teal: #5cd0b3;
+  --gold: #f0ac5f;
+  --purple: #b189c6;
+  --pole: #ff8080;
+  --zero: #a6cf8c;
+  --roc: #29abca;
+  --good: #83c167;
+  --bad: #fc6255;
+  --font-display: KaTeX_Main, "Latin Modern Roman", "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --panel-w: 372px;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-ui); overflow: hidden; }
+.app { height: 100%; display: flex; flex-direction: column; }
+
+header.top { display: flex; align-items: center; gap: 18px; padding: 10px 16px; border-bottom: 1px solid var(--line);
+             padding-top: calc(10px + env(safe-area-inset-top, 0px)); background: var(--bg); }
+.brand { font-family: var(--font-display); font-size: 21px; white-space: nowrap; letter-spacing: .01em; }
+.brand i { color: var(--accent); }
+nav.stops { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.stops::-webkit-scrollbar { display: none; }
+nav.stops button { flex: none; display: flex; align-items: baseline; gap: 7px; background: transparent; border: 1px solid transparent;
+                   color: var(--muted); font: 500 13px/1 var(--font-ui); padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+nav.stops button .n { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+nav.stops button:hover { color: var(--fg); background: var(--surface); }
+nav.stops button[aria-current="true"] { color: var(--fg); border-color: var(--line); background: var(--surface-2); }
+nav.stops button[aria-current="true"] .n { color: var(--accent); }
+.tools { display: flex; gap: 6px; }
+
+main { flex: 1; min-height: 0; display: flex; }
+.viewport { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#gl:active { cursor: grabbing; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 17px; color: var(--fg); text-shadow: 0 0 6px #000, 0 0 2px #000;
+       will-change: transform; }
+.lbl.sm { font-size: 14px; }
+.lbl.lg { font-size: 20px; }
+.viewhint { position: absolute; left: 14px; bottom: 12px; color: var(--faint); font-size: 12px; pointer-events: none; }
+.stopname { position: absolute; left: 16px; top: 12px; font-family: var(--font-display); font-size: 26px; pointer-events: none;
+            text-shadow: 0 0 8px #000; }
+.nogl { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 24px; }
+
+aside.panel { width: var(--panel-w); flex: none; border-left: 1px solid var(--line); background: var(--surface); overflow-y: auto;
+              padding: 18px 18px calc(24px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+body.full aside.panel { display: none; }
+.stop-panel { display: flex; flex-direction: column; gap: 14px; }
+.stop-panel[hidden] { display: none !important; }
+.stop-panel h2 { font-family: var(--font-display); font-weight: 400; font-size: 25px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.stop-panel .blurb { margin: 0; color: var(--muted); }
+.formula { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; overflow-x: auto; font-size: 17px; }
+.formula .katex-display { margin: 4px 0; }
+.ctl { display: flex; flex-direction: column; gap: 6px; }
+.ctl .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.ctl label, .lab { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+.val { font-family: var(--font-mono); font-size: 13px; color: var(--fg); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button, .btn { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+                    font: 500 13px/1.2 var(--font-ui); cursor: pointer; }
+.seg button:hover, .btn:hover { border-color: var(--faint); }
+.seg button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn:focus-visible, .seg button:focus-visible, nav.stops button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--fg); cursor: pointer; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.chks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.pad { width: 100%; height: 230px; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; touch-action: none; }
+.plot { width: 100%; height: 170px; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+.readout { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: baseline; font-size: 14px; }
+.readout dt { color: var(--faint); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+.readout dd { margin: 0; min-width: 0; overflow-x: auto; }
+.verdict { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 13px; font-weight: 600;
+           border: 1px solid currentColor; }
+.verdict.good { color: var(--good); } .verdict.bad { color: var(--bad); } .verdict.warn { color: var(--accent); }
+details.notes { border-top: 1px solid var(--line); padding-top: 10px; }
+details.notes summary { cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+details.notes ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+details.notes li { margin: 4px 0; }
+.pad-hint { font-size: 12px; color: var(--faint); margin-top: -4px; }
+kbd { font: 12px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; background: var(--surface-2); }
+
+@media (max-width: 860px) {
+  body { overflow: auto; }
+  .app { height: auto; min-height: 100%; }
+  main { flex-direction: column; }
+  .viewport { height: 62vh; min-height: 340px; flex: none; }
+  aside.panel { width: auto; border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .brand { font-size: 18px; }
+  header.top { flex-wrap: wrap; gap: 8px; }
+  nav.stops { order: 3; flex-basis: 100%; }
+  .stopname { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">Laplace transform <i>in 3D</i></div>
+    <nav class="stops" id="stops" aria-label="Views"></nav>
+    <div class="tools">
+      <button class="btn" id="bReset" title="Reset the camera (R)">Reset view</button>
+      <button class="btn" id="bFull" title="Hide the side panel (P)">Panel</button>
+    </div>
+  </header>
+  <main>
+    <div class="viewport" id="viewport">
+      <canvas id="gl" aria-label="3D view: drag to rotate, scroll to zoom"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="stopname" id="stopname"></div>
+      <div class="viewhint">drag to rotate · scroll or pinch to zoom · shift-drag to pan · <kbd>&larr;</kbd> <kbd>&rarr;</kbd> change view</div>
+    </div>
+    <aside class="panel" id="panel"></aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ============================================================== complex numbers */
+const C = (re, im = 0) => ({ re, im });
+const cadd = (a, b) => C(a.re + b.re, a.im + b.im);
+const csub = (a, b) => C(a.re - b.re, a.im - b.im);
+const cmul = (a, b) => C(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+const cdiv = (a, b) => { const d = b.re * b.re + b.im * b.im; return C((a.re * b.re + a.im * b.im) / d, (a.im * b.re - a.re * b.im) / d); };
+const cexp = (a) => { const m = Math.exp(a.re); return C(m * Math.cos(a.im), m * Math.sin(a.im)); };
+const cabs = (a) => Math.hypot(a.re, a.im);
+const cscale = (a, k) => C(a.re * k, a.im * k);
+const conj = (a) => C(a.re, -a.im);
+const fmt = (x, d = 2) => (Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x).toFixed(d);
+const fmtC = (z, d = 2) => fmt(z.re, d) + (z.im < 0 ? ' − ' : ' + ') + fmt(Math.abs(z.im), d) + 'j';
+function rational(k, zeros, poles) {
+  return (s) => {
+    let n = C(k, 0), d = C(1, 0);
+    for (const z of zeros) n = cmul(n, csub(s, z));
+    for (const p of poles) d = cmul(d, csub(s, p));
+    return cdiv(n, d);
+  };
+}
+
+/* ============================================================== palette */
+const COL = { sig: 0x58c4dd, teal: 0x5cd0b3, gold: 0xf0ac5f, yellow: 0xf7d96f, purple: 0xb189c6, pole: 0xff8080, zero: 0xa6cf8c,
+              roc: 0x29abca, good: 0x83c167, bad: 0xfc6255, axis: 0x9da0b0, grid: 0x245a70, wall: 0x2a2c36, red: 0xfc6255, white: 0xe8e9ef };
+const CSS = { sig: '#58c4dd', teal: '#5cd0b3', gold: '#f0ac5f', yellow: '#f7d96f', purple: '#b189c6', pole: '#ff8080', zero: '#a6cf8c',
+              roc: '#29abca', good: '#83c167', bad: '#fc6255', fg: '#e8e9ef', muted: '#a3a6b5', faint: '#6f7383', line: '#282b36', grid: '#1d2a33' };
+const HEIGHT_STOPS = [[0, 0x236b8e], [0.2, 0x58c4dd], [0.43, 0x5cd0b3], [0.73, 0xf7d96f], [1, 0xfc6255]];
+function heightColor(x, out) {
+  x = Math.max(0, Math.min(1, x));
+  for (let i = 1; i < HEIGHT_STOPS.length; i++) {
+    const [x1, c1] = HEIGHT_STOPS[i];
+    if (x <= x1) {
+      const [x0, c0] = HEIGHT_STOPS[i - 1];
+      const f = (x - x0) / (x1 - x0);
+      out.setHex(c0).lerp(new THREE.Color(c1), f);
+      return out;
+    }
+  }
+  return out.setHex(HEIGHT_STOPS[HEIGHT_STOPS.length - 1][1]);
+}
+
+/* ============================================================== DOM helpers */
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+function tex(src, display = false) {
+  const s = el('span');
+  if (window.katex) katex.render(src, s, { throwOnError: false, displayMode: display });
+  else s.textContent = src;
+  return s;
+}
+function setTex(node, src, display = false) {
+  if (window.katex) katex.render(src, node, { throwOnError: false, displayMode: display });
+  else node.textContent = src;
+}
+function slider({ label, min, max, step, value, unit = '', format, onInput }) {
+  const id = 'sl-' + Math.random().toString(36).slice(2, 8);
+  const v = el('span', { class: 'val' });
+  const input = el('input', { type: 'range', id, min, max, step, value });
+  const show = () => { v.textContent = (format ? format(+input.value) : (+input.value).toFixed(2)) + unit; };
+  input.addEventListener('input', () => { show(); onInput(+input.value); });
+  show();
+  const wrap = el('div', { class: 'ctl' }, el('div', { class: 'row' }, el('label', { for: id }, label), v), input);
+  return { el: wrap, input, set(x) { input.value = x; show(); } };
+}
+function seg(options, value, onChange) {
+  const box = el('div', { class: 'seg', role: 'group' });
+  const btns = options.map(([id, label]) => {
+    const b = el('button', { type: 'button', 'aria-pressed': String(id === value) });
+    if (label.startsWith('$')) b.append(tex(label.slice(1, -1))); else b.textContent = label;
+    b.addEventListener('click', () => { set(id); onChange(id); });
+    box.append(b);
+    return [id, b];
+  });
+  function set(id) { for (const [k, b] of btns) b.setAttribute('aria-pressed', String(k === id)); }
+  return { el: box, set };
+}
+function check(label, checked, onChange) {
+  const id = 'ck-' + Math.random().toString(36).slice(2, 8);
+  const input = el('input', { type: 'checkbox', id });
+  input.checked = checked;
+  input.addEventListener('change', () => onChange(input.checked));
+  const l = el('label', { class: 'chk', for: id }, input);
+  if (label.includes('$')) {
+    for (const [i, part] of label.split('$').entries()) l.append(i % 2 ? tex(part) : document.createTextNode(part));
+  } else l.append(label);
+  return { el: l, input };
+}
+function readout(rows) {
+  const dl = el('dl', { class: 'readout' });
+  const cells = {};
+  for (const [key, label] of rows) {
+    const dd = el('dd');
+    dl.append(el('dt', {}, label), dd);
+    cells[key] = dd;
+  }
+  return { el: dl, cells };
+}
+function verdict(node, kind, text) {
+  node.innerHTML = '';
+  node.append(el('span', { class: 'verdict ' + kind }, text));
+}
+
+/* ============================================================== 2D canvases: s-plane pad and plots */
+class Canvas2D {
+  constructor(cls) {
+    this.el = el('canvas', { class: cls });
+    this.ctx = this.el.getContext('2d');
+    this.dpr = 1;
+    new ResizeObserver(() => this.resize()).observe(this.el);
+  }
+  resize() {
+    const r = this.el.getBoundingClientRect();
+    if (r.width < 2) return;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.el.width = Math.round(r.width * this.dpr);
+    this.el.height = Math.round(r.height * this.dpr);
+    this.w = r.width; this.h = r.height;
+    this.draw();
+  }
+  draw() {}
+}
+
+class SPad extends Canvas2D {
+  /* the s-plane: draggable handles, regions, poles/zeros, vertical lines */
+  constructor({ xr = [-3, 3], yr = [-3, 3], height = 230, onDrag, onClick }) {
+    super('pad');
+    this.el.style.height = height + 'px';
+    Object.assign(this, { xr, yr, onDrag, onClick });
+    this.handles = []; this.regions = []; this.vlines = []; this.poles = []; this.zeros = []; this.marks = []; this.stripes = [];
+    this.drag = null;
+    this.el.addEventListener('pointerdown', (e) => this.down(e));
+    this.el.addEventListener('pointermove', (e) => this.move(e));
+    this.el.addEventListener('pointerup', (e) => this.up(e));
+    this.el.addEventListener('pointercancel', (e) => this.up(e));
+  }
+  pad() { return { l: 30, r: 14, t: 12, b: 22 }; }
+  X(x) { const p = this.pad(); return p.l + (x - this.xr[0]) / (this.xr[1] - this.xr[0]) * (this.w - p.l - p.r); }
+  Y(y) { const p = this.pad(); return p.t + (this.yr[1] - y) / (this.yr[1] - this.yr[0]) * (this.h - p.t - p.b); }
+  inv(px, py) {
+    const p = this.pad();
+    return [this.xr[0] + (px - p.l) / (this.w - p.l - p.r) * (this.xr[1] - this.xr[0]),
+            this.yr[1] - (py - p.t) / (this.h - p.t - p.b) * (this.yr[1] - this.yr[0])];
+  }
+  draw() {
+    const c = this.ctx; if (!this.w) return;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, this.w, this.h);
+    const [x0, x1] = this.xr, [y0, y1] = this.yr;
+    // regions
+    for (const r of this.regions) {
+      const l = Math.max(x0, r.l ?? x0), rr = Math.min(x1, r.r ?? x1);
+      if (rr <= l) continue;
+      c.fillStyle = r.color; c.globalAlpha = r.alpha ?? 0.25;
+      c.fillRect(this.X(l), this.Y(y1), this.X(rr) - this.X(l), this.Y(y0) - this.Y(y1));
+      c.globalAlpha = 1;
+      if (r.edges !== false) {
+        c.strokeStyle = r.color; c.setLineDash([5, 4]); c.lineWidth = 1.5;
+        for (const e of [r.l, r.r]) if (e != null && e > x0 && e < x1) { c.beginPath(); c.moveTo(this.X(e), this.Y(y1)); c.lineTo(this.X(e), this.Y(y0)); c.stroke(); }
+        c.setLineDash([]);
+      }
+      if (r.label) { c.fillStyle = r.color; c.font = '600 11px ' + getComputedStyle(document.body).fontFamily; c.textAlign = 'center';
+        c.fillText(r.label, (this.X(l) + this.X(rr)) / 2, this.Y(y0) - 6); }
+    }
+    for (const s of this.stripes) {
+      c.fillStyle = s.color; c.globalAlpha = 0.55;
+      c.fillRect(this.X(s.x) - 1.5, this.Y(y1), 3, this.Y(y0) - this.Y(y1));
+      c.globalAlpha = 1;
+    }
+    // grid
+    c.strokeStyle = CSS.grid; c.lineWidth = 1;
+    const sx = niceStep(x1 - x0), sy = niceStep(y1 - y0);
+    c.beginPath();
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) { c.moveTo(this.X(x), this.Y(y0)); c.lineTo(this.X(x), this.Y(y1)); }
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) { c.moveTo(this.X(x0), this.Y(y)); c.lineTo(this.X(x1), this.Y(y)); }
+    c.stroke();
+    // axes
+    c.strokeStyle = '#8a8d9c'; c.lineWidth = 1.2; c.beginPath();
+    if (y0 <= 0 && y1 >= 0) { c.moveTo(this.X(x0), this.Y(0)); c.lineTo(this.X(x1), this.Y(0)); }
+    if (x0 <= 0 && x1 >= 0) { c.moveTo(this.X(0), this.Y(y0)); c.lineTo(this.X(0), this.Y(y1)); }
+    c.stroke();
+    c.fillStyle = CSS.faint; c.font = '11px ' + getComputedStyle(document.body).fontFamily; c.textAlign = 'center';
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) if (Math.abs(x) > 1e-9) c.fillText(+x.toFixed(2), this.X(x), this.h - 7);
+    c.textAlign = 'right';
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) if (Math.abs(y) > 1e-9) c.fillText(+y.toFixed(2) + 'j', 26, this.Y(y) + 4);
+    c.fillStyle = CSS.muted; c.font = 'italic 13px KaTeX_Main, serif'; c.textAlign = 'left';
+    c.fillText('σ', this.w - 12, this.Y(Math.max(y0, Math.min(y1, 0))) - 5);
+    c.fillText('jω', this.X(Math.max(x0, Math.min(x1, 0))) + 5, 14);
+    // vertical lines
+    for (const v of this.vlines) {
+      c.strokeStyle = v.color; c.lineWidth = v.width ?? 3; c.setLineDash(v.dash ?? []);
+      c.beginPath(); c.moveTo(this.X(v.x), this.Y(y0)); c.lineTo(this.X(v.x), this.Y(y1)); c.stroke(); c.setLineDash([]);
+    }
+    // marks (arrows etc.)
+    for (const m of this.marks) m(c, this);
+    // zeros and poles
+    for (const z of this.zeros) { c.strokeStyle = z.color || CSS.zero; c.lineWidth = 2.2; c.beginPath(); c.arc(this.X(z.re), this.Y(z.im), z.r || 6, 0, 2 * Math.PI); c.stroke(); }
+    for (const p of this.poles) {
+      const X = this.X(p.re), Y = this.Y(p.im), s = 6;
+      c.strokeStyle = p.color || CSS.pole; c.lineWidth = 2.6;
+      c.beginPath(); c.moveTo(X - s, Y - s); c.lineTo(X + s, Y + s); c.moveTo(X + s, Y - s); c.lineTo(X - s, Y + s); c.stroke();
+    }
+    // handles
+    for (const h of this.handles) {
+      if (h.hidden) continue;
+      const X = this.X(h.x), Y = this.Y(h.y);
+      c.fillStyle = h.color; c.strokeStyle = '#0c0c0f'; c.lineWidth = 2;
+      c.beginPath(); c.arc(X, Y, h === this.drag ? 8 : 7, 0, 2 * Math.PI); c.fill(); c.stroke();
+      if (h.label) { c.fillStyle = h.color; c.font = 'italic 14px KaTeX_Main, serif'; c.textAlign = 'left'; c.fillText(h.label, X + 9, Y - 8); }
+    }
+  }
+  pick(e) {
+    const r = this.el.getBoundingClientRect(); const px = e.clientX - r.left, py = e.clientY - r.top;
+    let best = null, bd = 16;
+    for (const h of this.handles) {
+      if (h.hidden) continue;
+      const d = Math.hypot(this.X(h.x) - px, this.Y(h.y) - py);
+      if (d < bd) { bd = d; best = h; }
+    }
+    return { best, px, py };
+  }
+  down(e) {
+    const { best, px, py } = this.pick(e);
+    if (best) { this.drag = best; this.el.setPointerCapture(e.pointerId); this.moveTo(best, px, py); e.preventDefault(); }
+    else if (this.onClick) { const [x, y] = this.inv(px, py); this.onClick(x, y); }
+  }
+  move(e) {
+    if (!this.drag) {
+      const { best } = this.pick(e); this.el.style.cursor = best ? 'grab' : (this.onClick ? 'pointer' : 'default'); return;
+    }
+    const r = this.el.getBoundingClientRect(); this.moveTo(this.drag, e.clientX - r.left, e.clientY - r.top);
+  }
+  moveTo(h, px, py) {
+    let [x, y] = this.inv(px, py);
+    x = Math.max(h.xmin ?? this.xr[0], Math.min(h.xmax ?? this.xr[1], x));
+    y = Math.max(h.ymin ?? this.yr[0], Math.min(h.ymax ?? this.yr[1], y));
+    if (h.lockX != null) x = h.lockX;
+    if (h.lockY != null) y = h.lockY;
+    if (h.snap) { x = Math.round(x / h.snap) * h.snap; y = Math.round(y / h.snap) * h.snap; }
+    h.x = x; h.y = y;
+    if (this.onDrag) this.onDrag(h);
+    this.draw();
+  }
+  up() { this.drag = null; this.draw(); }
+}
+function niceStep(span) { const raw = span / 6; const p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+
+class Plot extends Canvas2D {
+  constructor({ xr = [-4, 4], yr = [-1.5, 1.5], height = 170, xlabel = 't', ylabel = '' }) {
+    super('plot');
+    this.el.style.height = height + 'px';
+    Object.assign(this, { xr, yr, xlabel, ylabel });
+    this.curves = [];
+  }
+  X(x) { return 26 + (x - this.xr[0]) / (this.xr[1] - this.xr[0]) * (this.w - 40); }
+  Y(y) { return 10 + (this.yr[1] - y) / (this.yr[1] - this.yr[0]) * (this.h - 30); }
+  draw() {
+    const c = this.ctx; if (!this.w) return;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, this.w, this.h);
+    const [x0, x1] = this.xr, [y0, y1] = this.yr;
+    c.strokeStyle = CSS.grid; c.lineWidth = 1; c.beginPath();
+    const sx = niceStep(x1 - x0), sy = niceStep(y1 - y0);
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) { c.moveTo(this.X(x), this.Y(y0)); c.lineTo(this.X(x), this.Y(y1)); }
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) { c.moveTo(this.X(x0), this.Y(y)); c.lineTo(this.X(x1), this.Y(y)); }
+    c.stroke();
+    c.strokeStyle = '#8a8d9c'; c.lineWidth = 1.2; c.beginPath();
+    c.moveTo(this.X(x0), this.Y(0)); c.lineTo(this.X(x1), this.Y(0));
+    if (x0 <= 0 && x1 >= 0) { c.moveTo(this.X(0), this.Y(y0)); c.lineTo(this.X(0), this.Y(y1)); }
+    c.stroke();
+    c.fillStyle = CSS.faint; c.font = '11px ' + getComputedStyle(document.body).fontFamily; c.textAlign = 'center';
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) if (Math.abs(x) > 1e-9) c.fillText(+x.toFixed(2), this.X(x), this.h - 6);
+    c.textAlign = 'right';
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) if (Math.abs(y) > 1e-9) c.fillText(+y.toFixed(2), 22, this.Y(y) + 4);
+    c.fillStyle = CSS.muted; c.font = 'italic 13px KaTeX_Main, serif'; c.textAlign = 'right';
+    c.fillText(this.xlabel, this.w - 6, this.Y(0) - 5);
+    c.textAlign = 'left'; c.fillText(this.ylabel, this.X(Math.max(x0, Math.min(x1, 0))) + 5, 20);
+    for (const cv of this.curves) this.curve(cv);
+  }
+  curve({ f, color, width = 2.5, dash, fill, breaks = [], n = 500 }) {
+    const c = this.ctx, [x0, x1] = this.xr, [y0, y1] = this.yr;
+    const pad = (y1 - y0) * 0.02;
+    const edges = [x0, ...breaks.filter((b) => b > x0 && b < x1), x1];
+    for (let k = 0; k < edges.length - 1; k++) {
+      const a = edges[k] + (k > 0 ? 1e-6 : 0), b = edges[k + 1] - (k < edges.length - 2 ? 1e-6 : 0);
+      const m = Math.max(4, Math.round(n * (b - a) / (x1 - x0)));
+      const pts = [];
+      for (let i = 0; i <= m; i++) { const x = a + (b - a) * i / m; const y = f(x); pts.push([x, y]); }
+      if (fill) {
+        c.fillStyle = fill; c.beginPath(); c.moveTo(this.X(a), this.Y(0));
+        for (const [x, y] of pts) c.lineTo(this.X(x), this.Y(Math.max(y0 - pad, Math.min(y1 + pad, isFinite(y) ? y : y1))));
+        c.lineTo(this.X(b), this.Y(0)); c.closePath(); c.fill();
+      }
+      c.strokeStyle = color; c.lineWidth = width; c.setLineDash(dash || []); c.lineJoin = 'round';
+      c.beginPath(); let pen = false;
+      for (const [x, y] of pts) {
+        if (!isFinite(y) || y > y1 + pad || y < y0 - pad) {
+          if (pen && isFinite(y)) c.lineTo(this.X(x), this.Y(Math.max(y0 - pad, Math.min(y1 + pad, y))));
+          pen = false; continue;
+        }
+        if (!pen) { c.moveTo(this.X(x), this.Y(y)); pen = true; } else c.lineTo(this.X(x), this.Y(y));
+      }
+      c.stroke(); c.setLineDash([]);
+    }
+  }
+}
+
+/* ============================================================== 3D stage */
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('gl');
+const labelsRoot = document.getElementById('labels');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
+} catch (e) { renderer = null; }
+if (!renderer || !window.THREE) {
+  viewport.append(el('div', { class: 'nogl' }, 'This browser could not start WebGL, so the 3D views are unavailable. Try Chrome, Edge, Safari or Firefox with hardware acceleration on.'));
+}
+const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 500);
+if (renderer) { renderer.setClearColor(0x0c0c0f, 1); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); }
+
+class Orbit {
+  constructor(cam, dom) {
+    this.cam = cam; this.target = new THREE.Vector3(); this.r = 16; this.theta = 0.6; this.phi = 1.15;
+    this.goal = null; this.ptrs = new Map(); this.moved = 0;
+    dom.addEventListener('pointerdown', (e) => { dom.setPointerCapture(e.pointerId); this.ptrs.set(e.pointerId, [e.clientX, e.clientY]); this.goal = null; this.pan = e.shiftKey || e.button === 2; });
+    dom.addEventListener('pointermove', (e) => {
+      if (!this.ptrs.has(e.pointerId)) return;
+      const [px, py] = this.ptrs.get(e.pointerId);
+      const dx = e.clientX - px, dy = e.clientY - py;
+      if (this.ptrs.size === 2) {
+        const pts = [...this.ptrs.values()]; const before = Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]);
+        this.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+        const after = [...this.ptrs.values()]; const now = Math.hypot(after[0][0] - after[1][0], after[0][1] - after[1][1]);
+        if (before > 0) this.r = Math.max(3, Math.min(80, this.r * before / now));
+      } else if (this.pan) {
+        const k = this.r * 0.0016;
+        const right = new THREE.Vector3().setFromMatrixColumn(this.cam.matrix, 0), up = new THREE.Vector3().setFromMatrixColumn(this.cam.matrix, 1);
+        this.target.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
+        this.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+      } else {
+        this.theta -= dx * 0.006; this.phi = Math.max(0.05, Math.min(Math.PI - 0.05, this.phi - dy * 0.006));
+        this.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+      }
+      this.moved++;
+    });
+    const end = (e) => { this.ptrs.delete(e.pointerId); };
+    dom.addEventListener('pointerup', end); dom.addEventListener('pointercancel', end);
+    dom.addEventListener('contextmenu', (e) => e.preventDefault());
+    dom.addEventListener('wheel', (e) => { e.preventDefault(); this.goal = null; this.r = Math.max(3, Math.min(80, this.r * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+  }
+  set(v, animate = true) {
+    const g = { target: new THREE.Vector3(...v.target), r: v.r, theta: v.theta, phi: v.phi };
+    if (animate) this.goal = g; else { this.target.copy(g.target); Object.assign(this, { r: g.r, theta: g.theta, phi: g.phi }); this.goal = null; }
+  }
+  update(dt) {
+    if (this.goal) {
+      const k = 1 - Math.exp(-dt * 6);
+      this.target.lerp(this.goal.target, k);
+      this.r += (this.goal.r - this.r) * k; this.theta += (this.goal.theta - this.theta) * k; this.phi += (this.goal.phi - this.phi) * k;
+      if (Math.abs(this.goal.r - this.r) < 1e-3 && Math.abs(this.goal.theta - this.theta) < 1e-4) this.goal = null;
+    }
+    const sp = Math.sin(this.phi);
+    this.cam.position.set(this.target.x + this.r * sp * Math.sin(this.theta), this.target.y + this.r * Math.cos(this.phi),
+                          this.target.z + this.r * sp * Math.cos(this.theta));
+    this.cam.lookAt(this.target);
+  }
+}
+const orbit = new Orbit(camera, canvas);
+
+/* 3D building blocks */
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function lambert(color, opts = {}) { return new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide, ...opts }); }
+function basic(color, opts = {}) { return new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, ...opts }); }
+
+function tubeGeom(points, radius) {
+  if (points.length < 2) return null;
+  const path = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.0);
+  return new THREE.TubeGeometry(path, Math.min(1200, Math.max(2, points.length * 2)), radius, 8, false);
+}
+/* a curve drawn as tubes; points with null break the curve */
+class Curve {
+  constructor(color, radius = 0.035, opts = {}) { this.group = new THREE.Group(); this.mat = lambert(color, { emissive: color, emissiveIntensity: 0.35, ...opts }); this.radius = radius; }
+  set(points) {
+    for (const m of this.group.children) m.geometry.dispose();
+    this.group.clear();
+    let run = [];
+    const flush = () => { if (run.length >= 2) { const g = tubeGeom(run, this.radius); if (g) this.group.add(new THREE.Mesh(g, this.mat)); } run = []; };
+    for (const p of points) { if (p) run.push(p); else flush(); }
+    flush();
+    return this;
+  }
+}
+function thinLine(points, color, opacity = 1, dashed = false) {
+  const g = new THREE.BufferGeometry().setFromPoints(points);
+  const m = dashed ? new THREE.LineDashedMaterial({ color, dashSize: 0.15, gapSize: 0.1, transparent: opacity < 1, opacity })
+                   : new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity });
+  const l = new THREE.Line(g, m);
+  if (dashed) l.computeLineDistances();
+  return l;
+}
+function segments(pairs, color, opacity = 1) {
+  const g = new THREE.BufferGeometry().setFromPoints(pairs.flat());
+  return new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity }));
+}
+function rod(a, b, color, r = 0.02) {
+  const dir = new THREE.Vector3().subVectors(b, a); const len = dir.length();
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8, 1), lambert(color, { emissive: color, emissiveIntensity: 0.3 }));
+  m.position.copy(a).addScaledVector(dir, 0.5);
+  m.quaternion.setFromUnitVectors(V(0, 1, 0), dir.normalize());
+  return m;
+}
+class Arrow3 {
+  constructor(color, r = 0.035) {
+    this.group = new THREE.Group();
+    const mat = lambert(color, { emissive: color, emissiveIntensity: 0.35 });
+    this.shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 10, 1), mat);
+    this.head = new THREE.Mesh(new THREE.ConeGeometry(r * 3, 1, 14, 1), mat);
+    this.group.add(this.shaft, this.head); this.r = r;
+  }
+  set(a, b) {
+    const dir = new THREE.Vector3().subVectors(b, a); const len = dir.length();
+    this.group.visible = len > 1e-3;
+    if (!this.group.visible) return this;
+    const hl = Math.min(0.28, len * 0.4);
+    const u = dir.clone().normalize(); const q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), u);
+    this.shaft.scale.set(1, len - hl, 1); this.shaft.position.copy(a).addScaledVector(u, (len - hl) / 2); this.shaft.quaternion.copy(q);
+    this.head.scale.set(1, hl, 1); this.head.position.copy(a).addScaledVector(u, len - hl / 2); this.head.quaternion.copy(q);
+    return this;
+  }
+}
+function quad(a, b, c, d, color, opacity) {
+  const g = new THREE.BufferGeometry().setFromPoints([a, b, c, a, c, d]);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, basic(color, { transparent: true, opacity, depthWrite: false }));
+}
+function poleMark(p, color = COL.pole, s = 0.22, r = 0.035) {
+  const g = new THREE.Group();
+  g.add(rod(V(p.x - s, p.y, p.z - s), V(p.x + s, p.y, p.z + s), color, r));
+  g.add(rod(V(p.x - s, p.y, p.z + s), V(p.x + s, p.y, p.z - s), color, r));
+  return g;
+}
+function zeroMark(p, color = COL.zero, rad = 0.2) {
+  const m = new THREE.Mesh(new THREE.TorusGeometry(rad, 0.035, 8, 32), lambert(color, { emissive: color, emissiveIntensity: 0.3 }));
+  m.position.copy(p); m.rotation.x = Math.PI / 2; return m;
+}
+
+/* the |X(s)| landscape: one geometry, two materials (inside / outside the ROC) */
+class Landscape {
+  constructor({ u0, u1, v0, v1, nu = 110, nv = 130, zmax = 3, hscale = 1, map }) {
+    Object.assign(this, { u0, u1, v0, v1, nu, nv, zmax, hscale, map });
+    this.geo = new THREE.BufferGeometry();
+    const n = (nu + 1) * (nv + 1);
+    this.pos = new Float32Array(n * 3); this.col = new Float32Array(n * 3); this.h = new Float32Array(n);
+    this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+    this.geo.setAttribute('color', new THREE.BufferAttribute(this.col, 3));
+    this.inside = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    this.ghost = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false });
+    this.mesh = new THREE.Mesh(this.geo, [this.inside, this.ghost]);
+    this.wire = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x0c0c0f, transparent: true, opacity: 0.35 }));
+    this.group = new THREE.Group(); this.group.add(this.mesh, this.wire);
+    this.roc = [null, null];
+  }
+  setFunction(F) {
+    const { u0, u1, v0, v1, nu, nv, zmax } = this; const col = new THREE.Color();
+    let k = 0;
+    for (let j = 0; j <= nv; j++) {
+      const v = v0 + (v1 - v0) * j / nv;
+      for (let i = 0; i <= nu; i++, k++) {
+        const u = u0 + (u1 - u0) * i / nu;
+        let h = F(C(u, v)); h = typeof h === 'number' ? h : cabs(h);
+        if (!isFinite(h) || h > zmax) h = zmax;
+        this.h[k] = h;
+        const p = this.map(u, v, h * this.hscale);
+        this.pos[3 * k] = p.x; this.pos[3 * k + 1] = p.y; this.pos[3 * k + 2] = p.z;
+        heightColor(h / zmax, col); this.col[3 * k] = col.r; this.col[3 * k + 1] = col.g; this.col[3 * k + 2] = col.b;
+      }
+    }
+    this.geo.attributes.position.needsUpdate = true; this.geo.attributes.color.needsUpdate = true;
+    this.setROC(this.roc[0], this.roc[1], true);
+    this.geo.computeBoundingSphere();
+  }
+  setROC(l, r, normals = false) {
+    this.roc = [l, r];
+    const { nu, nv, zmax } = this; const inn = [], out = [], wire = [];
+    const L = l ?? -Infinity, R = r ?? Infinity;
+    const idx = (i, j) => j * (nu + 1) + i;
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) {
+      const a = idx(i, j), b = idx(i + 1, j), c = idx(i + 1, j + 1), d = idx(i, j + 1);
+      const uc = this.u0 + (this.u1 - this.u0) * (i + 0.5) / nu;
+      const dst = uc > L && uc < R ? inn : out;
+      const top = (x) => this.h[x] >= zmax - 1e-9;
+      if (!(top(a) && top(b) && top(c))) dst.push(a, b, c);
+      if (!(top(a) && top(c) && top(d))) dst.push(a, c, d);
+    }
+    this.geo.setIndex(inn.concat(out));
+    this.geo.clearGroups(); this.geo.addGroup(0, inn.length, 0); this.geo.addGroup(inn.length, out.length, 1);
+    if (normals) this.geo.computeVertexNormals();
+    // a sparse wire mesh over the lit part
+    const P = (k) => new THREE.Vector3(this.pos[3 * k], this.pos[3 * k + 1] + 0.004, this.pos[3 * k + 2]);
+    const stepI = Math.max(1, Math.round(nu / 22)), stepJ = Math.max(1, Math.round(nv / 26));
+    for (let j = 0; j <= nv; j += stepJ) for (let i = 0; i < nu; i++) {
+      const uc = this.u0 + (this.u1 - this.u0) * (i + 0.5) / nu;
+      if (uc > L && uc < R && !(this.h[idx(i, j)] >= zmax && this.h[idx(i + 1, j)] >= zmax)) wire.push(P(idx(i, j)), P(idx(i + 1, j)));
+    }
+    for (let i = 0; i <= nu; i += stepI) {
+      const uc = this.u0 + (this.u1 - this.u0) * i / nu;
+      if (!(uc > L && uc < R)) continue;
+      for (let j = 0; j < nv; j++) if (!(this.h[idx(i, j)] >= zmax && this.h[idx(i, j + 1)] >= zmax)) wire.push(P(idx(i, j)), P(idx(i, j + 1)));
+    }
+    this.wire.geometry.dispose(); this.wire.geometry = new THREE.BufferGeometry().setFromPoints(wire);
+  }
+}
+
+/* labels: HTML (KaTeX) pinned to 3D points */
+class Labels {
+  constructor() { this.root = el('div'); labelsRoot.append(this.root); this.items = []; this.root.hidden = true; }
+  add(src, at, cls = '', color) {
+    const node = el('div', { class: 'lbl ' + cls });
+    if (color) node.style.color = color;
+    setTex(node, src);
+    this.root.append(node);
+    const item = { node, at, visible: true };
+    this.items.push(item);
+    return item;
+  }
+  update(w, h) {
+    const v = new THREE.Vector3();
+    for (const it of this.items) {
+      if (!it.visible) { it.node.style.display = 'none'; continue; }
+      const p = typeof it.at === 'function' ? it.at() : it.at;
+      if (!p) { it.node.style.display = 'none'; continue; }
+      v.copy(p).project(camera);
+      if (v.z > 1 || v.z < -1) { it.node.style.display = 'none'; continue; }
+      it.node.style.display = '';
+      const x = (v.x * 0.5 + 0.5) * w, y = (-v.y * 0.5 + 0.5) * h;
+      it.node.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+    }
+  }
+}
+
+function makeScene() {
+  const scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+  const d = new THREE.DirectionalLight(0xffffff, 0.55); d.position.set(4, 10, 6); scene.add(d);
+  const d2 = new THREE.DirectionalLight(0xffffff, 0.22); d2.position.set(-6, 4, -5); scene.add(d2);
+  return scene;
+}
+
+/* complex-time space: x = t, y = Im, z = Re */
+function complexTime(scene, labels, { t0 = 0, t1 = 8, R = 1.5, k = 1.2, x0 = null, walls = false, labelT = 't' }) {
+  const off = x0 ?? -(t0 + t1) / 2;
+  const P = (t, z) => V(off + t, z.im * k, z.re * k);
+  scene.add(rod(P(t0, C(0)), P(t1 + 0.4, C(0)), COL.axis, 0.016));
+  scene.add(rod(P(0, C(-R)), P(0, C(R)), COL.teal, 0.012));
+  scene.add(rod(P(0, C(0, -R)), P(0, C(0, R)), COL.gold, 0.012));
+  labels.add(labelT, P(t1 + 0.75, C(0)), 'lg', CSS.muted);
+  labels.add('\\mathrm{Re}', P(0, C(R + 0.35)), '', CSS.teal);
+  labels.add('\\mathrm{Im}', P(0, C(0, R + 0.3)), '', CSS.gold);
+  const ticks = [];
+  for (let t = Math.ceil(t0); t <= t1; t++) if (t !== 0) ticks.push([P(t, C(0, -0.07)), P(t, C(0, 0.07))]);
+  scene.add(segments(ticks, COL.axis, 0.8));
+  let wallObjs = null;
+  if (walls) {
+    const w = R * k;
+    const floor = quad(V(off + t0, -w, -w), V(off + t1, -w, -w), V(off + t1, -w, w), V(off + t0, -w, w), COL.wall, 0.35);
+    const back = quad(V(off + t0, -w, -w), V(off + t1, -w, -w), V(off + t1, w, -w), V(off + t0, w, -w), COL.wall, 0.35);
+    const lines = [];
+    for (let t = Math.ceil(t0); t <= t1; t++) { lines.push([V(off + t, -w, -w), V(off + t, -w, w)], [V(off + t, -w, -w), V(off + t, w, -w)]); }
+    lines.push([V(off + t0, -w, 0), V(off + t1, -w, 0)], [V(off + t0, 0, -w), V(off + t1, 0, -w)]);
+    const grid = segments(lines, 0x3b3f4d, 0.6);
+    wallObjs = new THREE.Group(); wallObjs.add(floor, back, grid); scene.add(wallObjs);
+  }
+  return { P, off, walls: wallObjs, wallAt: R * k };
+}
+
+/* s-plane floor: x = sigma, z = -omega, y = height */
+function sFloor(scene, labels, { u0, u1, v0, v1, step = 1, labelsOn = true }) {
+  const P = (s, h = 0) => V(s.re, h, -s.im);
+  const lines = [];
+  for (let u = Math.ceil(u0 / step) * step; u <= u1 + 1e-9; u += step) lines.push([V(u, 0, -v0), V(u, 0, -v1)]);
+  for (let v = Math.ceil(v0 / step) * step; v <= v1 + 1e-9; v += step) lines.push([V(u0, 0, -v), V(u1, 0, -v)]);
+  scene.add(segments(lines, COL.grid, 0.55));
+  scene.add(rod(V(u0, 0, 0), V(u1 + 0.3, 0, 0), COL.axis, 0.016));
+  scene.add(rod(V(0, 0, -v0), V(0, 0, -v1 - 0.3), COL.axis, 0.016));
+  if (labelsOn) {
+    labels.add('\\sigma', V(u1 + 0.65, 0, 0), 'lg', CSS.muted);
+    labels.add('j\\omega', V(0, 0, -v1 - 0.75), 'lg', CSS.muted);
+    for (let u = Math.ceil(u0); u <= u1; u++) if (u) labels.add(String(u), V(u, 0, 0.35), 'sm', CSS.faint);
+    for (let v = Math.ceil(v0); v <= v1; v++) if (v && v % 2 === 0) labels.add(v + 'j', V(-0.35, 0, -v), 'sm', CSS.faint);
+  }
+  return { P };
+}
+function floorBand(l, r, v0, v1, color, opacity = 0.28, y = 0.002) {
+  const g = new THREE.Group();
+  g.add(quad(V(l, y, -v0), V(r, y, -v0), V(r, y, -v1), V(l, y, -v1), color, opacity));
+  return g;
+}
+function floorEdge(x, v0, v1, color) { return thinLine([V(x, 0.004, -v0), V(x, 0.004, -v1)], color, 1, true); }
+
+/* ============================================================== stops */
+const STOPS = [];
+function stop(def) { STOPS.push(def); }
+
+function panelSection(title, blurb, formulaTex) {
+  const sec = el('section', { class: 'stop-panel', hidden: '' });
+  sec.append(el('h2', {}, title));
+  if (blurb) sec.append(el('p', { class: 'blurb' }, blurb));
+  if (formulaTex) { const f = el('div', { class: 'formula' }); setTex(f, formulaTex, true); sec.append(f); }
+  return sec;
+}
+function notes(items) {
+  const d = el('details', { class: 'notes' }, el('summary', {}, 'What to notice'));
+  const ul = el('ul');
+  for (const it of items) { const li = el('li'); for (const [i, part] of it.split('$').entries()) li.append(i % 2 ? tex(part) : document.createTextNode(part)); ul.append(li); }
+  d.append(ul);
+  return d;
+}
+
+/* ---------------------------------------------------------- 1. Euler's helix */
+stop({ id: 'euler', name: "Euler's helix", build() {
+  const scene = makeScene(), labels = new Labels();
+  const T1 = 8, R = 1.5;
+  const ct = complexTime(scene, labels, { t0: 0, t1: T1, R, walls: true });
+  const { P } = ct;
+  const circle = []; for (let i = 0; i <= 96; i++) circle.push(P(0, cexp(C(0, 2 * Math.PI * i / 96))));
+  scene.add(thinLine(circle, COL.axis, 0.6));
+  const st = { w: 2, T: 0, playing: true, shadows: true, pair: false };
+  const helix = new Curve(COL.sig, 0.04); scene.add(helix.group);
+  const cosSh = new Curve(COL.teal, 0.028); const sinSh = new Curve(COL.gold, 0.028); scene.add(cosSh.group, sinSh.group);
+  const neg = new Curve(COL.purple, 0.032); const cosC = new Curve(COL.yellow, 0.045); scene.add(neg.group, cosC.group);
+  const arrow = new Arrow3(COL.sig, 0.03), arrowN = new Arrow3(COL.purple, 0.026), arrowS = new Arrow3(COL.yellow, 0.032);
+  scene.add(arrow.group, arrowN.group, arrowS.group);
+  const dropRe = new Curve(COL.teal, 0.01), dropIm = new Curve(COL.gold, 0.01); scene.add(dropRe.group, dropIm.group);
+  const w = ct.wallAt;
+  const lHelix = labels.add('e^{j\\omega t}', () => P(T1 + 0.2, C(0.2, 1.45)), 'lg', CSS.sig);
+  const lNeg = labels.add('e^{-j\\omega t}', () => P(T1 + 0.2, C(0.2, -1.45)), 'lg', CSS.purple);
+  const lCos = labels.add('\\cos\\omega t', () => V(ct.off + T1 + 0.5, -w, 0), '', CSS.teal);
+  const lSin = labels.add('\\sin\\omega t', () => V(ct.off + T1 + 0.5, 0, -w), '', CSS.gold);
+
+  function rebuild() {
+    const n = Math.max(2, Math.round(st.T * 50));
+    const e = (t, sgn = 1) => cexp(C(0, sgn * st.w * t));
+    const hp = [], cp = [], sp = [], np = [], kp = [];
+    for (let i = 0; i <= n; i++) {
+      const t = st.T * i / n, z = e(t);
+      hp.push(P(t, z));
+      cp.push(V(ct.off + t, -w + 0.01, z.re * 1.2));
+      sp.push(V(ct.off + t, z.im * 1.2, -w + 0.01));
+      if (st.pair) { np.push(P(t, e(t, -1))); kp.push(P(t, C(Math.cos(st.w * t), 0))); }
+    }
+    helix.set(hp);
+    cosSh.set(st.shadows ? cp : []); sinSh.set(st.shadows ? sp : []);
+    neg.set(st.pair ? np : []); cosC.set(st.pair ? kp : []);
+    const z = e(st.T), zn = e(st.T, -1);
+    arrow.set(P(st.T, C(0)), P(st.T, z));
+    arrowN.group.visible = st.pair; arrowS.group.visible = st.pair;
+    if (st.pair) { arrowN.set(P(st.T, C(0)), P(st.T, zn)); arrowS.set(P(st.T, C(0)), P(st.T, C(z.re, 0))); }
+    dropRe.set(st.shadows ? [P(st.T, z), V(ct.off + st.T, -w, z.re * 1.2)] : []);
+    dropIm.set(st.shadows ? [P(st.T, z), V(ct.off + st.T, z.im * 1.2, -w)] : []);
+    ct.walls.visible = st.shadows; lCos.visible = st.shadows; lSin.visible = st.shadows;
+    lNeg.visible = st.pair;
+    ro.cells.val.textContent = '';
+    ro.cells.val.append(tex(`e^{j\\omega t} = ${fmt(z.re)} ${z.im < 0 ? '-' : '+'} ${fmt(Math.abs(z.im))}\\,j`));
+    ro.cells.t.textContent = st.T.toFixed(2) + ' s';
+  }
+
+  const sec = panelSection("Euler's helix", 'A spinning arrow, with time as the third axis. Its shadows are the cosine and the sine.',
+    'e^{j\\omega t} = \\cos\\omega t + j\\sin\\omega t');
+  const sw = slider({ label: 'ω, rad/s', min: -4, max: 4, step: 0.1, value: st.w, format: (x) => x.toFixed(1), onInput: (x) => { st.w = x; rebuild(); } });
+  const play = el('button', { class: 'btn', type: 'button' }, 'Pause');
+  play.onclick = () => { st.playing = !st.playing; play.textContent = st.playing ? 'Pause' : 'Play'; };
+  const restart = el('button', { class: 'btn', type: 'button' }, 'Draw again');
+  restart.onclick = () => { st.T = 0; st.playing = true; play.textContent = 'Pause'; };
+  const c1 = check('Shadows on the walls', true, (v) => { st.shadows = v; rebuild(); });
+  const c2 = check('Add $e^{-j\\omega t}$ (cosine = average)', false, (v) => { st.pair = v; rebuild(); });
+  const ro = readout([['t', 'time'], ['val', 'value']]);
+  sec.append(sw.el, el('div', { class: 'seg' }, play, restart), el('div', { class: 'chks' }, c1.el, c2.el), ro.el,
+    notes(['Each turn of the helix takes $2\\pi/\\omega$ seconds; a larger $|\\omega|$ means tighter coils.',
+           'Negative $\\omega$ twists the other way.',
+           'With $e^{-j\\omega t}$ added, the imaginary parts cancel and the average stays on the real axis: $\\cos\\omega t = \\tfrac12(e^{j\\omega t}+e^{-j\\omega t})$.']));
+  return {
+    scene, labels, panel: sec, view: { target: [0, 0, 0], r: 15.5, theta: 0.72, phi: 1.12 },
+    tick(dt) { if (st.playing) { st.T += dt * 1.4; if (st.T > T1) st.T = T1, st.playing = false, play.textContent = 'Play'; rebuild(); } },
+    enter() { if (st.T === 0) st.playing = true; rebuild(); },
+  };
+} });
+
+/* ---------------------------------------------------------- 2. e^{st} */
+stop({ id: 'est', name: 'e^{st}', build() {
+  const scene = makeScene(), labels = new Labels();
+  const T1 = 8, R = 2;
+  const ct = complexTime(scene, labels, { t0: 0, t1: T1, R, k: 1.0 });
+  const { P } = ct;
+  const st = { s: C(-0.25, 2), pair: false, env: true };
+  const spiral = new Curve(COL.sig, 0.04), mirror = new Curve(COL.purple, 0.032), real = new Curve(COL.yellow, 0.045);
+  scene.add(spiral.group, mirror.group, real.group);
+  const funnelMat = new THREE.MeshBasicMaterial({ color: COL.pole, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false });
+  const funnelWire = new THREE.MeshBasicMaterial({ color: COL.pole, wireframe: true, transparent: true, opacity: 0.18 });
+  let funnel = null;
+  const lS = labels.add('e^{st}', () => P(T1 + 0.3, C(0, 1.5)), 'lg', CSS.sig);
+
+  function curve(s) {
+    const pts = [];
+    for (let i = 0; i <= 700; i++) { const t = T1 * i / 700; const z = cexp(cmul(s, C(t))); pts.push(cabs(z) <= R ? P(t, z) : null); }
+    return pts;
+  }
+  function rebuild() {
+    spiral.set(curve(st.s));
+    mirror.set(st.pair ? curve(conj(st.s)) : []);
+    if (st.pair) {
+      const pts = [];
+      for (let i = 0; i <= 500; i++) { const t = T1 * i / 500; const v = Math.exp(st.s.re * t) * Math.cos(st.s.im * t); pts.push(Math.abs(v) <= R ? P(t, C(v, 0)) : null); }
+      real.set(pts);
+    } else real.set([]);
+    if (funnel) { scene.remove(funnel); funnel.children.forEach((m) => m.geometry.dispose()); }
+    funnel = null;
+    if (st.env) {
+      const s = st.s.re; let hi = T1; if (s > 1e-6) hi = Math.min(T1, Math.log(R) / s);
+      const nu = 40, nv = 28, ps = [], idx = [];
+      for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
+        const t = hi * i / nu, a = 2 * Math.PI * j / nv, r = Math.exp(s * t);
+        ps.push(P(t, C(r * Math.cos(a), r * Math.sin(a))));
+      }
+      for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const a = i * (nv + 1) + j, b = a + nv + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+      const g = new THREE.BufferGeometry().setFromPoints(ps); g.setIndex(idx);
+      funnel = new THREE.Group(); funnel.add(new THREE.Mesh(g, funnelMat), new THREE.Mesh(g, funnelWire)); scene.add(funnel);
+    }
+    const s = st.s;
+    ro.cells.s.textContent = ''; ro.cells.s.append(tex(`s = ${fmt(s.re)} ${s.im < 0 ? '-' : '+'} ${fmt(Math.abs(s.im))}\\,j`));
+    let kind, text;
+    if (Math.abs(s.re) < 0.02) { kind = 'warn'; text = Math.abs(s.im) < 0.05 ? 'constant' : 'spins forever'; }
+    else if (s.re < 0) { kind = 'good'; text = Math.abs(s.im) < 0.05 ? 'decays, no spin' : 'spirals in (decays)'; }
+    else { kind = 'bad'; text = Math.abs(s.im) < 0.05 ? 'grows, no spin' : 'spirals out (grows)'; }
+    verdict(ro.cells.b, kind, text);
+    pad.handles[0].x = s.re; pad.handles[0].y = s.im; pad.handles[1].x = s.re; pad.handles[1].y = -s.im; pad.handles[1].hidden = !st.pair;
+    pad.draw();
+  }
+  const sec = panelSection('The complex exponential', 'Drag the point s. The real part σ sets the size, growing or decaying; the imaginary part ω sets the spin.',
+    'e^{st} = e^{\\sigma t}\\, e^{j\\omega t}');
+  const pad = new SPad({ xr: [-1, 1], yr: [-4, 4], height: 250, onDrag: (h) => { st.s = h.id === 'c' ? C(h.x, -h.y) : C(h.x, h.y); rebuild(); } });
+  pad.regions = [{ l: null, r: 0, color: CSS.good, alpha: 0.13, edges: false, label: 'decay' }, { l: 0, r: null, color: CSS.bad, alpha: 0.13, edges: false, label: 'growth' }];
+  pad.vlines = [{ x: 0, color: CSS.yellow, width: 2 }];
+  pad.handles = [{ id: 's', x: st.s.re, y: st.s.im, color: CSS.yellow, label: 's' }, { id: 'c', x: st.s.re, y: -st.s.im, color: CSS.purple, label: 's*', hidden: true }];
+  const presets = seg([['d', 'Decay'], ['o', 'Pure spin'], ['g', 'Growth'], ['r', 'No spin']], 'd', (id) => {
+    st.s = { d: C(-0.25, 2), o: C(0, 2), g: C(0.1, 2), r: C(-0.3, 0) }[id]; rebuild();
+  });
+  const c1 = check('Envelope $e^{\\sigma t}$', true, (v) => { st.env = v; rebuild(); });
+  const c2 = check('Conjugate pair, real sum', false, (v) => { st.pair = v; rebuild(); });
+  const ro = readout([['s', 'point'], ['b', 'behaviour']]);
+  sec.append(el('div', { class: 'lab' }, 's-plane'), pad.el, el('div', { class: 'pad-hint' }, 'Drag the yellow dot.'), presets.el,
+    el('div', { class: 'chks' }, c1.el, c2.el), ro.el,
+    notes(['Left half-plane: the funnel narrows, the spiral dies out. Right half-plane: it blows up.',
+           'On the $j\\omega$-axis the spiral neither grows nor decays: these are the Fourier building blocks.',
+           'A conjugate pair $s, s^*$ spins both ways; their average $e^{\\sigma t}\\cos\\omega t$ is a real damped cosine.']));
+  return { scene, labels, panel: sec, view: { target: [0.2, 0, 0], r: 16, theta: 0.72, phi: 1.12 }, enter: rebuild };
+} });
+
+/* ---------------------------------------------------------- 3. convergence */
+stop({ id: 'convergence', name: 'Convergence', build() {
+  const scene = makeScene(), labels = new Labels();
+  const T1 = 10, R = 1.6;
+  const ct = complexTime(scene, labels, { t0: 0, t1: T1, R, k: 1.1 });
+  const { P } = ct;
+  const st = { s: C(0.35, 1.5), T: 0, playing: true };
+  const integrand = new Curve(COL.sig, 0.03), total = new Curve(COL.yellow, 0.045), limit = new Curve(COL.good, 0.02);
+  scene.add(integrand.group, total.group, limit.group);
+  const vel = new Arrow3(COL.sig, 0.03); scene.add(vel.group);
+  labels.add('e^{-st}', () => P(1.2, C(0.1, 1.35)), 'lg', CSS.sig);
+  const lT = labels.add('\\int_0^T e^{-st}dt', () => P(T1 + 0.3, C(-1.5, 0.9)), '', CSS.yellow);
+  const lL = labels.add('1/s', () => { const v = cdiv(C(1), st.s); return cabs(v) < R ? P(T1 + 0.5, v) : null; }, 'lg', CSS.good);
+  const I = (t) => cdiv(csub(C(1), cexp(cscale(st.s, -t))), st.s);
+
+  const view = new Canvas2D('pad');
+  view.el.style.height = '210px';
+  view.draw = function () {
+    const c = this.ctx; if (!this.w) return;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); c.clearRect(0, 0, this.w, this.h);
+    const sc = Math.min(this.w, this.h) / 4.4, cx = this.w / 2, cy = this.h / 2;
+    const X = (z) => cx + z.re * sc, Y = (z) => cy - z.im * sc;
+    c.strokeStyle = CSS.grid; c.lineWidth = 1; c.beginPath();
+    for (let k = -2; k <= 2; k++) { c.moveTo(cx + k * sc, 0); c.lineTo(cx + k * sc, this.h); c.moveTo(0, cy + k * sc); c.lineTo(this.w, cy + k * sc); }
+    c.stroke();
+    c.strokeStyle = '#8a8d9c'; c.beginPath(); c.moveTo(0, cy); c.lineTo(this.w, cy); c.moveTo(cx, 0); c.lineTo(cx, this.h); c.stroke();
+    c.fillStyle = CSS.faint; c.font = '11px ' + getComputedStyle(document.body).fontFamily; c.fillText('Re', this.w - 22, cy - 6); c.fillText('Im', cx + 6, 13);
+    c.strokeStyle = CSS.yellow; c.lineWidth = 2.4; c.beginPath(); let pen = false;
+    const n = Math.max(2, Math.round(st.T * 80));
+    for (let i = 0; i <= n; i++) { const z = I(st.T * i / n); const x = X(z), y = Y(z);
+      if (Math.abs(z.re) > 2.4 || Math.abs(z.im) > 2.4) { pen = false; continue; }
+      if (!pen) { c.moveTo(x, y); pen = true; } else c.lineTo(x, y); }
+    c.stroke();
+    const target = cdiv(C(1), st.s);
+    if (st.s.re > 0 && cabs(target) < 2.3) { c.fillStyle = CSS.good; c.beginPath(); c.arc(X(target), Y(target), 5, 0, 2 * Math.PI); c.fill();
+      c.font = 'italic 14px KaTeX_Main, serif'; c.fillText('1/s', X(target) + 8, Y(target) - 6); }
+    const z = I(st.T), g = cscale(cexp(cscale(st.s, -st.T)), 0.6);
+    if (Math.abs(z.re) < 2.4 && Math.abs(z.im) < 2.4) {
+      c.strokeStyle = CSS.sig; c.lineWidth = 2.5; c.beginPath(); c.moveTo(X(z), Y(z)); c.lineTo(X(cadd(z, g)), Y(cadd(z, g))); c.stroke();
+      c.fillStyle = CSS.yellow; c.beginPath(); c.arc(X(z), Y(z), 4, 0, 2 * Math.PI); c.fill();
+    }
+  };
+
+  function rebuild() {
+    const ip = [], tp = [];
+    for (let i = 0; i <= 800; i++) { const t = T1 * i / 800; const g = cexp(cscale(st.s, -t)); ip.push(cabs(g) <= R ? P(t, g) : null); }
+    const n = Math.max(2, Math.round(st.T * 60));
+    for (let i = 0; i <= n; i++) { const t = st.T * i / n; const z = I(t); tp.push(cabs(z) <= R ? P(t, z) : null); }
+    integrand.set(ip); total.set(tp);
+    const tgt = cdiv(C(1), st.s);
+    limit.set(st.s.re > 0 && cabs(tgt) < R ? [P(0, tgt), P(T1, tgt)] : []);
+    const g = cexp(cscale(st.s, -st.T)), z = I(st.T);
+    if (cabs(z) <= R && cabs(cadd(z, cscale(g, 0.6))) <= R * 1.2) vel.set(P(st.T, z), P(st.T, cadd(z, cscale(g, 0.6)))); else vel.group.visible = false;
+    view.draw();
+    const s = st.s;
+    ro.cells.s.textContent = ''; ro.cells.s.append(tex(`s = ${fmt(s.re)} ${s.im < 0 ? '-' : '+'} ${fmt(Math.abs(s.im))}\\,j`));
+    ro.cells.inv.textContent = ''; ro.cells.inv.append(tex(`1/s = ${fmt(tgt.re)} ${tgt.im < 0 ? '-' : '+'} ${fmt(Math.abs(tgt.im))}\\,j`));
+    if (s.re > 0.005) verdict(ro.cells.v, 'good', 'settles at 1/s'); else if (s.re > -0.005) verdict(ro.cells.v, 'warn', 'circles forever'); else verdict(ro.cells.v, 'bad', 'spirals out: diverges');
+    pad.handles[0].x = s.re; pad.handles[0].y = s.im; pad.draw();
+  }
+  const sec = panelSection('Integrating a spiral', 'The running total of $e^{-st}$ moves with velocity $e^{-st}$. If the spiral shrinks, the total settles.',
+    '\\int_0^{\\infty} e^{-st}\\,dt = \\frac{1}{s}\\quad (\\mathrm{Re}\\{s\\} > 0)');
+  sec.querySelector('.blurb').innerHTML = '';
+  for (const [i, part] of 'The running total of $e^{-st}$ moves with velocity $e^{-st}$. If the spiral shrinks, the total settles.'.split('$').entries())
+    sec.querySelector('.blurb').append(i % 2 ? tex(part) : document.createTextNode(part));
+  const pad = new SPad({ xr: [-0.6, 1.2], yr: [-3, 3], height: 190, onDrag: (h) => { st.s = C(h.x, Math.abs(h.y) < 0.05 ? 0.05 : h.y); rebuild(); } });
+  pad.regions = [{ l: 0, r: null, color: CSS.good, alpha: 0.13, edges: false, label: 'converges' }, { l: null, r: 0, color: CSS.bad, alpha: 0.13, edges: false, label: 'diverges' }];
+  pad.handles = [{ id: 's', x: st.s.re, y: st.s.im, color: CSS.yellow, label: 's' }];
+  const replay = el('button', { class: 'btn', type: 'button' }, 'Run the total again');
+  replay.onclick = () => { st.T = 0; st.playing = true; };
+  const ro = readout([['s', 'point'], ['inv', 'limit'], ['v', 'result']]);
+  sec.append(el('div', { class: 'lab' }, 's-plane'), pad.el, el('div', { class: 'lab' }, 'Looking down the time axis'), view.el, replay, ro.el,
+    notes(['The blue arrow is the integrand; it is the velocity of the yellow running total.',
+           'Only $\\sigma$ decides convergence: $|e^{-st}| = e^{-\\sigma t}$. Changing $\\omega$ moves the limit $1/s$ but never stops it settling.',
+           'At $\\sigma = 0$ the total runs round a circle forever; for $\\sigma < 0$ it spirals out.']));
+  return { scene, labels, panel: sec, view: { target: [0.8, 0, 0], r: 17, theta: 0.75, phi: 1.1 },
+           tick(dt) { if (st.playing) { st.T = Math.min(T1, st.T + dt * 1.6); if (st.T >= T1) st.playing = false; rebuild(); } },
+           enter() { view.resize(); rebuild(); } };
+} });
+
+/* ---------------------------------------------------------- 4. weighting */
+const SIGNALS = {
+  grow: { name: '$e^{0.5t}u(t)$', f: (t) => (t >= 0 ? Math.exp(0.5 * t) : 0), roc: [0.5, null], X: 'X(s) = \\frac{1}{s-0.5}', rt: '\\mathrm{Re}\\{s\\} > 0.5' },
+  step: { name: '$u(t)$', f: (t) => (t >= 0 ? 1 : 0), roc: [0, null], X: 'X(s) = \\frac{1}{s}', rt: '\\mathrm{Re}\\{s\\} > 0' },
+  right: { name: '$e^{-t}u(t)$', f: (t) => (t >= 0 ? Math.exp(-t) : 0), roc: [-1, null], X: 'X(s) = \\frac{1}{s+1}', rt: '\\mathrm{Re}\\{s\\} > -1' },
+  left: { name: '$-e^{-t}u(-t)$', f: (t) => (t < 0 ? -Math.exp(-t) : 0), roc: [null, -1], X: 'X(s) = \\frac{1}{s+1}', rt: '\\mathrm{Re}\\{s\\} < -1' },
+  two: { name: '$e^{-|t|}$', f: (t) => Math.exp(-Math.abs(t)), roc: [-1, 1], X: 'X(s) = \\frac{-2}{s^2-1}', rt: '-1 < \\mathrm{Re}\\{s\\} < 1' },
+};
+const inROC = (roc, s) => (roc[0] == null || s > roc[0] + 1e-9) && (roc[1] == null || s < roc[1] - 1e-9);
+
+stop({ id: 'weighting', name: 'Weighting', build() {
+  const scene = makeScene(), labels = new Labels();
+  const t0 = -4, t1 = 6, s0 = -2, s1 = 2, ZM = 3;
+  /* x = t, z = -sigma*2 (depth), y = |x(t)| e^{-sigma t} */
+  const D = 2.0;
+  const P = (t, sg, h) => V(t - 1, h, -sg * D);
+  const st = { sig: 'grow', sigma: 0.8 };
+  scene.add(rod(P(t0, s0, 0), P(t1 + 0.4, s0, 0), COL.axis, 0.016));
+  scene.add(rod(P(t0 - 0.2, s0, 0), P(t0 - 0.2, s1 + 0.2, 0), COL.pole, 0.02));
+  labels.add('t', P(t1 + 0.8, s0, 0), 'lg', CSS.muted);
+  labels.add('\\sigma', P(t0 - 0.2, s1 + 0.55, 0), 'lg', CSS.pole);
+  for (const v of [-2, -1, 0, 1, 2]) labels.add(String(v), P(t0 - 0.6, v, 0), 'sm', CSS.faint);
+  scene.add(rod(P(0, s0, 0), P(0, s1, 0), 0x555866, 0.008));
+  const geo = new THREE.BufferGeometry(); const nu = 160, nv = 64;
+  const pos = new Float32Array((nu + 1) * (nv + 1) * 3), col = new Float32Array((nu + 1) * (nv + 1) * 3);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const hgt = new Float32Array((nu + 1) * (nv + 1));
+  const surf = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  scene.add(surf);
+  const rocBand = new THREE.Group(); scene.add(rocBand);
+  const slice = new Curve(COL.yellow, 0.05); scene.add(slice.group);
+  const plane = quad(V(0, 0, 0), V(1, 0, 0), V(1, 1, 0), V(0, 1, 0), COL.yellow, 0.08); scene.add(plane);
+  function fill() {
+    const S = SIGNALS[st.sig]; const cGood = new THREE.Color(COL.good), cBad = new THREE.Color(COL.bad), c = new THREE.Color();
+    let k = 0;
+    for (let j = 0; j <= nv; j++) {
+      const sg = s0 + (s1 - s0) * j / nv; const good = inROC(S.roc, sg);
+      for (let i = 0; i <= nu; i++, k++) {
+        const t = t0 + (t1 - t0) * i / nu; let h = Math.abs(S.f(t)) * Math.exp(-sg * t); if (!isFinite(h) || h > ZM) h = ZM;
+        hgt[k] = h;
+        const p = P(t, sg, h); pos[3 * k] = p.x; pos[3 * k + 1] = p.y; pos[3 * k + 2] = p.z;
+        c.copy(good ? cGood : cBad).lerp(new THREE.Color(0x0c0c0f), 0.55 - 0.3 * Math.min(1, h / ZM));
+        col[3 * k] = c.r; col[3 * k + 1] = c.g; col[3 * k + 2] = c.b;
+      }
+    }
+    const idx = [], top = (q) => hgt[q] >= ZM - 1e-9;   // leave out the clipped tops: blowing up reads as a cliff
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) {
+      const a = j * (nu + 1) + i, b = a + 1, cc = a + nu + 2, d = a + nu + 1;
+      if (!(top(a) && top(b) && top(cc))) idx.push(a, b, cc);
+      if (!(top(a) && top(cc) && top(d))) idx.push(a, cc, d);
+    }
+    geo.setIndex(idx);
+    geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingSphere();
+    rocBand.clear();
+    const l = Math.max(s0, S.roc[0] ?? s0), r = Math.min(s1, S.roc[1] ?? s1);
+    if (r > l) rocBand.add(quad(P(t0, l, 0.003), P(t1, l, 0.003), P(t1, r, 0.003), P(t0, r, 0.003), COL.roc, 0.3));
+    setTex(xo, S.X); setTex(rocTex, '\\mathrm{ROC}:\\ ' + S.rt);
+  }
+  function update() {
+    const S = SIGNALS[st.sig];
+    const pts = [];
+    for (let i = 0; i <= 400; i++) { const t = t0 + (t1 - t0) * i / 400; const h = Math.abs(S.f(t)) * Math.exp(-st.sigma * t); pts.push(h <= ZM ? P(t, st.sigma, h + 0.02) : null); }
+    slice.set(pts);
+    const a = P(t0, st.sigma, 0), b = P(t1, st.sigma, 0);
+    plane.geometry.dispose();
+    plane.geometry = new THREE.BufferGeometry().setFromPoints([a, b, V(b.x, ZM, b.z), a, V(b.x, ZM, b.z), V(a.x, ZM, a.z)]);
+    plot.curves = [{ f: (t) => S.f(t) * Math.exp(-st.sigma * t), color: CSS.yellow, width: 2.6, fill: inROC(S.roc, st.sigma) ? 'rgba(131,193,103,.22)' : 'rgba(252,98,85,.18)', breaks: [0] }];
+    plot.draw();
+    if (inROC(S.roc, st.sigma)) verdict(ro.cells.v, 'good', 'decays both ways: converges'); else verdict(ro.cells.v, 'bad', 'does not decay: diverges');
+  }
+  const sec = panelSection('Weighting by e^{−σt}', 'Each slice of the surface is the weighted signal for one σ. Green slices decay and can be Fourier transformed; red ones cannot.',
+    'X(\\sigma + j\\omega) = \\mathcal{F}\\big\\{x(t)\\,e^{-\\sigma t}\\big\\}');
+  sec.querySelector('h2').textContent = ''; sec.querySelector('h2').append('Weighting by ', tex('e^{-\\sigma t}'));
+  const sigSeg = seg(Object.entries(SIGNALS).map(([k, v]) => [k, v.name]), st.sig, (id) => { st.sig = id; fill(); update(); });
+  const ss = slider({ label: 'σ', min: -2, max: 2, step: 0.01, value: st.sigma, onInput: (x) => { st.sigma = x; update(); } });
+  const plot = new Plot({ xr: [-4, 6], yr: [-1.6, 3], height: 160, ylabel: 'x(t)e^{−σt}' });
+  const xo = el('div'), rocTex = el('div');
+  const ro = readout([['v', 'slice']]);
+  sec.append(el('div', { class: 'lab' }, 'Signal'), sigSeg.el, ss.el, plot.el, ro.el, el('div', { class: 'formula' }, xo, rocTex),
+    notes(['Increasing $\\sigma$ shrinks the right half ($t>0$) and inflates the left half ($t<0$).',
+           'So right-sided signals converge for large $\\sigma$, left-sided ones for small $\\sigma$, and two-sided ones only in a strip.',
+           'The blue band on the floor is the region of convergence: every $\\sigma$ whose slice decays.']));
+  return { scene, labels, panel: sec, view: { target: [0, 0.8, 0], r: 18.5, theta: 0.32, phi: 1.12 }, enter() { plot.resize(); fill(); update(); } };
+} });
+
+/* ---------------------------------------------------------- 5. landscape */
+const PRESETS = {
+  ex91: { name: '9.1', k: 1, zeros: [], poles: [C(-1)], roc: [-1, null], tex: 'X(s)=\\dfrac{1}{s+1}', sig: 'e^{-t}u(t)' },
+  ex92: { name: '9.2', k: 1, zeros: [], poles: [C(-1)], roc: [null, -1], tex: 'X(s)=\\dfrac{1}{s+1}', sig: '-e^{-t}u(-t)' },
+  ex93: { name: '9.3', k: 1, zeros: [C(1)], poles: [C(-1), C(-2)], roc: [-1, null], tex: 'X(s)=\\dfrac{s-1}{(s+1)(s+2)}', sig: '3e^{-2t}u(t)-2e^{-t}u(t)' },
+  ex94: { name: '9.4', k: 2, zeros: [C(-1.25, 2.107), C(-1.25, -2.107)], poles: [C(-2), C(-1, 3), C(-1, -3)], roc: [-1, null],
+          tex: 'X(s)=\\dfrac{2s^2+5s+12}{(s+2)(s^2+2s+10)}', sig: 'e^{-2t}u(t)+e^{-t}\\cos(3t)u(t)' },
+  ex95: { name: '9.5', k: 1, zeros: [C(1), C(1)], poles: [C(-1), C(2)], roc: [2, null], tex: 'X(s)=\\dfrac{(s-1)^2}{(s+1)(s-2)}', sig: '\\delta(t)-\\tfrac43e^{-t}u(t)+\\tfrac13e^{2t}u(t)' },
+  ex96: { name: '9.6', F: (s) => { const a = cadd(s, C(1)); if (cabs(a) < 1e-6) return C(2); return cdiv(csub(C(1), cexp(cscale(a, -2))), a); },
+          zeros: [C(-1, Math.PI), C(-1, -Math.PI)], poles: [], roc: [null, null], tex: 'X(s)=\\dfrac{1-e^{-2(s+1)}}{s+1}', sig: 'e^{-t},\\ 0<t<2' },
+  ex97: { name: '9.7', k: -2, zeros: [], poles: [C(-1), C(1)], roc: [-1, 1], tex: 'X(s)=\\dfrac{-2}{s^2-1}', sig: 'e^{-|t|}' },
+  ex98: { name: '9.8', k: 1, zeros: [], poles: [C(-1), C(-2)], roc: [-1, null], tex: 'X(s)=\\dfrac{1}{(s+1)(s+2)}', sig: '\\text{depends on the ROC}' },
+  custom: { name: 'Your own', k: 1, zeros: [C(0.5, 1.5), C(0.5, -1.5)], poles: [C(-1, 2), C(-1, -2), C(-2.5)], roc: [-1, null], tex: '', sig: '' },
+};
+function strips(poles) {
+  const xs = [...new Set(poles.map((p) => +p.re.toFixed(6)))].sort((a, b) => a - b);
+  const out = [[null, xs[0] ?? null]];
+  for (let i = 0; i < xs.length - 1; i++) out.push([xs[i], xs[i + 1]]);
+  if (xs.length) out.push([xs[xs.length - 1], null]);
+  return xs.length ? out : [[null, null]];
+}
+function stripName(roc, poles) {
+  if (!poles.length) return 'the whole plane';
+  if (roc[0] != null && roc[1] == null) return 'right of all poles: right-sided signal';
+  if (roc[0] == null && roc[1] != null) return 'left of all poles: left-sided signal';
+  if (roc[0] == null && roc[1] == null) return 'the whole plane';
+  return 'a strip between poles: two-sided signal';
+}
+function rocTex(roc) {
+  const [l, r] = roc;
+  if (l == null && r == null) return '\\text{every } s';
+  if (r == null) return `\\mathrm{Re}\\{s\\} > ${fmt(l, 2).replace(/\.?0+$/, '')}`;
+  if (l == null) return `\\mathrm{Re}\\{s\\} < ${fmt(r, 2).replace(/\.?0+$/, '')}`;
+  return `${fmt(l, 2).replace(/\.?0+$/, '')} < \\mathrm{Re}\\{s\\} < ${fmt(r, 2).replace(/\.?0+$/, '')}`;
+}
+function polyTex(k, roots, v = 's') {
+  if (!roots.length) return fmt(k, 2).replace(/\.?0+$/, '');
+  const parts = [];
+  const used = new Set();
+  roots.forEach((r, i) => {
+    if (used.has(i)) return;
+    const j = roots.findIndex((q, m) => m !== i && !used.has(m) && Math.abs(q.re - r.re) < 1e-6 && Math.abs(q.im + r.im) < 1e-6 && Math.abs(r.im) > 1e-6);
+    if (j >= 0) {
+      used.add(i); used.add(j);
+      const b = -2 * r.re, c = r.re * r.re + r.im * r.im;
+      parts.push(`(${v}^2 ${b < 0 ? '-' : '+'} ${fmt(Math.abs(b), 2).replace(/\.?0+$/, '')}${v} + ${fmt(c, 2).replace(/\.?0+$/, '')})`);
+    } else {
+      used.add(i);
+      parts.push(Math.abs(r.re) < 1e-9 ? v : `(${v} ${r.re < 0 ? '+' : '-'} ${fmt(Math.abs(r.re), 2).replace(/\.?0+$/, '')})`);
+    }
+  });
+  const kk = Math.abs(k - 1) < 1e-9 ? '' : fmt(k, 2).replace(/\.?0+$/, '');
+  return kk + parts.join('');
+}
+
+stop({ id: 'landscape', name: 'Landscape', build() {
+  const scene = makeScene(), labels = new Labels();
+  const u0 = -4, u1 = 3, v0 = -5, v1 = 5;
+  const fl = sFloor(scene, labels, { u0, u1, v0, v1 });
+  const st = { key: 'ex93', zmax: 4, jw: true, preset: null, poles: [], zeros: [], k: 1, roc: [-1, null] };
+  const land = new Landscape({ u0, u1, v0, v1, nu: 120, nv: 150, zmax: st.zmax, hscale: 0.75, map: (u, v, h) => V(u, h, -v) });
+  scene.add(land.group);
+  const marks = new THREE.Group(); scene.add(marks);
+  const rocG = new THREE.Group(); scene.add(rocG);
+  const jw = new Curve(COL.yellow, 0.04); scene.add(jw.group);
+  const jwAxis = new Curve(COL.yellow, 0.02); scene.add(jwAxis.group);
+
+  function F() { return st.preset.F || rational(st.k, st.zeros, st.poles); }
+  function rebuild(full = true) {
+    const f = F();
+    if (full) { land.zmax = st.zmax; land.setFunction(f); }
+    land.setROC(st.roc[0], st.roc[1], false);
+    marks.clear();
+    for (const p of st.poles) if (p.re >= u0 && p.re <= u1 && Math.abs(p.im) <= v1) marks.add(poleMark(V(p.re, 0.01, -p.im)));
+    const zs = {}; for (const z of st.zeros) { const key = z.re.toFixed(3) + ',' + z.im.toFixed(3); zs[key] = (zs[key] || 0) + 1;
+      if (z.re >= u0 && z.re <= u1 && Math.abs(z.im) <= v1) marks.add(zeroMark(V(z.re, 0.01, -z.im), COL.zero, 0.16 + 0.08 * (zs[key] - 1))); }
+    rocG.clear();
+    const l = Math.max(u0, st.roc[0] ?? u0), r = Math.min(u1, st.roc[1] ?? u1);
+    if (r > l) rocG.add(floorBand(l, r, v0, v1, COL.roc, 0.22));
+    for (const e of st.roc) if (e != null && e > u0 && e < u1) rocG.add(floorEdge(e, v0, v1, COL.roc));
+    const inside = inROC(st.roc, 0);
+    if (st.jw) {
+      const pts = [];
+      for (let i = 0; i <= 600; i++) { const w = v0 + (v1 - v0) * i / 600; let h = cabs(f(C(0, w))); pts.push(isFinite(h) && h < st.zmax ? V(0, h * 0.75 + 0.03, -w) : null); }
+      jw.set(pts); jwAxis.set([V(0, 0.01, -v0), V(0, 0.01, -v1)]);
+    } else { jw.set([]); jwAxis.set([]); }
+    // panel
+    const t = st.preset.F ? st.preset.tex : (st.key === 'custom' ? `X(s) = \\dfrac{${polyTex(st.k, st.zeros)}}{${polyTex(1, st.poles)}}` : st.preset.tex);
+    setTex(form, t, true);
+    sigNode.textContent = ''; if (st.preset.sig) sigNode.append(tex('x(t) = ' + st.preset.sig));
+    ro.cells.roc.textContent = ''; ro.cells.roc.append(tex(rocTex(st.roc)));
+    ro.cells.kind.textContent = stripName(st.roc, st.poles);
+    verdict(ro.cells.f, inside ? 'good' : 'bad', inside ? 'jω-axis inside the ROC: Fourier exists' : 'jω-axis outside the ROC: no Fourier transform');
+    pad.poles = st.poles.map((p) => ({ re: p.re, im: p.im }));
+    pad.zeros = st.zeros.map((z) => ({ re: z.re, im: z.im }));
+    pad.regions = [{ l: st.roc[0], r: st.roc[1], color: CSS.roc, alpha: 0.22 }];
+    pad.handles = st.key === 'custom' ? handles() : [];
+    pad.draw();
+  }
+  function handles() {
+    const hs = [];
+    st.poles.forEach((p, i) => { if (p.im >= -1e-9) hs.push({ kind: 'p', i, x: p.re, y: p.im, color: CSS.pole }); });
+    st.zeros.forEach((z, i) => { if (z.im >= -1e-9) hs.push({ kind: 'z', i, x: z.re, y: z.im, color: CSS.zero }); });
+    return hs;
+  }
+  function load(key) {
+    st.key = key; st.preset = PRESETS[key];
+    st.poles = st.preset.poles.map((p) => C(p.re, p.im)); st.zeros = st.preset.zeros.map((z) => C(z.re, z.im)); st.k = st.preset.k ?? 1;
+    st.roc = [...st.preset.roc];
+    customBox.hidden = key !== 'custom';
+    rebuild();
+  }
+  let pending = null;
+  const pad = new SPad({ xr: [u0, u1], yr: [v0, v1], height: 250,
+    onDrag: (h) => {
+      const list = h.kind === 'p' ? st.poles : st.zeros;
+      const old = list[h.i];
+      const mate = list.findIndex((q, m) => m !== h.i && Math.abs(q.re - old.re) < 1e-6 && Math.abs(q.im + old.im) < 1e-6 && Math.abs(old.im) > 1e-6);
+      const y = Math.max(0, h.y);
+      list[h.i] = C(h.x, mate >= 0 ? Math.max(0.05, y) : (Math.abs(old.im) < 1e-6 ? 0 : y));
+      if (mate >= 0) list[mate] = C(h.x, -list[h.i].im);
+      h.y = list[h.i].im;
+      // keep the ROC valid: snap to the strip that contains its old middle
+      const ss = strips(st.poles); const mid = ((st.roc[0] ?? -99) + (st.roc[1] ?? 99)) / 2;
+      st.roc = ss.find(([l, r]) => (l == null || mid > l) && (r == null || mid < r)) || ss[ss.length - 1];
+      if (!pending) pending = requestAnimationFrame(() => { pending = null; rebuild(); });
+    },
+    onClick: (x) => { const s = strips(st.poles).find(([l, r]) => (l == null || x > l) && (r == null || x < r)); if (s) { st.roc = s; rebuild(false); } } });
+  const sec = panelSection('The |X(s)| landscape', 'Height is |X(s)|. Poles shoot up, zeros touch the floor, and only the lit region (the ROC) is the transform. Click a strip on the s-plane to pick a different ROC.');
+  const form = el('div', { class: 'formula' }); const sigNode = el('div', { class: 'blurb' });
+  const presets = seg(Object.entries(PRESETS).map(([k, v]) => [k, v.name.startsWith('9') ? 'Ex ' + v.name : v.name]), st.key, (id) => load(id));
+  const customBox = el('div', { class: 'seg' });
+  const addBtn = (label, fn) => { const b = el('button', { class: 'btn', type: 'button' }, label); b.onclick = () => { fn(); st.roc = strips(st.poles).slice(-1)[0]; rebuild(); }; customBox.append(b); };
+  addBtn('+ pole pair', () => st.poles.length < 6 && st.poles.push(C(-0.5, 1), C(-0.5, -1)));
+  addBtn('+ real pole', () => st.poles.length < 6 && st.poles.push(C(0.5, 0)));
+  addBtn('+ zero pair', () => st.zeros.length < 6 && st.zeros.push(C(1, 2.5), C(1, -2.5)));
+  addBtn('Clear', () => { st.poles = [C(-1)]; st.zeros = []; });
+  customBox.hidden = true;
+  const sz = slider({ label: 'Height cut-off', min: 2, max: 8, step: 0.5, value: st.zmax, format: (x) => x.toFixed(1), onInput: (x) => { st.zmax = x; rebuild(); } });
+  const cj = check('Slice along the $j\\omega$-axis', true, (v) => { st.jw = v; rebuild(false); });
+  const ro = readout([['roc', 'ROC'], ['kind', 'signal'], ['f', 'Fourier']]);
+  sec.append(el('div', { class: 'lab' }, 'Example (Lecture 6)'), presets.el, form, sigNode, el('div', { class: 'lab' }, 's-plane'), pad.el,
+    el('div', { class: 'pad-hint' }, 'Click a strip to choose the ROC. In "Your own", drag the poles and zeros.'), customBox, sz.el, cj.el, ro.el,
+    notes(['Ex 9.1 and 9.2 have the same landscape; only the lit side differs.',
+           'Ex 9.4: the $j\\omega$ slice peaks near $\\omega=\\pm3$, close to the poles $-1\\pm3j$ (resonance).',
+           'Ex 9.6 has no spike at $s=-1$: a finite-duration signal has no poles, and its ROC is the whole plane.',
+           'In "Your own", drag a pole pair across the $j\\omega$-axis and watch the Fourier verdict change.']));
+  load(st.key);
+  return { scene, labels, panel: sec, view: { target: [-0.4, 0.6, 0], r: 17.5, theta: 0.62, phi: 1.0 }, enter() { pad.resize(); } };
+} });
+
+/* ---------------------------------------------------------- 6. poles */
+stop({ id: 'poles', name: 'Poles', build() {
+  const scene = makeScene(), labels = new Labels();
+  const u0 = -3, u1 = 1.5, v0 = -4, v1 = 4, TZ = 6, KT = 0.9, K = 0.85;
+  sFloor(scene, labels, { u0, u1, v0, v1 });
+  scene.add(floorBand(u0, 0, v0, v1, COL.good, 0.1), floorBand(0, u1, v0, v1, COL.bad, 0.1));
+  scene.add(rod(V(0, 0.01, -v0), V(0, 0.01, -v1), COL.yellow, 0.02));
+  labels.add('\\text{stable}', V(-1.6, 0, -v0 + 0.6), '', CSS.good);
+  labels.add('\\text{unstable}', V(0.8, 0, -v0 + 0.6), '', CSS.bad);
+  scene.add(rod(V(u0, 0, -v1), V(u0, TZ * KT + 0.3, -v1), COL.axis, 0.016));
+  labels.add('t', V(u0, TZ * KT + 0.6, -v1), 'lg', CSS.muted);
+  const st = { p: C(-0.5, 2), real: false };
+  const m1 = new Curve(COL.sig, 0.04), m2 = new Curve(COL.purple, 0.04); scene.add(m1.group, m2.group);
+  const marks = new THREE.Group(); scene.add(marks);
+  function mode(p) {
+    const pts = [];
+    for (let i = 0; i <= 600; i++) { const t = TZ * i / 600; const z = cscale(cexp(cscale(p, t)), K); pts.push(cabs(z) <= 1.8 ? V(p.re + z.re, t * KT, -(p.im + z.im)) : null); }
+    return pts;
+  }
+  function rebuild() {
+    const p = st.p;
+    const poles = st.real ? [C(p.re, 0)] : [p, conj(p)];
+    m1.set(mode(poles[0])); m2.set(st.real ? [] : mode(poles[1]));
+    marks.clear(); for (const q of poles) marks.add(poleMark(V(q.re, 0.01, -q.im)));
+    const sig = p.re, w = st.real ? 0 : Math.abs(p.im);
+    plot.curves = [{ f: (t) => (t < 0 ? 0 : (st.real ? Math.exp(sig * t) : Math.exp(sig * t) * Math.sin(w * t) / w)), color: CSS.yellow, width: 2.6, breaks: [0] }];
+    plot.yr = st.real ? [-0.5, 2] : [-0.8, 0.8]; plot.draw();
+    setTex(hTex, st.real ? `\\begin{aligned}H(s) &= \\frac{1}{s ${sig < 0 ? '+' : '-'} ${fmt(Math.abs(sig))}}\\\\ h(t) &= e^{${fmt(sig)}t}\\,u(t)\\end{aligned}`
+      : `\\begin{aligned}H(s) &= \\frac{1}{(s ${sig < 0 ? '+' : '-'} ${fmt(Math.abs(sig))})^2 + ${fmt(w * w)}}\\\\ h(t) &= \\tfrac{1}{${fmt(w)}}\\,e^{${fmt(sig)}t}\\sin(${fmt(w)}t)\\,u(t)\\end{aligned}`, true);
+    ro.cells.p.textContent = ''; ro.cells.p.append(tex(st.real ? `p = ${fmt(sig)}` : `p = ${fmt(sig)} \\pm ${fmt(w)}j`));
+    if (sig < -0.02) verdict(ro.cells.v, 'good', 'stable: h(t) dies out');
+    else if (sig <= 0.02) verdict(ro.cells.v, 'warn', 'marginal: rings forever');
+    else verdict(ro.cells.v, 'bad', 'unstable: h(t) blows up');
+    const wn = Math.hypot(sig, w);
+    ro.cells.z.textContent = st.real ? '—' : `ζ = ${fmt(-sig / wn)} · ωn = ${fmt(wn)} rad/s`;
+    pad.handles[0].x = p.re; pad.handles[0].y = st.real ? 0 : p.im; pad.poles = poles.map((q) => ({ re: q.re, im: q.im })); pad.draw();
+  }
+  const sec = panelSection('Poles decide the behaviour', 'Each pole p seeds a mode e^{pt}, drawn as a spiral rising out of the s-plane. Drag the pole pair and watch the impulse response.');
+  const pad = new SPad({ xr: [u0, u1], yr: [v0, v1], height: 230, onDrag: (h) => { st.p = C(h.x, st.real ? 0 : Math.max(0.15, h.y)); rebuild(); } });
+  pad.regions = [{ l: null, r: 0, color: CSS.good, alpha: 0.12, edges: false, label: 'stable' }, { l: 0, r: null, color: CSS.bad, alpha: 0.12, edges: false, label: 'unstable' }];
+  pad.vlines = [{ x: 0, color: CSS.yellow, width: 2 }];
+  pad.handles = [{ x: st.p.re, y: st.p.im, color: CSS.yellow, label: 'p' }];
+  const kind = seg([['pair', 'Conjugate pair'], ['real', 'One real pole']], 'pair', (id) => { st.real = id === 'real'; if (st.real) st.p = C(st.p.re, 0); else st.p = C(st.p.re, 2); rebuild(); });
+  const plot = new Plot({ xr: [-1, 8], yr: [-0.8, 0.8], height: 160, ylabel: 'h(t)' });
+  const hTex = el('div', { class: 'formula' });
+  const ro = readout([['p', 'poles'], ['v', 'system'], ['z', 'damping']]);
+  sec.append(kind.el, el('div', { class: 'lab' }, 's-plane'), pad.el, el('div', { class: 'pad-hint' }, 'Drag the yellow pole; its conjugate follows.'), hTex,
+    el('div', { class: 'lab' }, 'Impulse response'), plot.el, ro.el,
+    notes(['The real part of a pole is the decay rate, the imaginary part the ringing frequency.',
+           'Closer to the $j\\omega$-axis means less damping: the response rings longer.',
+           'Right half-plane poles give growing modes: an unstable system. It has no Fourier transform, but a Laplace transform with ROC to the right of the pole.']));
+  return { scene, labels, panel: sec, view: { target: [-0.6, 1.8, 0], r: 16.5, theta: 0.7, phi: 1.12 }, enter() { pad.resize(); plot.resize(); rebuild(); } };
+} });
+
+/* ---------------------------------------------------------- 7. ROC tester */
+const ROCSIG = {
+  ex91: { name: 'Ex 9.1', tex: 'e^{-t}u(t)', right: (t) => Math.exp(-t), left: null, roc: [-1, null], poles: [C(-1)] },
+  ex92: { name: 'Ex 9.2', tex: '-e^{-t}u(-t)', right: null, left: (t) => -Math.exp(-t), roc: [null, -1], poles: [C(-1)] },
+  ex97: { name: 'Ex 9.7', tex: 'e^{-|t|}', right: (t) => Math.exp(-t), left: (t) => Math.exp(t), roc: [-1, 1], poles: [C(-1), C(1)] },
+  ex96: { name: 'Ex 9.6', tex: 'e^{-t},\\ 0<t<2', right: (t) => (t < 2 ? Math.exp(-t) : 0), left: null, roc: [null, null], poles: [], finite: 2 },
+  grow: { name: 'Growing', tex: 'e^{2t}u(t)', right: (t) => Math.exp(2 * t), left: null, roc: [2, null], poles: [C(2)] },
+};
+stop({ id: 'roc', name: 'ROC tester', build() {
+  const scene = makeScene(), labels = new Labels();
+  const TR = 6, R = 1.8;
+  const ct = complexTime(scene, labels, { t0: -TR, t1: TR, R, k: 0.95, x0: 0 });
+  const { P } = ct;
+  const st = { key: 'ex91', s: C(0, 2), seen: new Map() };
+  const cr = new Curve(COL.sig, 0.04), cl = new Curve(COL.purple, 0.04); scene.add(cr.group, cl.group);
+  const funnelMat = new THREE.MeshBasicMaterial({ color: COL.white, wireframe: true, transparent: true, opacity: 0.1 });
+  let funnels = new THREE.Group(); scene.add(funnels);
+  labels.add('t > 0', P(TR * 0.6, C(0, -1.9)), 'sm', CSS.faint);
+  labels.add('t < 0', P(-TR * 0.6, C(0, -1.9)), 'sm', CSS.faint);
+  function side(f, a, b) {
+    const pts = []; if (!f) return pts;
+    for (let i = 0; i <= 700; i++) { const t = a + (b - a) * i / 700; const z = cscale(cexp(cscale(st.s, -t)), f(t)); pts.push(cabs(z) <= R && (!S().finite || t <= S().finite) ? P(t, z) : null); }
+    return pts;
+  }
+  function funnel(rate, a, b) {
+    let lo = a, hi = b;
+    if (rate > 1e-6) hi = Math.min(hi, Math.log(R) / rate); else if (rate < -1e-6) lo = Math.max(lo, Math.log(R) / rate);
+    if (hi - lo < 0.05) return null;
+    const nu = 30, nv = 20, ps = [], idx = [];
+    for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) { const t = lo + (hi - lo) * i / nu, ang = 2 * Math.PI * j / nv, r = Math.exp(rate * t); ps.push(P(t, C(r * Math.cos(ang), r * Math.sin(ang)))); }
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const q = i * (nv + 1) + j, w = q + nv + 1; idx.push(q, w, q + 1, w, w + 1, q + 1); }
+    const g = new THREE.BufferGeometry().setFromPoints(ps); g.setIndex(idx);
+    return new THREE.Mesh(g, funnelMat);
+  }
+  const S = () => ROCSIG[st.key];
+  function rebuild() {
+    const sig = S();
+    cr.set(side(sig.right, 0, sig.finite || TR)); cl.set(side(sig.left, -TR, 0));
+    scene.remove(funnels); funnels.children.forEach((m) => m.geometry.dispose()); funnels = new THREE.Group(); scene.add(funnels);
+    if (sig.right) { const f = funnel(-(st.s.re + 1) * (st.key === 'grow' ? 0 : 1) + (st.key === 'grow' ? 2 - st.s.re : 0), 0, sig.finite || TR); if (f) funnels.add(f); }
+    if (sig.left) { const f = funnel(-(st.s.re) + (st.key === 'ex92' ? -1 : 1), -TR, 0); if (f) funnels.add(f); }
+    const okR = !sig.right || sig.finite || inROC([st.key === 'grow' ? 2 : -1, null], st.s.re);
+    const okL = !sig.left || inROC([null, st.key === 'ex92' ? -1 : 1], st.s.re);
+    const ok = okR && okL;
+    const key = Math.round(st.s.re * 20) / 20;
+    st.seen.set(key, ok);
+    pad.stripes = [...st.seen.entries()].map(([x, g]) => ({ x, color: g ? CSS.good : CSS.bad }));
+    pad.handles[0].x = st.s.re; pad.handles[0].y = st.s.im;
+    pad.poles = sig.poles.map((p) => ({ re: p.re, im: p.im }));
+    pad.regions = showRoc.input.checked ? [{ l: sig.roc[0], r: sig.roc[1], color: CSS.roc, alpha: 0.2 }] : [];
+    pad.draw();
+    ro.cells.r.textContent = ''; ro.cells.l.textContent = '';
+    if (sig.right) verdict(ro.cells.r, okR ? 'good' : 'bad', sig.finite ? 'finite stretch: always fine' : okR ? 'shrinks: converges' : 'grows: diverges'); else ro.cells.r.append('— (zero)');
+    if (sig.left) verdict(ro.cells.l, okL ? 'good' : 'bad', okL ? 'shrinks as t → −∞' : 'grows as t → −∞'); else ro.cells.l.append('— (zero)');
+    verdict(ro.cells.all, ok ? 'good' : 'bad', ok ? 's is in the ROC' : 's is outside the ROC');
+    setTex(sigTex, 'x(t) = ' + sig.tex + ',\\qquad \\mathrm{ROC}: ' + rocTex(sig.roc));
+  }
+  const sec = panelSection('ROC tester', 'Drag the test point s. The integrand x(t)e^{−st} is drawn for t > 0 (blue) and t < 0 (purple). The stripes record every σ you have tried.',
+    '\\big|x(t)\\,e^{-st}\\big| = |x(t)|\\,e^{-\\sigma t}');
+  const pad = new SPad({ xr: [-3, 3], yr: [-3, 3], height: 230, onDrag: (h) => { st.s = C(h.x, h.y); rebuild(); } });
+  pad.handles = [{ x: st.s.re, y: st.s.im, color: CSS.yellow, label: 's' }];
+  const which = seg(Object.entries(ROCSIG).map(([k, v]) => [k, v.name]), st.key, (id) => { st.key = id; st.seen.clear(); rebuild(); });
+  const showRoc = check('Show the ROC', false, () => rebuild());
+  const clear = el('button', { class: 'btn', type: 'button' }, 'Clear stripes'); clear.onclick = () => { st.seen.clear(); rebuild(); };
+  const sigTex = el('div', { class: 'formula' });
+  const ro = readout([['r', 't > 0 part'], ['l', 't < 0 part'], ['all', 'together']]);
+  sec.append(el('div', { class: 'lab' }, 'Signal'), which.el, sigTex, el('div', { class: 'lab' }, 's-plane'), pad.el,
+    el('div', { class: 'chks' }, showRoc.el, clear), ro.el,
+    notes(['Move the point straight up or down: nothing changes. Only $\\sigma$ matters, so the ROC is made of vertical strips.',
+           'Right-sided parts need $\\sigma$ large enough; left-sided parts need $\\sigma$ small enough; two-sided signals need both, a strip.',
+           'Ex 9.6 lives on a finite stretch of time, so every $s$ works.']));
+  return { scene, labels, panel: sec, view: { target: [0, 0, 0], r: 17, theta: 0.6, phi: 1.12 }, enter() { pad.resize(); rebuild(); } };
+} });
+
+/* ---------------------------------------------------------- 8. inverse */
+const INV = {
+  one: { name: '1/(s+1)', F: (s) => cdiv(C(1), cadd(s, C(1))), poles: [C(-1)],
+         answer: (roc) => (roc[0] != null ? [(t) => (t >= 0 ? Math.exp(-t) : 0), 'e^{-t}u(t)'] : [(t) => (t < 0 ? -Math.exp(-t) : 0), '-e^{-t}u(-t)']) },
+  two: { name: '1/((s+1)(s+2))', F: (s) => cdiv(C(1), cmul(cadd(s, C(1)), cadd(s, C(2)))), poles: [C(-1), C(-2)],
+         answer: (roc) => {
+           if (roc[0] === -1) return [(t) => (t >= 0 ? Math.exp(-t) - Math.exp(-2 * t) : 0), '(e^{-t}-e^{-2t})u(t)'];
+           if (roc[1] === -2) return [(t) => (t < 0 ? -Math.exp(-t) + Math.exp(-2 * t) : 0), '(-e^{-t}+e^{-2t})u(-t)'];
+           return [(t) => (t < 0 ? -Math.exp(-t) : -Math.exp(-2 * t)), '-e^{-t}u(-t)-e^{-2t}u(t)'];
+         } },
+};
+stop({ id: 'inverse', name: 'Inverse', build() {
+  const scene = makeScene(), labels = new Labels();
+  const u0 = -3.5, u1 = 2, v0 = -5, v1 = 5;
+  sFloor(scene, labels, { u0, u1, v0, v1 });
+  const st = { key: 'one', sigma: 0.5, W: 20 };
+  const land = new Landscape({ u0, u1, v0, v1, nu: 110, nv: 150, zmax: 3.5, hscale: 0.8, map: (u, v, h) => V(u, h, -v) });
+  scene.add(land.group);
+  const line = new Curve(COL.yellow, 0.035), slice = new Curve(COL.yellow, 0.045); scene.add(line.group, slice.group);
+  const marks = new THREE.Group(); scene.add(marks);
+  let lastKey = null;
+  function rocOf() { return strips(INV[st.key].poles).find(([l, r]) => (l == null || st.sigma > l) && (r == null || st.sigma < r)); }
+  function invert(t) {
+    const F = INV[st.key].F, n = Math.max(400, Math.round(st.W * 40)), dw = st.W / n;
+    let acc = 0;
+    for (let i = 0; i <= n; i++) {
+      const w = i * dw, s = C(st.sigma, w), v = cmul(F(s), cexp(cscale(s, t))).re;
+      acc += (i === 0 || i === n ? 0.5 : 1) * v;
+    }
+    return acc * dw / Math.PI;
+  }
+  function rebuild() {
+    const inv = INV[st.key];
+    if (lastKey !== st.key) { land.setFunction(inv.F); lastKey = st.key; marks.clear(); for (const p of inv.poles) marks.add(poleMark(V(p.re, 0.01, -p.im))); }
+    const roc = rocOf(); land.setROC(roc[0], roc[1]);
+    line.set([V(st.sigma, 0.02, -v0), V(st.sigma, 0.02, -v1)]);
+    const pts = []; for (let i = 0; i <= 400; i++) { const w = v0 + (v1 - v0) * i / 400; const h = cabs(inv.F(C(st.sigma, w))); pts.push(h < 3.5 ? V(st.sigma, h * 0.8 + 0.03, -w) : null); }
+    slice.set(pts);
+    const [f, ftex] = inv.answer(roc);
+    const samples = []; for (let i = 0; i <= 160; i++) { const t = -4 + 8 * i / 160; samples.push([t, invert(t)]); }
+    const interp = (t) => { const x = (t + 4) / 8 * 160; const i = Math.max(0, Math.min(159, Math.floor(x))); const a = samples[i][1], b = samples[i + 1][1]; return a + (b - a) * (x - i); };
+    plot.yr = st.key === 'one' ? [-2.5, 1.4] : [-1.6, 1];
+    plot.curves = [{ f, color: CSS.muted, width: 2, dash: [6, 5], breaks: [0] }, { f: interp, color: CSS.yellow, width: 2.6 }];
+    plot.draw();
+    pad.poles = inv.poles.map((p) => ({ re: p.re, im: p.im })); pad.regions = [{ l: roc[0], r: roc[1], color: CSS.roc, alpha: 0.2 }];
+    pad.handles[0].x = st.sigma; pad.draw();
+    ro.cells.roc.textContent = ''; ro.cells.roc.append(tex(rocTex(roc)));
+    ro.cells.x.textContent = ''; ro.cells.x.append(tex('x(t) = ' + ftex));
+  }
+  let busy = null;
+  const schedule = () => { if (!busy) busy = requestAnimationFrame(() => { busy = null; rebuild(); }); };
+  const sec = panelSection('Inverse: walk up a line', 'Add up X(s)e^{st} along a vertical line inside the ROC. Slide the line past a pole and the same X(s) gives a different signal.',
+    'x(t) = \\frac{1}{2\\pi j}\\int_{\\sigma - j\\infty}^{\\sigma + j\\infty} X(s)\\,e^{st}\\,ds');
+  const which = seg(Object.entries(INV).map(([k, v]) => [k, '$X(s)=' + (k === 'one' ? '\\frac{1}{s+1}' : '\\frac{1}{(s+1)(s+2)}') + '$']), st.key, (id) => { st.key = id; rebuild(); });
+  const pad = new SPad({ xr: [u0, u1], yr: [-3, 3], height: 170, onDrag: (h) => {
+    let x = h.x; for (const p of INV[st.key].poles) if (Math.abs(x - p.re) < 0.06) x = p.re + (x < p.re ? -0.06 : 0.06);
+    st.sigma = x; h.x = x; schedule(); } });
+  pad.handles = [{ x: st.sigma, y: 0, lockY: 0, color: CSS.yellow, label: 'σ' }];
+  pad.marks = [(c, p) => { c.strokeStyle = CSS.yellow; c.lineWidth = 3; c.beginPath(); c.moveTo(p.X(st.sigma), p.Y(p.yr[0])); c.lineTo(p.X(st.sigma), p.Y(p.yr[1])); c.stroke(); }];
+  const sw = slider({ label: 'frequencies used, |ω| ≤ W', min: 1, max: 60, step: 1, value: st.W, format: (x) => 'W = ' + x, onInput: (x) => { st.W = x; schedule(); } });
+  const plot = new Plot({ xr: [-4, 4], yr: [-2.5, 1.4], height: 170, ylabel: 'x(t)' });
+  const ro = readout([['roc', 'line is in'], ['x', 'gives']]);
+  sec.append(which.el, el('div', { class: 'lab' }, 's-plane: drag the line'), pad.el, sw.el, el('div', { class: 'lab' }, 'Reconstruction (yellow) and exact (dashed)'), plot.el, ro.el,
+    notes(['The yellow curve on the landscape is $X(s)$ along the line; those values weight the spirals $e^{st}$.',
+           'With few frequencies the sum ripples; as $W$ grows it settles on the exact signal (0.5 at a jump).',
+           'Cross a pole and the answer flips between right-sided, two-sided and left-sided: the line must lie in the ROC you mean.']));
+  return { scene, labels, panel: sec, view: { target: [-0.6, 0.5, 0], r: 17, theta: 0.85, phi: 1.02 }, enter() { pad.resize(); plot.resize(); rebuild(); } };
+} });
+
+/* ---------------------------------------------------------- 9. partial fractions */
+stop({ id: 'partial', name: 'Partial fractions', build() {
+  const scene = makeScene(), labels = new Labels();
+  const u0 = -3.5, u1 = 1.5, v0 = -3.5, v1 = 3.5;
+  sFloor(scene, labels, { u0, u1, v0, v1 });
+  const F = (s) => cdiv(C(1), cmul(cadd(s, C(1)), cadd(s, C(2))));
+  const land = new Landscape({ u0, u1, v0, v1, nu: 100, nv: 110, zmax: 3.5, hscale: 0.8, map: (u, v, h) => V(u, h, -v) });
+  land.setFunction(F); scene.add(land.group);
+  scene.add(poleMark(V(-1, 0.01, 0), COL.teal), poleMark(V(-2, 0.01, 0), COL.gold));
+  const rocG = new THREE.Group(); scene.add(rocG);
+  const CASES = {
+    right: { roc: [-1, null], ex: '9.9', r1: true, r2: true },
+    left: { roc: [null, -2], ex: '9.10', r1: false, r2: false },
+    mid: { roc: [-2, -1], ex: '9.11', r1: false, r2: true },
+  };
+  const st = { c: 'right' };
+  function rebuild() {
+    const cs = CASES[st.c];
+    land.setROC(cs.roc[0], cs.roc[1]);
+    rocG.clear();
+    const l = Math.max(u0, cs.roc[0] ?? u0), r = Math.min(u1, cs.roc[1] ?? u1);
+    rocG.add(floorBand(l, r, v0, v1, COL.roc, 0.22));
+    for (const e of cs.roc) if (e != null) rocG.add(floorEdge(e, v0, v1, COL.roc));
+    const t1 = cs.r1 ? (t) => (t >= 0 ? Math.exp(-t) : 0) : (t) => (t < 0 ? -Math.exp(-t) : 0);
+    const t2 = cs.r2 ? (t) => (t >= 0 ? -Math.exp(-2 * t) : 0) : (t) => (t < 0 ? Math.exp(-2 * t) : 0);
+    plot.curves = [{ f: t1, color: CSS.teal, width: 2, breaks: [0] }, { f: t2, color: CSS.gold, width: 2, breaks: [0] }, { f: (t) => t1(t) + t2(t), color: CSS.yellow, width: 3, breaks: [0] }];
+    plot.draw();
+    pad.regions = [{ l: cs.roc[0], r: cs.roc[1], color: CSS.roc, alpha: 0.24 }];
+    pad.marks = [(c, p) => {           // each pole points towards the side its ROC is on
+      for (const [x, right, col, y] of [[-1, cs.r1, CSS.teal, 0.85], [-2, cs.r2, CSS.gold, -0.85]]) {
+        const x0 = p.X(x), x1 = p.X(x + (right ? 0.75 : -0.75)), Y = p.Y(y), d = right ? 1 : -1;
+        c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(x0, Y); c.lineTo(x1 - d * 8, Y); c.stroke();
+        c.beginPath(); c.moveTo(x1, Y); c.lineTo(x1 - d * 10, Y - 6); c.lineTo(x1 - d * 10, Y + 6); c.closePath(); c.fill();
+        c.setLineDash([3, 3]); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, p.Y(0)); c.lineTo(x0, Y); c.stroke(); c.setLineDash([]);
+      }
+    }];
+    pad.draw();
+    terms.textContent = '';
+    terms.append(
+      el('div', {}, tex(`\\color{#5cd0b3}{\\tfrac{1}{s+1}} \\to ${cs.r1 ? 'e^{-t}u(t)' : '-e^{-t}u(-t)'}`)),
+      el('div', {}, tex(`\\color{#f0ac5f}{-\\tfrac{1}{s+2}} \\to ${cs.r2 ? '-e^{-2t}u(t)' : 'e^{-2t}u(-t)'}`)),
+      el('div', {}, tex(`\\color{#f7d96f}{x(t) = ${{ right: '(e^{-t}-e^{-2t})u(t)', left: '(-e^{-t}+e^{-2t})u(-t)', mid: '-e^{-t}u(-t)-e^{-2t}u(t)' }[st.c]}}`)));
+    caseSeg.set(st.c);
+    exLab.textContent = 'Example ' + cs.ex + ': ROC ';
+    exLab.append(tex(rocTex(cs.roc)));
+  }
+  const sec = panelSection('Partial fractions and the ROC', 'Split X(s) into one term per pole. Each pole looks towards the ROC: ROC on its right gives a causal term, on its left an anticausal one.',
+    '\\begin{aligned}X(s) &= \\frac{1}{(s+1)(s+2)}\\\\ &= {\\color{#5cd0b3}\\frac{1}{s+1}} - {\\color{#f0ac5f}\\frac{1}{s+2}}\\end{aligned}');
+  const pad = new SPad({ xr: [u0, u1], yr: [-2, 2], height: 150, onClick: (x) => { st.c = x > -1 ? 'right' : x < -2 ? 'left' : 'mid'; rebuild(); } });
+  pad.poles = [{ re: -1, im: 0, color: CSS.teal }, { re: -2, im: 0, color: CSS.gold }];
+  const caseSeg = seg([['right', 'Ex 9.9'], ['mid', 'Ex 9.11'], ['left', 'Ex 9.10']], st.c, (id) => { st.c = id; rebuild(); });
+  const exLab = el('div', { class: 'blurb' });
+  const plot = new Plot({ xr: [-3, 3], yr: [-1.6, 1.6], height: 170, ylabel: 'x(t)' });
+  const terms = el('div', { class: 'formula' });
+  sec.append(el('div', { class: 'lab' }, 'Choose the ROC'), caseSeg.el, pad.el, el('div', { class: 'pad-hint' }, 'Or click one of the three strips.'), exLab, terms,
+    el('div', { class: 'lab' }, 'The two terms and their sum'), plot.el,
+    notes(['Cover-up: $A = (s+1)X(s)|_{s=-1} = 1$, $B = (s+2)X(s)|_{s=-2} = -1$. The split never depends on the ROC.',
+           'Rule for $\\frac{A}{s+a}$: ROC to the right gives $Ae^{-at}u(t)$, to the left $-Ae^{-at}u(-t)$.',
+           'Between the poles each pole looks a different way, so the signal is two-sided.']));
+  return { scene, labels, panel: sec, view: { target: [-1, 0.4, 0], r: 15, theta: 0.6, phi: 1.03 }, enter() { pad.resize(); plot.resize(); rebuild(); } };
+} });
+
+/* ============================================================== navigation and the render loop */
+const nav = document.getElementById('stops');
+const panelRoot = document.getElementById('panel');
+const stopName = document.getElementById('stopname');
+let current = null;
+STOPS.forEach((s, i) => {
+  const b = el('button', { type: 'button', 'aria-current': 'false' }, el('span', { class: 'n' }, String(i + 1)));
+  if (s.name.includes('^')) b.append(tex(s.name)); else b.append(s.name);
+  b.addEventListener('click', () => show(s.id));
+  nav.append(b); s.btn = b;
+});
+function show(id) {
+  const s = STOPS.find((x) => x.id === id) || STOPS[0];
+  if (current === s) return;
+  if (current) { current.inst.labels.root.hidden = true; current.inst.panel.hidden = true; current.btn.setAttribute('aria-current', 'false'); }
+  if (!s.inst) { s.inst = s.build(); panelRoot.append(s.inst.panel); }
+  current = s;
+  s.btn.setAttribute('aria-current', 'true'); s.btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  s.inst.labels.root.hidden = false; s.inst.panel.hidden = false;
+  stopName.textContent = ''; stopName.append(STOPS.indexOf(s) + 1 + '  ', s.name.includes('^') ? tex(s.name) : s.name);
+  orbit.set(s.inst.view, !!s.visited); s.visited = true;
+  if (s.inst.enter) s.inst.enter();
+  try { history.replaceState(null, '', '#' + s.id); } catch (e) {}
+}
+function step(d) { const i = STOPS.indexOf(current); show(STOPS[(i + d + STOPS.length) % STOPS.length].id); }
+document.getElementById('bReset').onclick = () => orbit.set(current.inst.view, true);
+document.getElementById('bFull').onclick = () => { document.body.classList.toggle('full'); };
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input, textarea, select')) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') step(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') step(-1);
+  else if (e.key === 'r' || e.key === 'R') orbit.set(current.inst.view, true);
+  else if (e.key === 'p' || e.key === 'P') document.body.classList.toggle('full');
+  else return;
+  e.preventDefault();
+});
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  if (renderer && w > 0 && h > 0) {
+    const need = renderer.getSize(new THREE.Vector2());
+    if (need.x !== w || need.y !== h) {
+      renderer.setSize(w, h, false); camera.aspect = w / h;
+      // keep the horizontal field of view on narrow screens instead of cropping the sides
+      const a = w / h;
+      camera.fov = a >= 1.6 ? 36 : Math.min(80, 2 * Math.atan(Math.tan(18 * Math.PI / 180) * 1.6 / a) * 180 / Math.PI);
+      camera.updateProjectionMatrix();
+    }
+    if (current) {
+      if (current.inst.tick) current.inst.tick(dt);
+      orbit.update(dt);
+      renderer.render(current.inst.scene, camera);
+      current.inst.labels.update(w, h);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+show((location.hash || '').slice(1) || 'euler');
+requestAnimationFrame(frame);
+})();
+</script>

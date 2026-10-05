@@ -1,0 +1,3 @@
+# Keep LF endings in shell scripts even when Git for Windows checks out with CRLF,
+# otherwise bash fails with "$'\r': command not found".
+*.sh text eol=lf

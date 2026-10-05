@@ -1,0 +1,54 @@
+{
+ "scene": "ROCStrips",
+ "duration": 59.0,
+ "beats": [
+  {
+   "t": 1.8,
+   "label": "Example 9.7: a two-sided signal, split in two"
+  },
+  {
+   "t": 5.8,
+   "label": "both ROCs overlap in a strip"
+  },
+  {
+   "t": 10.3,
+   "label": "the landscape, strip lit"
+  },
+  {
+   "t": 16.8,
+   "label": "smaller b: a thinner strip"
+  },
+  {
+   "t": 21.8,
+   "label": "b <= 0: the strip is gone"
+  },
+  {
+   "t": 26.1,
+   "label": "poles chop the plane into strips"
+  },
+  {
+   "t": 36.7,
+   "label": "the allowed ROCs"
+  },
+  {
+   "t": 42.5,
+   "label": "two poles: -1 and -2"
+  },
+  {
+   "t": 46.5,
+   "label": "right of both poles: right-sided"
+  },
+  {
+   "t": 50.0,
+   "label": "left of both poles: left-sided"
+  },
+  {
+   "t": 53.5,
+   "label": "between the poles: two-sided"
+  },
+  {
+   "t": 57.0,
+   "label": "the ROC picks the signal"
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "scene": "ComplexToEuler",
+ "duration": 109.8,
+ "beats": [
+  {
+   "t": 2.3,
+   "label": "the complex plane"
+  },
+  {
+   "t": 5.1,
+   "label": "z = a + jb"
+  },
+  {
+   "t": 10.7,
+   "label": "multiply by j: rotate 90 degrees"
+  },
+  {
+   "t": 15.7,
+   "label": "j squared = -1"
+  },
+  {
+   "t": 19.2,
+   "label": "polar form: length and angle"
+  },
+  {
+   "t": 25.7,
+   "label": "multiplying = rotate and scale"
+  },
+  {
+   "t": 31.6,
+   "label": "Euler's formula"
+  },
+  {
+   "t": 39.1,
+   "label": "any z = r e^{j theta}"
+  },
+  {
+   "t": 46.2,
+   "label": "spinning as time passes"
+  },
+  {
+   "t": 57.2,
+   "label": "a helix: rotation + time"
+  },
+  {
+   "t": 69.2,
+   "label": "shadows: cos on the floor, sin on the wall"
+  },
+  {
+   "t": 80.7,
+   "label": "omega: how fast it spins (sign = direction)"
+  },
+  {
+   "t": 88.5,
+   "label": "two helices, opposite twist"
+  },
+  {
+   "t": 98.0,
+   "label": "the sum stays in the real plane"
+  },
+  {
+   "t": 102.0,
+   "label": "side view: sin and -sin cancel"
+  },
+  {
+   "t": 106.0,
+   "label": "top view: cos(omega t)"
+  }
+ ]
+}

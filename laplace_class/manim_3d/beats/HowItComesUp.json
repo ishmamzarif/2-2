@@ -1,0 +1,46 @@
+{
+ "scene": "HowItComesUp",
+ "duration": 48.3,
+ "beats": [
+  {
+   "t": 1.8,
+   "label": "an LTI system"
+  },
+  {
+   "t": 5.5,
+   "label": "weights h(tau) along the tau axis"
+  },
+  {
+   "t": 9.5,
+   "label": "delayed copies x(t - tau), scaled by h(tau)"
+  },
+  {
+   "t": 14.5,
+   "label": "add them up: the output y(t)"
+  },
+  {
+   "t": 21.8,
+   "label": "the input spiral"
+  },
+  {
+   "t": 25.8,
+   "label": "delay it by tau"
+  },
+  {
+   "t": 31.8,
+   "label": "same spiral, turned by omega*tau"
+  },
+  {
+   "t": 39.8,
+   "label": "out comes the same spiral, times H(s)"
+  },
+  {
+   "t": 42.3,
+   "label": "H(s): one complex number per s"
+  },
+  {
+   "t": 45.8,
+   "label": "s = j omega: Fourier; any s: Laplace"
+  }
+ ]
+}

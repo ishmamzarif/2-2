@@ -1,0 +1,38 @@
+{
+ "scene": "IntegralsConverge",
+ "duration": 60.2,
+ "beats": [
+  {
+   "t": 10.3,
+   "label": "to infinity: the area settles at 1"
+  },
+  {
+   "t": 20.3,
+   "label": "a growing integrand: diverges"
+  },
+  {
+   "t": 27.6,
+   "label": "the integrand: a shrinking spiral"
+  },
+  {
+   "t": 38.6,
+   "label": "the running total settles at 1/s"
+  },
+  {
+   "t": 44.1,
+   "label": "different omega: still settles"
+  },
+  {
+   "t": 49.1,
+   "label": "sigma = 0: circles forever"
+  },
+  {
+   "t": 53.6,
+   "label": "sigma < 0: spirals out, diverges"
+  },
+  {
+   "t": 57.1,
+   "label": "the size depends only on sigma"
+  }
+ ]
+}

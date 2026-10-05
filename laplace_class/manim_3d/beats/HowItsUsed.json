@@ -1,0 +1,54 @@
+{
+ "scene": "HowItsUsed",
+ "duration": 66.2,
+ "beats": [
+  {
+   "t": 13.3,
+   "label": "velocity = s times position"
+  },
+  {
+   "t": 15.8,
+   "label": "so d/dt becomes multiplication by s"
+  },
+  {
+   "t": 20.1,
+   "label": "a mass-spring-damper style ODE"
+  },
+  {
+   "t": 22.1,
+   "label": "every d/dt becomes a factor s"
+  },
+  {
+   "t": 25.6,
+   "label": "the system function and its poles"
+  },
+  {
+   "t": 33.9,
+   "label": "poles at -1 +- 2j: two spirals rise"
+  },
+  {
+   "t": 37.4,
+   "label": "together: a decaying oscillation h(t)"
+  },
+  {
+   "t": 41.9,
+   "label": "closer to the j omega-axis: rings longer"
+  },
+  {
+   "t": 46.4,
+   "label": "on the axis: sustained oscillation"
+  },
+  {
+   "t": 50.9,
+   "label": "right half-plane: unstable"
+  },
+  {
+   "t": 53.4,
+   "label": "Fourier fails here, Laplace doesn't"
+  },
+  {
+   "t": 63.7,
+   "label": "the toolkit"
+  }
+ ]
+}

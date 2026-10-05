@@ -1,0 +1,38 @@
+{
+ "scene": "LandscapeExamples",
+ "duration": 48.9,
+ "beats": [
+  {
+   "t": 3.8,
+   "label": "each term has its own half-plane"
+  },
+  {
+   "t": 6.3,
+   "label": "both must converge: Re{s} > -1"
+  },
+  {
+   "t": 10.3,
+   "label": "the landscape, ROC lit"
+  },
+  {
+   "t": 16.1,
+   "label": "poles at -2 and -1 +- 3j"
+  },
+  {
+   "t": 27.1,
+   "label": "the j omega slice: resonance peaks"
+  },
+  {
+   "t": 36.9,
+   "label": "double zero at 1, poles at -1 and 2"
+  },
+  {
+   "t": 39.4,
+   "label": "ROC Re{s} > 2: no Fourier transform"
+  },
+  {
+   "t": 46.9,
+   "label": "far from the poles the delta leaves height 1"
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+# rendered output: regenerate with render_all.sh
+manim_animations/media/
+manim_animations/videos/
+manim_3d/build/
+manim_3d/videos/
+
+.venv/
+__pycache__/
+.DS_Store

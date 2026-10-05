@@ -1,0 +1,30 @@
+{
+ "scene": "BigPicture",
+ "duration": 27.3,
+ "beats": [
+  {
+   "t": 2.0,
+   "label": "a signal in time"
+  },
+  {
+   "t": 8.0,
+   "label": "becomes a landscape over the s-plane"
+  },
+  {
+   "t": 13.5,
+   "label": "poles: the decay rate and the frequency"
+  },
+  {
+   "t": 17.0,
+   "label": "Fourier is one slice of it"
+  },
+  {
+   "t": 19.5,
+   "label": "the formula we will unpack"
+  },
+  {
+   "t": 25.8,
+   "label": "roadmap"
+  }
+ ]
+}

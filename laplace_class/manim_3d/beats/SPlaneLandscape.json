@@ -1,0 +1,38 @@
+{
+ "scene": "SPlaneLandscape",
+ "duration": 50.3,
+ "beats": [
+  {
+   "t": 2.8,
+   "label": "each s gives a complex number X(s)"
+  },
+  {
+   "t": 5.3,
+   "label": "its size becomes a height"
+  },
+  {
+   "t": 11.3,
+   "label": "the landscape |X(s)|"
+  },
+  {
+   "t": 13.8,
+   "label": "a pole: X(s) blows up at s = -1"
+  },
+  {
+   "t": 17.8,
+   "label": "only the ROC part is the transform"
+  },
+  {
+   "t": 25.3,
+   "label": "slice along j omega: the Fourier transform"
+  },
+  {
+   "t": 37.8,
+   "label": "zeros touch the floor, poles shoot up"
+  },
+  {
+   "t": 48.8,
+   "label": "seen from above: the pole-zero plot"
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "scene": "ROCProperties",
+ "duration": 56.5,
+ "beats": [
+  {
+   "t": 6.8,
+   "label": "different omega, same envelope"
+  },
+  {
+   "t": 11.1,
+   "label": "a whole vertical line converges together"
+  },
+  {
+   "t": 13.6,
+   "label": "so the ROC is a union of vertical lines"
+  },
+  {
+   "t": 19.9,
+   "label": "poles bound the ROC"
+  },
+  {
+   "t": 27.7,
+   "label": "no spike at s = -1: the pole cancels"
+  },
+  {
+   "t": 34.2,
+   "label": "finite everywhere: big on the left, but never infinite"
+  },
+  {
+   "t": 40.5,
+   "label": "the weight e^{-sigma t} over (t, sigma)"
+  },
+  {
+   "t": 46.5,
+   "label": "right-sided: ROC extends to the right"
+  },
+  {
+   "t": 53.0,
+   "label": "left-sided: ROC extends to the left"
+  }
+ ]
+}

@@ -1,0 +1,50 @@
+{
+ "scene": "FourierRecap",
+ "duration": 55.35,
+ "beats": [
+  {
+   "t": 2.3,
+   "label": "a pulse"
+  },
+  {
+   "t": 8.35,
+   "label": "each wave slides forward and adds in"
+  },
+  {
+   "t": 16.55,
+   "label": "13 sinusoids already make the pulse"
+  },
+  {
+   "t": 22.05,
+   "label": "the spectrum: how much of each frequency"
+  },
+  {
+   "t": 24.55,
+   "label": "and back: add them all up"
+  },
+  {
+   "t": 30.05,
+   "label": "the waterfall from another angle"
+  },
+  {
+   "t": 38.85,
+   "label": "a growing spiral: the integral diverges"
+  },
+  {
+   "t": 41.35,
+   "label": "idea: first multiply by e^{-sigma t}"
+  },
+  {
+   "t": 45.35,
+   "label": "sigma = 0.25: just balanced"
+  },
+  {
+   "t": 50.35,
+   "label": "weighted enough: it converges"
+  },
+  {
+   "t": 52.85,
+   "label": "Fourier of the weighted signal = Laplace"
+  }
+ ]
+}

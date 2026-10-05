@@ -1,0 +1,38 @@
+{
+ "scene": "LaplaceDefinition",
+ "duration": 48.4,
+ "beats": [
+  {
+   "t": 4.8,
+   "label": "the definition"
+  },
+  {
+   "t": 9.3,
+   "label": "a Fourier transform of the weighted signal"
+  },
+  {
+   "t": 15.1,
+   "label": "the signal grows: no Fourier transform"
+  },
+  {
+   "t": 20.1,
+   "label": "one weighted copy per sigma"
+  },
+  {
+   "t": 30.1,
+   "label": "sweep sigma: the weight wins once sigma > 0.5"
+  },
+  {
+   "t": 32.6,
+   "label": "these sigmas: the region of convergence"
+  },
+  {
+   "t": 39.9,
+   "label": "every omega works: a half-plane"
+  },
+  {
+   "t": 42.4,
+   "label": "Fourier = the j omega-axis, which is outside here"
+  }
+ ]
+}

@@ -4,3 +4,7 @@ CSE220/offlines/
 *.Ds_Store
 *.tog
 *.class
+*.mp4
+.venv
+.claude
+*/.claude

@@ -1,0 +1,62 @@
+{
+ "scene": "ComplexExponentials",
+ "duration": 72.3,
+ "beats": [
+  {
+   "t": 4.3,
+   "label": "sigma < 0: decays"
+  },
+  {
+   "t": 7.8,
+   "label": "sigma = 0: constant"
+  },
+  {
+   "t": 10.8,
+   "label": "sigma > 0: grows"
+  },
+  {
+   "t": 19.6,
+   "label": "e^{st}: a spiral"
+  },
+  {
+   "t": 22.3,
+   "label": "its envelope e^{sigma t}"
+  },
+  {
+   "t": 24.3,
+   "label": "each s is one spiral"
+  },
+  {
+   "t": 27.8,
+   "label": "left of the axis: shrinks"
+  },
+  {
+   "t": 31.8,
+   "label": "on the j omega-axis: spins forever"
+  },
+  {
+   "t": 35.8,
+   "label": "right of the axis: grows"
+  },
+  {
+   "t": 46.5,
+   "label": "omega: faster, slower, reversed"
+  },
+  {
+   "t": 50.5,
+   "label": "on the real axis: no spin"
+  },
+  {
+   "t": 55.5,
+   "label": "the map of the s-plane"
+  },
+  {
+   "t": 65.3,
+   "label": "conjugate pair = damped cosine"
+  },
+  {
+   "t": 69.8,
+   "label": "seen from above: e^{sigma t} cos(omega t)"
+  }
+ ]
+}

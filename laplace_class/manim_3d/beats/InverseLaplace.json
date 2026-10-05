@@ -1,0 +1,62 @@
+{
+ "scene": "InverseLaplace",
+ "duration": 68.417,
+ "beats": [
+  {
+   "t": 1.8,
+   "label": "start from the Fourier view"
+  },
+  {
+   "t": 3.8,
+   "label": "invert the Fourier transform"
+  },
+  {
+   "t": 5.8,
+   "label": "multiply by e^{sigma t}"
+  },
+  {
+   "t": 7.8,
+   "label": "the Bromwich integral"
+  },
+  {
+   "t": 16.1,
+   "label": "the values of X(s) along the line"
+  },
+  {
+   "t": 18.6,
+   "label": "each point contributes X(s) e^{st}"
+  },
+  {
+   "t": 26.45,
+   "label": "each wave grows like e^{sigma t}..."
+  },
+  {
+   "t": 33.617,
+   "label": "...yet together they rebuild e^{-t}u(t)"
+  },
+  {
+   "t": 37.117,
+   "label": "in the limit: exactly x(t)"
+  },
+  {
+   "t": 46.417,
+   "label": "line right of the pole: e^{-t}u(t)"
+  },
+  {
+   "t": 54.117,
+   "label": "left of the pole: -e^{-t}u(-t)"
+  },
+  {
+   "t": 60.417,
+   "label": "t > 0: enclose the pole"
+  },
+  {
+   "t": 63.917,
+   "label": "t < 0: enclose nothing"
+  },
+  {
+   "t": 66.417,
+   "label": "the residue theorem does the integral"
+  }
+ ]
+}

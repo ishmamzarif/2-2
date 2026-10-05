@@ -1,0 +1,5 @@
+# Python packages for the animations. Install them with:  bash setup.sh
+# manim also needs LaTeX and ffmpeg, which pip can't install (see README.md).
+manim==0.21.0
+numpy
+pycairo
